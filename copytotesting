@@ -1,0 +1,8 @@
+#!/usr/bin/bash
+dest="/mnt/c/Users/Willi/Documents/Coding/Calculator Applications/fxSDK Testing"
+for file in *.g1a; do
+	[ -f "$file" ] || break
+	cp $file "$dest"/TESTING.g1a
+	cp $file "$dest"/$file
+	echo "Moved $file to $dest as TESTING.g1a and $file"
+done
