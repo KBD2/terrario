@@ -1,20 +1,21 @@
 #include <gint/display.h>
 #include <gint/keyboard.h>
 #include <gint/gray.h>
+#include <gint/std/stdio.h>
+
+#include "map.h"
 
 int main(void)
 {
-	extern image_t img_tile_stone;
+	struct Map map;
+	char buffer[21];
+
+	generateMap(&map);
 
 	gray_start();
-	gclear(C_WHITE);
-	for(int y = 0; y < 64; y += 8)
-	{
-		for(int x = 0; x < 128; x += 8)
-		{
-			gimage(x, y, &img_tile_stone);
-		}
-	}
+
+	sprintf(buffer, "%d %d", map.tiles[0].sprite, tiles[0].sprite);
+	gtext(0, 0, buffer, C_BLACK, C_WHITE);
 	gupdate();
 
 	getkey();

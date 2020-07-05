@@ -2,3 +2,4 @@
 build-fx
 build-cg
 *.g1a
+*.code-workspace
