@@ -15,7 +15,7 @@ void generateMap(struct Map* map)
 	{
 		for(unsigned int x = 0; x < MAP_WIDTH; x++)
 		{
-			map->tiles[y * MAP_HEIGHT + x] = tiles[TILE_STONE];
+			map->tiles[y * MAP_HEIGHT + x] = &(tiles[TILE_STONE]);
 		}
 	}
 }

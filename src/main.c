@@ -14,7 +14,7 @@ int main(void)
 
 	gray_start();
 
-	sprintf(buffer, "%d %d", map.tiles[0].sprite, tiles[0].sprite);
+	sprintf(buffer, "%d %d", sizeof map.tiles[0], sizeof tiles[0]);
 	gtext(0, 0, buffer, C_BLACK, C_WHITE);
 	gupdate();
 

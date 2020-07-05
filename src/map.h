@@ -18,7 +18,7 @@ enum Tilenames {
 };
 
 struct Map {
-	Tile* tiles;
+	const Tile** tiles;
 };
 
 void generateMap(struct Map* map);
