@@ -23,6 +23,7 @@ int main(void)
 
 	generateMap(&map);
 
+	gray_delays(920, 1740);
 	gray_start();
 
 	while(1)
