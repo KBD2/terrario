@@ -21,7 +21,7 @@ int main(void)
 		{0, 0},
 		{0, 0},
 		&updatePlayer,
-		&handleCollisions
+		&handlePhysics
 	};
 	int ticks;
 	char buf[10];

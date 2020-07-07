@@ -29,6 +29,7 @@ void render(struct Map* map, struct Player* player)
 	bool marginLeft, marginRight, marginTop, marginBottom;
 	int flags;
 
+//	This probably shouldn't be here but cam positions can't be accessed anywhere else right now
 	player->cursorTile.x = (camX + player->cursor.x - (SCREEN_WIDTH >> 1)) >> 3;
 	player->cursorTile.y = (camY + player->cursor.y - (SCREEN_HEIGHT >> 1)) >> 3;
 

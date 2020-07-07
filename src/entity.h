@@ -29,8 +29,8 @@ struct Player {
 	struct Coords cursorTile;
 
 	void (*update)(struct Map* map, struct Player* self);
-	void (*collisions)(struct Map* map, struct EntPhysicsProps* self);
+	void (*physics)(struct Map* map, struct EntPhysicsProps* self);
 };
 
 void updatePlayer(struct Map* map, struct Player* self);
-void handleCollisions(struct Map* map, struct EntPhysicsProps* self);
+void handlePhysics(struct Map* map, struct EntPhysicsProps* self);

@@ -1,4 +1,6 @@
-#define VERSION "v0.0.1-indev"
+#pragma once
+
+#define VERSION "v0.0.2-indev"
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64

@@ -1,3 +1,5 @@
+#pragma once
+
 // Syscalls
 #define SCA 0xD201D002
 #define SCB 0x422B0009

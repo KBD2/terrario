@@ -30,12 +30,12 @@ void updatePlayer(struct Map* map, struct Player* self)
 //	Easiest way to exit from here
 	if(keydown(KEY_MENU)) RebootOS();
 
-	self->collisions(map, &self->props);
+	self->physics(map, &self->props);
 }
 
 /* Having a generic physics property struct lets me have one function to handle
 collisions, instead of one for each entity/player struct */
-void handleCollisions(struct Map* map, struct EntPhysicsProps* self)
+void handlePhysics(struct Map* map, struct EntPhysicsProps* self)
 {
 	struct Rect tileCheckBox = {
 		{

@@ -57,6 +57,12 @@ float interpolate(float a, float b, float x){
     return a * (1.0 - f) + b * f;
 }
 
+float randFloat()
+{
+//	Don't know what RAND_MAX is
+	return (float)(rand() % 10000) / 10000;
+}
+
 void generateMap(struct Map* map)
 {
 	float amplitude = 5;
@@ -85,13 +91,13 @@ void generateMap(struct Map* map)
 	}
 
 //	Make some hills using Perlin noise
-	a = (float)(rand() % 10000) / 10000;
-	b = (float)(rand() % 10000) / 10000;
+	a = randFloat();
+	b = randFloat();
 	for(int x = 0; x < MAP_WIDTH; x++)
 	{
 		if(x % (int)wavelength == 0){
 			a = b;
-			b = (float)(rand() % 10000) / 10000;
+			b = randFloat();
 			perlinY = MAP_HEIGHT / 2 + a * amplitude;
 		}
 		else
