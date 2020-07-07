@@ -31,8 +31,6 @@ void updatePlayer(struct Map* map, struct Player* self)
 	if(keydown(KEY_MENU)) RebootOS();
 
 	self->collisions(map, &self->props);
-	self->props.x = min(max(self->props.x, 0), 8 * MAP_WIDTH - self->props.width);
-	self->props.y = min(max(self->props.y, 0), 8 * MAP_HEIGHT - self->props.height);
 }
 
 /* Having a generic physics property struct lets me have one function to handle
@@ -99,7 +97,7 @@ void handleCollisions(struct Map* map, struct EntPhysicsProps* self)
 							self->y -= overlapY;
 							self->touchingTileTop = true;
 						}
-					} 
+					}
 					else
 					{
 						self->xVel = 0;
@@ -117,4 +115,11 @@ void handleCollisions(struct Map* map, struct EntPhysicsProps* self)
 		}
 	}
 	self->xVel *= 0.8;
+	self->x = min(max(self->x, 0), 8 * MAP_WIDTH - self->width);
+	self->y = min(max(self->y, 0), 8 * MAP_HEIGHT - self->height);
+	if(self->y + self->height == (MAP_HEIGHT << 3) - 1)
+	{
+		self->yVel = 0;
+		self->touchingTileTop = true;
+	}
 }

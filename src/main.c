@@ -1,5 +1,6 @@
 #include <gint/gray.h>
 #include <gint/std/stdio.h>
+#include <gint/std/stdlib.h>
 
 #include "syscalls.h"
 #include "map.h"
@@ -24,6 +25,8 @@ int main(void)
 	};
 	int ticks;
 	char buf[10];
+
+	srand(RTC_GetTicks());
 
 	generateMap(&map);
 
