@@ -5,3 +5,4 @@ build-cg
 *.g1a
 *.code-workspace
 *.cfg
+*.txt

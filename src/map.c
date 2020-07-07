@@ -59,7 +59,14 @@ float interpolate(float a, float b, float x){
 
 void generateMap(struct Map* map)
 {
+	float amplitude = 5;
+	int wavelength = 10;
+	float a, b;
+	int perlinY;
+
 	map->tiles = malloc(MAP_WIDTH * MAP_HEIGHT);
+
+//	Make some basic layers
 	for(unsigned int y = 0; y < MAP_HEIGHT; y++)
 	{
 		for(unsigned int x = 0; x < MAP_WIDTH; x++)
@@ -77,24 +84,20 @@ void generateMap(struct Map* map)
 		}
 	}
 
-	int amp = 5;
-	int wl = 10;
-	float a = (float)(rand() % 10000) / 10000;
-	float b = (float)(rand() % 10000) / 10000;
-	int x = 0;
-	int y = MAP_HEIGHT / 2;
-	while(x < MAP_WIDTH)
+//	Make some hills using Perlin noise
+	a = (float)(rand() % 10000) / 10000;
+	b = (float)(rand() % 10000) / 10000;
+	for(int x = 0; x < MAP_WIDTH; x++)
 	{
-		if(x % wl == 0){
+		if(x % (int)wavelength == 0){
 			a = b;
 			b = (float)(rand() % 10000) / 10000;
-			y = MAP_HEIGHT / 2 + a * amp;
+			perlinY = MAP_HEIGHT / 2 + a * amplitude;
 		}
 		else
 		{
-			y = MAP_HEIGHT / 2 + interpolate(a, b, (float)(x % wl) / wl) * (float)amp;
+			perlinY = MAP_HEIGHT / 2 + interpolate(a, b, (float)(x % wavelength) / wavelength) * amplitude;
 		}
-		for(int y2 = y; y2 < 30; y2++) map->tiles[y2 * MAP_WIDTH + x] = &tiles[TILE_DIRT];
-		x += 1;
+		for(; perlinY < 30; perlinY++) map->tiles[perlinY * MAP_WIDTH + x] = &tiles[TILE_DIRT];
 	}
 }
