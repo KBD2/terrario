@@ -4,9 +4,6 @@
 #include <stdbool.h>
 #include <gint/std/stdlib.h>
 
-#define MAP_WIDTH 100
-#define MAP_HEIGHT 50
-
 typedef struct Tiles {
 	image_t* sprite;
 	bool solid:1;

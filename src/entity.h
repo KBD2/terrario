@@ -2,8 +2,6 @@
 
 #include "map.h"
 
-#define GRAVITY_ACCEL 0.333
-
 struct Coords {
 	int x;
 	int y;
@@ -27,6 +25,8 @@ struct EntPhysicsProps {
 struct Player {
 	struct EntPhysicsProps props;
 	int health;
+	struct Coords cursor;
+	struct Coords cursorTile;
 
 	void (*update)(struct Map* map, struct Player* self);
 	void (*collisions)(struct Map* map, struct EntPhysicsProps* self);

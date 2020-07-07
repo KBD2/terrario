@@ -7,15 +7,29 @@
 #include "syscalls.h"
 #include "entity.h"
 #include "map.h"
+#include "defs.h"
 
 void updatePlayer(struct Map* map, struct Player* self)
 {
 	clearevents();
-	if(keydown(KEY_LEFT)) self->props.xVel = -4;
-	if(keydown(KEY_RIGHT)) self->props.xVel = 4;
-	if(keydown(KEY_UP) && self->props.touchingTileTop) self->props.yVel = -6;
+
+	if(keydown(KEY_4)) self->props.xVel = -3;
+	if(keydown(KEY_6)) self->props.xVel = 3;
+	if(keydown(KEY_8) && self->props.touchingTileTop) self->props.yVel = -5;
+
+	if(keydown(KEY_7)) map->tiles[self->cursorTile.y * MAP_WIDTH + self->cursorTile.x] = &tiles[TILE_NOTHING];
+	if(keydown(KEY_9)) map->tiles[self->cursorTile.y * MAP_WIDTH + self->cursorTile.x] = &tiles[TILE_STONE];
+
+	if(keydown(KEY_LEFT)) self->cursor.x--;
+	if(keydown(KEY_RIGHT)) self->cursor.x++;
+	if(keydown(KEY_UP)) self->cursor.y--;
+	if(keydown(KEY_DOWN)) self->cursor.y++;
+	self->cursor.x = min(max(0, self->cursor.x), SCREEN_WIDTH - 1);
+	self->cursor.y = min(max(0, self->cursor.y), SCREEN_HEIGHT - 1);
+
 //	Easiest way to exit from here
 	if(keydown(KEY_MENU)) RebootOS();
+
 	self->collisions(map, &self->props);
 	self->props.x = min(max(self->props.x, 0), 8 * MAP_WIDTH - self->props.width);
 	self->props.y = min(max(self->props.y, 0), 8 * MAP_HEIGHT - self->props.height);
@@ -31,13 +45,13 @@ void handleCollisions(struct Map* map, struct EntPhysicsProps* self)
 			max(0, (self->y >> 3) - 1)
 		},
 		{
-			min(MAP_WIDTH - 1, ((self->x + self->width) >> 3) - 1),
+			min(MAP_WIDTH - 1, ((self->x + self->width) >> 3) + 1),
 			min(MAP_HEIGHT - 1, ((self->y + self->height) >> 3) + 1)
 		}
 	};
 
 	int checkLeft, checkRight, checkTop, checkBottom;
-	bool overlapLeft, overlapRight, overlapTop, overlapBottom;
+	int overlapX, overlapY;
 
 	self->yVel += GRAVITY_ACCEL;
 	if(abs(self->xVel) < 1) self->xVel = 0;
@@ -68,34 +82,39 @@ void handleCollisions(struct Map* map, struct EntPhysicsProps* self)
 				checkTop = y << 3;
 				checkBottom = checkTop + 7;
 
-				overlapLeft = entBox.TL.x <= checkRight && entBox.BR.x >= checkLeft;
-				overlapRight = entBox.BR.x >= checkLeft && entBox.TL.x <= checkRight;
-				overlapTop = entBox.TL.y <= checkBottom && entBox.BR.y >= checkTop;
-				overlapBottom = entBox.BR.y >= checkTop && entBox.TL.y <= checkBottom;
-				
-				if((overlapLeft || overlapRight) && (overlapTop || overlapBottom))
+				overlapX = max(0, min(entBox.BR.x, checkRight + 1) - max(entBox.TL.x, checkLeft - 1));
+				overlapY = max(0, min(entBox.BR.y, checkBottom + 1) - max(entBox.TL.y, checkTop - 1));
+
+				if(overlapX && overlapY)
 				{
-					if(overlapBottom)
+					if(overlapX >= overlapY)
 					{
-						self->y -= entBox.BR.y - checkTop;
 						self->yVel = 0;
-						self->touchingTileTop = true;
-					} else if(overlapTop)
+						if(entBox.TL.y >= checkTop)
+						{
+							self->y += overlapY;
+						} 
+						else 
+						{
+							self->y -= overlapY;
+							self->touchingTileTop = true;
+						}
+					} 
+					else
 					{
-						self->y += checkBottom - entBox.TL.y;
-						self->yVel = 0;
-					} else if(overlapLeft)
-					{
-						self->x += checkRight - entBox.TL.x;
 						self->xVel = 0;
-					} else if(overlapRight)
-					{
-						self->x -= entBox.BR.x - checkLeft;
-						self->xVel = 0;
+						if(entBox.TL.x <= checkLeft)
+						{
+							self->x -= overlapX;
+						} 
+						else
+						{
+							self->x += overlapX;
+						}
 					}
 				}
 			}
 		}
 	}
-	if(self->touchingTileTop) self->xVel *= 0.8;
+	self->xVel *= 0.8;
 }

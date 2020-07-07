@@ -3,6 +3,7 @@
 
 #include "syscalls.h"
 #include "render.h"
+#include "defs.h"
 
 const unsigned int camMinX = SCREEN_WIDTH >> 1;
 const unsigned int camMaxX = (MAP_WIDTH << 3) - (SCREEN_WIDTH >> 1);
@@ -11,7 +12,7 @@ const unsigned int camMaxY = (MAP_HEIGHT << 3) - (SCREEN_HEIGHT >> 1);
 
 void render(struct Map* map, struct Player* player)
 {
-	extern image_t img_player1;
+	extern image_t img_player1, img_cursor;
 	int camX = min(max(player->props.x + (player->props.width >> 1), camMinX), camMaxX);
 	int camY = min(max(player->props.y + (player->props.height >> 1), camMinY), camMaxY);
 
@@ -27,6 +28,9 @@ void render(struct Map* map, struct Player* player)
 	int camOffsetY = (camY - (SCREEN_HEIGHT >> 1));
 	bool marginLeft, marginRight, marginTop, marginBottom;
 	int flags;
+
+	player->cursorTile.x = (camX + player->cursor.x - (SCREEN_WIDTH >> 1)) >> 3;
+	player->cursorTile.y = (camY + player->cursor.y - (SCREEN_HEIGHT >> 1)) >> 3;
 
 	gclear(C_WHITE);
 
@@ -58,4 +62,5 @@ void render(struct Map* map, struct Player* player)
 		}
 	}
 	gimage(player->props.x - (camX - (SCREEN_WIDTH >> 1)), player->props.y - (camY - (SCREEN_HEIGHT >> 1)), &img_player1);
+	gimage(player->cursor.x, player->cursor.y, &img_cursor);
 }

@@ -1,4 +1,5 @@
 #include "map.h"
+#include "defs.h"
 
 extern image_t 
 img_tile_nothing,

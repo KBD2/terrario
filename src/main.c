@@ -17,6 +17,8 @@ int main(void)
 	struct Player player = {
 		{0, 0, 0.0, 0.0, false, 12, 21},
 		100,
+		{0, 0},
+		{0, 0},
 		&updatePlayer,
 		&handleCollisions
 	};
