@@ -1,7 +1,7 @@
 #include <gint/gray.h>
 #include <gint/defs/util.h>
-#include <gint/std/stdio.h>
 
+#include "syscalls.h"
 #include "render.h"
 
 const unsigned int camMinX = SCREEN_WIDTH >> 1;
@@ -12,8 +12,8 @@ const unsigned int camMaxY = (MAP_HEIGHT << 3) - (SCREEN_HEIGHT >> 1);
 void render(struct Map* map, struct Player* player)
 {
 	extern image_t img_player1;
-	int camX = min(max(player->x, camMinX), camMaxX);
-	int camY = min(max(player->y, camMinY), camMaxY);
+	int camX = min(max(player->props.x + (player->props.width >> 1), camMinX), camMaxX);
+	int camY = min(max(player->props.y + (player->props.height >> 1), camMinY), camMaxY);
 
 //	Translating cam bounds to tile bounds is painful
 	unsigned int tileLeftX = max(0, ((camX - (SCREEN_WIDTH >> 1)) >> 3) - 1);
@@ -23,6 +23,10 @@ void render(struct Map* map, struct Player* player)
 
 	const Tile* currTile;
 	unsigned int currTileX, currTileY;
+	int camOffsetX = (camX - (SCREEN_WIDTH >> 1));
+	int camOffsetY = (camY - (SCREEN_HEIGHT >> 1));
+	bool marginLeft, marginRight, marginTop, marginBottom;
+	int flags;
 
 	gclear(C_WHITE);
 
@@ -31,15 +35,27 @@ void render(struct Map* map, struct Player* player)
 		for(unsigned int x = tileLeftX; x <= tileRightX; x++)
 		{
 			currTile = map->tiles[y * MAP_WIDTH + x];
-			currTileX = (x << 3) - (camX - (SCREEN_WIDTH >> 1));
-			currTileY = (y << 3) - (camY - (SCREEN_HEIGHT >> 1));
-			if(currTile->render) gimage(currTileX, currTileY, currTile->sprite);
+			currTileX = (x << 3) - camOffsetX;
+			currTileY = (y << 3) - camOffsetY;
+			if(currTile->render)
+			{
+				/* Disable clipping unless it's a block on the edges of the screen.
+				This reduces rendering time a bit (edges still need clipping or
+				we might crash trying to write outside the VRAM). */
+				marginLeft = x - tileLeftX <= 1;
+				marginRight = tileRightX - x <= 1;
+				marginTop = y - tileTopY <= 1;
+				marginBottom = tileBottomY - y <= 1;
+				if(marginLeft | marginRight | marginTop | marginBottom)
+				{
+					flags = DIMAGE_NONE;
+				} else
+				{
+					flags = DIMAGE_NOCLIP;
+				}
+				gsubimage(currTileX, currTileY, currTile->sprite, 0, 0, 8, 8, flags);
+			}
 		}
 	}
-	gimage(player->x - (camX - (SCREEN_WIDTH >> 1)), player->y - (camY - (SCREEN_HEIGHT >> 1)), &img_player1);
-
-//	This is my entire render process debugger :D
-	char buf[21];sprintf(buf,"%d %d %d %d",tileLeftX,tileRightX,tileTopY,tileBottomY);gtext(0,0,buf,C_BLACK,C_WHITE);
-
-	gupdate();
+	gimage(player->props.x - (camX - (SCREEN_WIDTH >> 1)), player->props.y - (camY - (SCREEN_HEIGHT >> 1)), &img_player1);
 }
