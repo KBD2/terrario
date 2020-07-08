@@ -14,7 +14,8 @@ extern const Tile tiles[];
 enum Tilenames {
 	TILE_NOTHING,
 	TILE_STONE,
-	TILE_DIRT
+	TILE_DIRT,
+	TILE_GRASS
 };
 
 struct World {

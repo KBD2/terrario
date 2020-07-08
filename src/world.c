@@ -9,13 +9,15 @@
 extern image_t 
 img_tile_nothing,
 img_tile_stone,
-img_tile_dirt;
+img_tile_dirt,
+img_tile_grass;
 
 const Tile tiles[] = {
 //      Ptr to sprite       	Solid?	Render?
 	{	&img_tile_nothing	,	false,	false	},
 	{   &img_tile_stone		,	true,	true	},
-	{   &img_tile_dirt 		,	true,	true	}
+	{   &img_tile_dirt 		,	true,	true	},
+	{	&img_tile_grass		,	true,	true	}
 };
 
 float interpolate(float a, float b, float x){
@@ -75,6 +77,7 @@ void generateWorld(struct World* world)
 		{
 			perlinY = WORLD_HEIGHT / 3 + interpolate(a, b, (float)(x % wavelength) / wavelength) * amplitude;
 		}
-		for(; perlinY < WORLD_HEIGHT / 2; perlinY++) world->tiles[perlinY * WORLD_WIDTH + x] = TILE_DIRT;
+		world->tiles[perlinY * WORLD_WIDTH + x] = TILE_GRASS;
+		for(perlinY++; perlinY < WORLD_HEIGHT / 2; perlinY++) world->tiles[perlinY * WORLD_WIDTH + x] = TILE_DIRT;
 	}
 }
