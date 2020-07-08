@@ -2,7 +2,6 @@
 
 #include <gint/display.h>
 #include <stdbool.h>
-#include <gint/std/stdlib.h>
 
 typedef struct Tiles {
 	image_t* sprite;
@@ -18,8 +17,8 @@ enum Tilenames {
 	TILE_DIRT
 };
 
-struct Map {
-	const Tile** tiles;
+struct World {
+	unsigned char* tiles;
 };
 
-void generateMap(struct Map* map);
+void generateWorld(struct World* world);

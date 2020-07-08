@@ -1,6 +1,6 @@
 #pragma once
 
-#include "map.h"
+#include "world.h"
 #include "entity.h"
 
-void render(struct Map* map, struct Player* player);
+void render(struct World* world, struct Player* player);

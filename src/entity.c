@@ -1,15 +1,13 @@
 #include <gint/keyboard.h>
 #include <gint/defs/util.h>
-
-#include <gint/gray.h>
-#include <gint/std/stdio.h>
+#include <gint/std/stdlib.h>
 
 #include "syscalls.h"
 #include "entity.h"
-#include "map.h"
+#include "world.h"
 #include "defs.h"
 
-void updatePlayer(struct Map* map, struct Player* self)
+void updatePlayer(struct World* world, struct Player* self)
 {
 	clearevents();
 
@@ -17,8 +15,8 @@ void updatePlayer(struct Map* map, struct Player* self)
 	if(keydown(KEY_6)) self->props.xVel = 3;
 	if(keydown(KEY_8) && self->props.touchingTileTop) self->props.yVel = -5;
 
-	if(keydown(KEY_7)) map->tiles[self->cursorTile.y * MAP_WIDTH + self->cursorTile.x] = &tiles[TILE_NOTHING];
-	if(keydown(KEY_9)) map->tiles[self->cursorTile.y * MAP_WIDTH + self->cursorTile.x] = &tiles[TILE_STONE];
+	if(keydown(KEY_7)) world->tiles[self->cursorTile.y * WORLD_WIDTH + self->cursorTile.x] = TILE_NOTHING;
+	if(keydown(KEY_9)) world->tiles[self->cursorTile.y * WORLD_WIDTH + self->cursorTile.x] = TILE_STONE;
 
 	if(keydown(KEY_LEFT)) self->cursor.x--;
 	if(keydown(KEY_RIGHT)) self->cursor.x++;
@@ -28,14 +26,18 @@ void updatePlayer(struct Map* map, struct Player* self)
 	self->cursor.y = min(max(0, self->cursor.y), SCREEN_HEIGHT - 1);
 
 //	Easiest way to exit from here
-	if(keydown(KEY_MENU)) RebootOS();
+	if(keydown(KEY_MENU))
+	{
+		free(world->tiles);
+		RebootOS();
+	} 
 
-	self->physics(map, &self->props);
+	self->physics(world, &self->props);
 }
 
 /* Having a generic physics property struct lets me have one function to handle
 collisions, instead of one for each entity/player struct */
-void handlePhysics(struct Map* map, struct EntPhysicsProps* self)
+void handlePhysics(struct World* world, struct EntPhysicsProps* self)
 {
 	struct Rect tileCheckBox = {
 		{
@@ -43,15 +45,15 @@ void handlePhysics(struct Map* map, struct EntPhysicsProps* self)
 			max(0, (self->y >> 3) - 1)
 		},
 		{
-			min(MAP_WIDTH - 1, ((self->x + self->width) >> 3) + 1),
-			min(MAP_HEIGHT - 1, ((self->y + self->height) >> 3) + 1)
+			min(WORLD_WIDTH - 1, ((self->x + self->width) >> 3) + 1),
+			min(WORLD_HEIGHT - 1, ((self->y + self->height) >> 3) + 1)
 		}
 	};
 
 	int checkLeft, checkRight, checkTop, checkBottom;
 	int overlapX, overlapY;
 
-	self->yVel += GRAVITY_ACCEL;
+	self->yVel = min(10, self->yVel + GRAVITY_ACCEL);
 	if(abs(self->xVel) < 1) self->xVel = 0;
 	self->x += self->xVel;
 	self->y += self->yVel;
@@ -61,7 +63,7 @@ void handlePhysics(struct Map* map, struct EntPhysicsProps* self)
 	{
 		for(int x = tileCheckBox.TL.x; x <= tileCheckBox.BR.x; x++)
 		{
-			if(map->tiles[y * MAP_WIDTH + x]->solid)
+			if(tiles[world->tiles[y * WORLD_WIDTH + x]].solid)
 			{
 				struct Rect entBox = {
 					{
@@ -115,9 +117,9 @@ void handlePhysics(struct Map* map, struct EntPhysicsProps* self)
 		}
 	}
 	self->xVel *= 0.8;
-	self->x = min(max(self->x, 0), 8 * MAP_WIDTH - self->width);
-	self->y = min(max(self->y, 0), 8 * MAP_HEIGHT - self->height);
-	if(self->y + self->height == (MAP_HEIGHT << 3) - 1)
+	self->x = min(max(self->x, 0), 8 * WORLD_WIDTH - self->width);
+	self->y = min(max(self->y, 0), 8 * WORLD_HEIGHT - self->height);
+	if(self->y + self->height == (WORLD_HEIGHT << 3) - 1)
 	{
 		self->yVel = 0;
 		self->touchingTileTop = true;

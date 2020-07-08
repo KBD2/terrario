@@ -6,11 +6,11 @@
 #include "defs.h"
 
 const unsigned int camMinX = SCREEN_WIDTH >> 1;
-const unsigned int camMaxX = (MAP_WIDTH << 3) - (SCREEN_WIDTH >> 1);
+const unsigned int camMaxX = (WORLD_WIDTH << 3) - (SCREEN_WIDTH >> 1);
 const unsigned int camMinY = SCREEN_HEIGHT >> 1;
-const unsigned int camMaxY = (MAP_HEIGHT << 3) - (SCREEN_HEIGHT >> 1);
+const unsigned int camMaxY = (WORLD_HEIGHT << 3) - (SCREEN_HEIGHT >> 1);
 
-void render(struct Map* map, struct Player* player)
+void render(struct World* world, struct Player* player)
 {
 	extern image_t img_player1, img_cursor;
 	int camX = min(max(player->props.x + (player->props.width >> 1), camMinX), camMaxX);
@@ -18,9 +18,9 @@ void render(struct Map* map, struct Player* player)
 
 //	Translating cam bounds to tile bounds is painful
 	unsigned int tileLeftX = max(0, ((camX - (SCREEN_WIDTH >> 1)) >> 3) - 1);
-	unsigned int tileRightX = min(MAP_WIDTH - 1, tileLeftX + (SCREEN_WIDTH >> 3) + 1);
+	unsigned int tileRightX = min(WORLD_WIDTH - 1, tileLeftX + (SCREEN_WIDTH >> 3) + 1);
 	unsigned int tileTopY = max(0, ((camY - (SCREEN_HEIGHT >> 1)) >> 3) - 1);
-	unsigned int tileBottomY = min(MAP_HEIGHT - 1, tileTopY + (SCREEN_HEIGHT >> 3) + 1);
+	unsigned int tileBottomY = min(WORLD_HEIGHT - 1, tileTopY + (SCREEN_HEIGHT >> 3) + 1);
 
 	const Tile* currTile;
 	unsigned int currTileX, currTileY;
@@ -39,7 +39,7 @@ void render(struct Map* map, struct Player* player)
 	{
 		for(unsigned int x = tileLeftX; x <= tileRightX; x++)
 		{
-			currTile = map->tiles[y * MAP_WIDTH + x];
+			currTile = &tiles[world->tiles[y * WORLD_WIDTH + x]];
 			currTileX = (x << 3) - camOffsetX;
 			currTileY = (y << 3) - camOffsetY;
 			if(currTile->render)

@@ -1,9 +1,11 @@
 #include <gint/gray.h>
-#include <gint/std/stdio.h>
-#include <gint/std/stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <math.h>
 
 #include "syscalls.h"
-#include "map.h"
+#include "world.h"
 #include "entity.h"
 #include "render.h"
 
@@ -14,7 +16,7 @@ const unsigned int sc0236[] = { SCA, SCB, SCE, 0x0236 };
 
 int main(void)
 {
-	struct Map map;
+	struct World world;
 	struct Player player = {
 		{0, 0, 0.0, 0.0, false, 12, 21},
 		100,
@@ -28,7 +30,7 @@ int main(void)
 
 	srand(RTC_GetTicks());
 
-	generateMap(&map);
+	generateWorld(&world);
 
 	gray_delays(920, 1740);
 	gray_start();
@@ -36,8 +38,8 @@ int main(void)
 	while(1)
 	{
 		ticks = RTC_GetTicks();
-		player.update(&map, &player);
-		render(&map, &player);
+		player.update(&world, &player);
+		render(&world, &player);
 		sprintf(buf, "%d", RTC_GetTicks() - ticks);
 		gtext(0, 0, buf, C_BLACK, C_WHITE);
 		gupdate();

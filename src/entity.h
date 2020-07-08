@@ -1,6 +1,6 @@
 #pragma once
 
-#include "map.h"
+#include "world.h"
 
 struct Coords {
 	int x;
@@ -28,9 +28,9 @@ struct Player {
 	struct Coords cursor;
 	struct Coords cursorTile;
 
-	void (*update)(struct Map* map, struct Player* self);
-	void (*physics)(struct Map* map, struct EntPhysicsProps* self);
+	void (*update)(struct World* world, struct Player* self);
+	void (*physics)(struct World* world, struct EntPhysicsProps* self);
 };
 
-void updatePlayer(struct Map* map, struct Player* self);
-void handlePhysics(struct Map* map, struct EntPhysicsProps* self);
+void updatePlayer(struct World* world, struct Player* self);
+void handlePhysics(struct World* world, struct EntPhysicsProps* self);

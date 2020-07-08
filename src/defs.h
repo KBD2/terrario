@@ -1,11 +1,10 @@
 #pragma once
 
-#define VERSION "v0.0.2-indev"
+#define VERSION "v0.0.3-indev"
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 
-#define MAP_WIDTH 100
-#define MAP_HEIGHT 50
-
+#define WORLD_WIDTH 300
+#define WORLD_HEIGHT 120
 #define GRAVITY_ACCEL 0.333
