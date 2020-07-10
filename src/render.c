@@ -22,12 +22,14 @@ void render(struct World* world, struct Player* player)
 	unsigned int tileTopY = max(0, ((camY - (SCREEN_HEIGHT >> 1)) >> 3) - 1);
 	unsigned int tileBottomY = min(WORLD_HEIGHT - 1, tileTopY + (SCREEN_HEIGHT >> 3) + 1);
 
-	const Tile* currTile;
+	Tile* tile;
+	const TileData* currTile;
 	unsigned int currTileX, currTileY;
 	int camOffsetX = (camX - (SCREEN_WIDTH >> 1));
 	int camOffsetY = (camY - (SCREEN_HEIGHT >> 1));
 	bool marginLeft, marginRight, marginTop, marginBottom;
 	int flags;
+	int subrectX, subrectY;
 
 //	This probably shouldn't be here but cam positions can't be accessed anywhere else right now
 	player->cursorTile.x = (camX + player->cursor.x - (SCREEN_WIDTH >> 1)) >> 3;
@@ -39,7 +41,8 @@ void render(struct World* world, struct Player* player)
 	{
 		for(unsigned int x = tileLeftX; x <= tileRightX; x++)
 		{
-			currTile = &tiles[world->tiles[y * WORLD_WIDTH + x]];
+			tile = &world->tiles[y * WORLD_WIDTH + x];
+			currTile = &tiles[tile->idx];
 			currTileX = (x << 3) - camOffsetX;
 			currTileY = (y << 3) - camOffsetY;
 			if(currTile->render)
@@ -58,7 +61,20 @@ void render(struct World* world, struct Player* player)
 				{
 					flags = DIMAGE_NOCLIP;
 				}
-				gsubimage(currTileX, currTileY, currTile->sprite, 0, 0, 8, 8, flags);
+				if(currTile->hasSpritesheet)
+				{
+//					Spritesheet layout allows for very fast calculation of the position of the sprite
+					subrectX = tile->state % 4;
+					subrectX = (subrectX << 3) + subrectX + 1;
+					subrectY = tile->state >> 2;
+					subrectY = (subrectY << 3) + subrectY + 1;
+					gsubimage(currTileX, currTileY, currTile->sprite, subrectX, subrectY, 8, 8, flags);
+				}
+				else
+				{
+					gsubimage(currTileX, currTileY, currTile->sprite, 0, 0, 8, 8, flags);
+				}
+				
 			}
 		}
 	}

@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <math.h>
-
 #include "syscalls.h"
 #include "world.h"
 #include "entity.h"
@@ -34,6 +32,7 @@ int main(void)
 
 	gray_delays(920, 1740);
 	gray_start();
+
 
 	while(1)
 	{

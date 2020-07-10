@@ -15,8 +15,16 @@ void updatePlayer(struct World* world, struct Player* self)
 	if(keydown(KEY_6)) self->props.xVel = 3;
 	if(keydown(KEY_8) && self->props.touchingTileTop) self->props.yVel = -5;
 
-	if(keydown(KEY_7)) world->tiles[self->cursorTile.y * WORLD_WIDTH + self->cursorTile.x] = TILE_NOTHING;
-	if(keydown(KEY_9)) world->tiles[self->cursorTile.y * WORLD_WIDTH + self->cursorTile.x] = TILE_STONE;
+	if(keydown(KEY_7))
+	{
+		world->tiles[self->cursorTile.y * WORLD_WIDTH + self->cursorTile.x] = (Tile){TILE_NOTHING, 0};
+		updateStates(world, self->cursorTile.x, self->cursorTile.y);
+	}
+	if(keydown(KEY_9))
+	{
+		world->tiles[self->cursorTile.y * WORLD_WIDTH + self->cursorTile.x] = (Tile){TILE_STONE, 0};
+		updateStates(world, self->cursorTile.x, self->cursorTile.y);
+	}
 
 	if(keydown(KEY_LEFT)) self->cursor.x--;
 	if(keydown(KEY_RIGHT)) self->cursor.x++;
@@ -63,7 +71,7 @@ void handlePhysics(struct World* world, struct EntPhysicsProps* self)
 	{
 		for(int x = tileCheckBox.TL.x; x <= tileCheckBox.BR.x; x++)
 		{
-			if(tiles[world->tiles[y * WORLD_WIDTH + x]].solid)
+			if(tiles[world->tiles[y * WORLD_WIDTH + x].idx].solid)
 			{
 				struct Rect entBox = {
 					{
