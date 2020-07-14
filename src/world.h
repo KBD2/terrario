@@ -5,10 +5,12 @@
 
 #define MAX_FRIENDS 2
 
+#define getTile(x, y) (world.tiles[(y) * WORLD_WIDTH + (x)])
+
 /* I want to keep as much data as I can in here
 and not the Tile struct */
 typedef struct TileDataStruct {
-	image_t* sprite;
+	bopti_image_t* sprite;
 	bool solid;
 	bool render;
 	bool hasSpritesheet;
@@ -36,6 +38,9 @@ enum Tilenames {
 struct World {
 	Tile* tiles;
 };
+	
+extern struct World world;
 
-void generateWorld(struct World* world);
-void updateStates(struct World* world, int x, int y);
+void generateWorld();
+void updateStates(int x, int y);
+void regionChange(int x, int y);

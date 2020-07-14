@@ -1,13 +1,17 @@
 #include <gint/keyboard.h>
 #include <gint/defs/util.h>
-#include <gint/std/stdlib.h>
+#include <gint/gray.h>
+#include <gint/gint.h>
+#include <stdbool.h>
 
 #include "syscalls.h"
 #include "entity.h"
-#include "world.h"
 #include "defs.h"
+#include "save.h"
+#include "world.h"
+#include "menu.h"
 
-void updatePlayer(struct World* world, struct Player* self)
+void updatePlayer(struct Player* self)
 {
 	clearevents();
 
@@ -17,13 +21,15 @@ void updatePlayer(struct World* world, struct Player* self)
 
 	if(keydown(KEY_7))
 	{
-		world->tiles[self->cursorTile.y * WORLD_WIDTH + self->cursorTile.x] = (Tile){TILE_NOTHING, 0};
-		updateStates(world, self->cursorTile.x, self->cursorTile.y);
+		getTile(self->cursorTile.x, self->cursorTile.y) = (Tile){TILE_NOTHING, 0};
+		updateStates(self->cursorTile.x, self->cursorTile.y);
+		regionChange(self->cursorTile.x, self->cursorTile.y);
 	}
 	if(keydown(KEY_9))
 	{
-		world->tiles[self->cursorTile.y * WORLD_WIDTH + self->cursorTile.x] = (Tile){TILE_STONE, 0};
-		updateStates(world, self->cursorTile.x, self->cursorTile.y);
+		getTile(self->cursorTile.x, self->cursorTile.y) = (Tile){TILE_STONE, 0};
+		updateStates(self->cursorTile.x, self->cursorTile.y);
+		regionChange(self->cursorTile.x, self->cursorTile.y);
 	}
 
 	if(keydown(KEY_LEFT)) self->cursor.x--;
@@ -36,16 +42,21 @@ void updatePlayer(struct World* world, struct Player* self)
 //	Easiest way to exit from here
 	if(keydown(KEY_MENU))
 	{
-		free(world->tiles);
+		dgray(DGRAY_OFF);
+		dclear(C_WHITE);
+		dtext(0, 0, C_BLACK, "Saving world...");
+		dupdate();
+		gint_switch(&saveGame);
+		if(save.error > -1) saveFailMenu();
 		RebootOS();
 	} 
 
-	self->physics(world, &self->props);
+	self->physics(&self->props);
 }
 
 /* Having a generic physics property struct lets me have one function to handle
 collisions, instead of one for each entity/player struct */
-void handlePhysics(struct World* world, struct EntPhysicsProps* self)
+void handlePhysics(struct EntPhysicsProps* self)
 {
 	struct Rect tileCheckBox = {
 		{
@@ -71,7 +82,7 @@ void handlePhysics(struct World* world, struct EntPhysicsProps* self)
 	{
 		for(int x = tileCheckBox.TL.x; x <= tileCheckBox.BR.x; x++)
 		{
-			if(tiles[world->tiles[y * WORLD_WIDTH + x].idx].solid)
+			if(tiles[world.tiles[y * WORLD_WIDTH + x].idx].solid)
 			{
 				struct Rect entBox = {
 					{

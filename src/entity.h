@@ -1,7 +1,5 @@
 #pragma once
 
-#include "world.h"
-
 struct Coords {
 	int x;
 	int y;
@@ -28,9 +26,9 @@ struct Player {
 	struct Coords cursor;
 	struct Coords cursorTile;
 
-	void (*update)(struct World* world, struct Player* self);
-	void (*physics)(struct World* world, struct EntPhysicsProps* self);
+	void (*update)(struct Player* self);
+	void (*physics)(struct EntPhysicsProps* self);
 };
 
-void updatePlayer(struct World* world, struct Player* self);
-void handlePhysics(struct World* world, struct EntPhysicsProps* self);
+void updatePlayer(struct Player* self);
+void handlePhysics(struct EntPhysicsProps* self);

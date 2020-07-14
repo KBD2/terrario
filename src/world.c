@@ -1,15 +1,17 @@
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 #include <gint/display.h>
 
 #include "world.h"
 #include "defs.h"
 #include "syscalls.h"
+#include "save.h"
 
 #define PI 3.14159265358979323846
 
-extern image_t 
+extern bopti_image_t 
 img_tile_nothing,
 img_tile_stone,
 img_tile_dirt,
@@ -38,15 +40,12 @@ Top third of world: Air
 1/6th of world: Dirt
 Bottom half of world: Stone
 */
-
-void generateWorld(struct World* world)
+void generateWorld()
 {
 	float amplitude = 10;
 	int wavelength = 20;
 	float a, b;
 	int perlinY;
-
-	world->tiles = malloc(WORLD_WIDTH * WORLD_HEIGHT * sizeof(Tile));
 
 //	Make some basic layers
 	for(unsigned int y = 0; y < WORLD_HEIGHT; y++)
@@ -55,13 +54,13 @@ void generateWorld(struct World* world)
 		{
 			if(y >= WORLD_HEIGHT / 2)
 			{
-				world->tiles[y * WORLD_WIDTH + x] = (Tile){TILE_STONE, 0};
+				getTile(x, y) = (Tile){TILE_STONE, 0};
 			} else if(y >= WORLD_HEIGHT / 2 - WORLD_HEIGHT / 12)
 			{
-				world->tiles[y * WORLD_WIDTH + x] = (Tile){TILE_DIRT, 0};
+				getTile(x, y) = (Tile){TILE_DIRT, 0};
 			} else
 			{
-				world->tiles[y * WORLD_WIDTH + x] = (Tile){TILE_NOTHING, 0};
+				getTile(x, y) = (Tile){TILE_NOTHING, 0};
 			}
 		}
 	}
@@ -80,27 +79,42 @@ void generateWorld(struct World* world)
 		{
 			perlinY = WORLD_HEIGHT / 3 + interpolate(a, b, (float)(x % wavelength) / wavelength) * amplitude;
 		}
-		world->tiles[perlinY * WORLD_WIDTH + x] = (Tile){TILE_GRASS, 0};
-		for(perlinY++; perlinY < WORLD_HEIGHT / 2; perlinY++) world->tiles[perlinY * WORLD_WIDTH + x] = (Tile){TILE_DIRT, 0};
+		getTile(x, perlinY) = (Tile){TILE_GRASS, 0};
+		for(int hillY = perlinY + 1; hillY < WORLD_HEIGHT / 2; hillY++) getTile(x, hillY) = (Tile){TILE_DIRT, 0};
+	}
+
+	for(int x = 0; x < WORLD_WIDTH; x++)
+	{
+		for(int y = 0; y < WORLD_HEIGHT; y++)
+		{
+			if(getTile(x, y).idx == TILE_GRASS)
+			{
+				if(getTile(x + 1, y).idx == TILE_NOTHING || getTile(x - 1, y).idx == TILE_NOTHING)
+				{
+					getTile(x, y + 1) = (Tile){TILE_GRASS, 0};
+				}
+				break;
+			}
+		}
 	}
 
 	for(int y = 0; y < WORLD_HEIGHT; y++)
 	{
 		for(int x = 0; x < WORLD_WIDTH; x++)
 		{
-			updateStates(world, x, y);
+			updateStates(x, y);
 		}
 	}
 }
 
-bool isSameOrFriend(struct World* world, int x, int y, unsigned char idx)
+bool isSameOrFriend(int x, int y, unsigned char idx)
 {
 	Tile* tile;
 	const unsigned char* friends;
 
 //	Outside world?
 	if(x < 0 || x >= WORLD_WIDTH || y < 0 || y > WORLD_HEIGHT) return 0;
-	tile = &world->tiles[y * WORLD_WIDTH + x];
+	tile = &getTile(x, y);
 //	Same tile type?
 	if(tile->idx == idx) return 1;
 	friends = tiles[idx].friends;
@@ -112,27 +126,32 @@ bool isSameOrFriend(struct World* world, int x, int y, unsigned char idx)
 	return 0;
 }
 
-void findState(struct World* world, int x, int y)
+void findState(int x, int y)
 {
 	if(x < 0 || x >= WORLD_WIDTH || y < 0 || y > WORLD_HEIGHT) return;
-	Tile* tile = &world->tiles[y * WORLD_WIDTH + x];
+	Tile* tile = &getTile(x, y);
 	unsigned char sides = 0;
 
-	sides |= isSameOrFriend(world, x - 1, y, tile->idx);
-	sides |= isSameOrFriend(world, x, y - 1, tile->idx) << 1;
-	sides |= isSameOrFriend(world, x + 1, y, tile->idx) << 2;
-	sides |= isSameOrFriend(world, x, y + 1, tile->idx) << 3;
+	sides |= isSameOrFriend(x - 1, y, tile->idx);
+	sides |= isSameOrFriend(x, y - 1, tile->idx) << 1;
+	sides |= isSameOrFriend(x + 1, y, tile->idx) << 2;
+	sides |= isSameOrFriend(x, y + 1, tile->idx) << 3;
 
 	tile->state = sides;
 }
 
-void updateStates(struct World* world, int x, int y)
+void updateStates(int x, int y)
 {
 	for(int dY = -1; dY < 2; dY++)
 	{
 		for(int dX = -1; dX < 2; dX++)
 		{
-			findState(world, x + dX, y + dY);
+			findState(x + dX, y + dY);
 		}
 	}
+}
+
+void regionChange(int x, int y)
+{
+	save.regionData[(y / REGION_SIZE) * save.regionsX + (x / REGION_SIZE)] = 1;
 }

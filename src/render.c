@@ -1,18 +1,21 @@
 #include <gint/gray.h>
 #include <gint/defs/util.h>
+#include <stdbool.h>
 
 #include "syscalls.h"
 #include "render.h"
 #include "defs.h"
+#include "world.h"
+#include "entity.h"
 
 const unsigned int camMinX = SCREEN_WIDTH >> 1;
 const unsigned int camMaxX = (WORLD_WIDTH << 3) - (SCREEN_WIDTH >> 1);
 const unsigned int camMinY = SCREEN_HEIGHT >> 1;
 const unsigned int camMaxY = (WORLD_HEIGHT << 3) - (SCREEN_HEIGHT >> 1);
 
-void render(struct World* world, struct Player* player)
+void render(struct Player* player)
 {
-	extern image_t img_player1, img_cursor;
+	extern bopti_image_t img_player1, img_cursor;
 	int camX = min(max(player->props.x + (player->props.width >> 1), camMinX), camMaxX);
 	int camY = min(max(player->props.y + (player->props.height >> 1), camMinY), camMaxY);
 
@@ -35,13 +38,13 @@ void render(struct World* world, struct Player* player)
 	player->cursorTile.x = (camX + player->cursor.x - (SCREEN_WIDTH >> 1)) >> 3;
 	player->cursorTile.y = (camY + player->cursor.y - (SCREEN_HEIGHT >> 1)) >> 3;
 
-	gclear(C_WHITE);
+	dclear(C_WHITE);
 
 	for(unsigned int y = tileTopY; y <= tileBottomY; y++)
 	{
 		for(unsigned int x = tileLeftX; x <= tileRightX; x++)
 		{
-			tile = &world->tiles[y * WORLD_WIDTH + x];
+			tile = &world.tiles[y * WORLD_WIDTH + x];
 			currTile = &tiles[tile->idx];
 			currTileX = (x << 3) - camOffsetX;
 			currTileY = (y << 3) - camOffsetY;
@@ -64,20 +67,18 @@ void render(struct World* world, struct Player* player)
 				if(currTile->hasSpritesheet)
 				{
 //					Spritesheet layout allows for very fast calculation of the position of the sprite
-					subrectX = tile->state % 4;
-					subrectX = (subrectX << 3) + subrectX + 1;
-					subrectY = tile->state >> 2;
-					subrectY = (subrectY << 3) + subrectY + 1;
-					gsubimage(currTileX, currTileY, currTile->sprite, subrectX, subrectY, 8, 8, flags);
+					subrectX = ((tile->state & 3) << 3) + (tile->state & 3) + 1;
+					subrectY = ((tile->state >> 2) << 3) + (tile->state >> 2) + 1;
+					dsubimage(currTileX, currTileY, currTile->sprite, subrectX, subrectY, 8, 8, flags);
 				}
 				else
 				{
-					gsubimage(currTileX, currTileY, currTile->sprite, 0, 0, 8, 8, flags);
+					dsubimage(currTileX, currTileY, currTile->sprite, 0, 0, 8, 8, flags);
 				}
 				
 			}
 		}
 	}
-	gimage(player->props.x - (camX - (SCREEN_WIDTH >> 1)), player->props.y - (camY - (SCREEN_HEIGHT >> 1)), &img_player1);
-	gimage(player->cursor.x, player->cursor.y, &img_cursor);
+	dimage(player->props.x - (camX - (SCREEN_WIDTH >> 1)), player->props.y - (camY - (SCREEN_HEIGHT >> 1)), &img_player1);
+	dimage(player->cursor.x - 2, player->cursor.y - 2, &img_cursor);
 }
