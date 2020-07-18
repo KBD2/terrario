@@ -1,5 +1,12 @@
 #pragma once
 
+#include <gint/display.h>
+
+struct Item {
+	bopti_image_t* sprite;
+	
+};
+
 struct Coords {
 	int x;
 	int y;
@@ -25,6 +32,9 @@ struct Player {
 	int health;
 	struct Coords cursor;
 	struct Coords cursorTile;
+	int animation;
+	int animationFrame;
+	int direction;
 
 	void (*update)(struct Player* self);
 	void (*physics)(struct EntPhysicsProps* self);

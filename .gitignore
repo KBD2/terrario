@@ -4,3 +4,5 @@ build-cg
 *.g1a
 *.code-workspace
 *.txt
+*.zip
+screenshots

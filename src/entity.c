@@ -17,7 +17,7 @@ void updatePlayer(struct Player* self)
 
 	if(keydown(KEY_4)) self->props.xVel = -3;
 	if(keydown(KEY_6)) self->props.xVel = 3;
-	if(keydown(KEY_8) && self->props.touchingTileTop) self->props.yVel = -5;
+	if(keydown(KEY_8) && self->props.touchingTileTop) self->props.yVel = -7;
 
 	if(keydown(KEY_7))
 	{
@@ -76,6 +76,7 @@ void handlePhysics(struct EntPhysicsProps* self)
 	if(abs(self->xVel) < 1) self->xVel = 0;
 	self->x += self->xVel;
 	self->y += self->yVel;
+	self->y++;
 
 	self->touchingTileTop = false;
 	for(int y = tileCheckBox.TL.y; y <= tileCheckBox.BR.y; y++)

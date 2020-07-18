@@ -9,7 +9,7 @@
 
 /* I want to keep as much data as I can in here
 and not the Tile struct */
-typedef struct TileDataStruct {
+struct TileData {
 	bopti_image_t* sprite;
 	bool solid;
 	bool render;
@@ -17,11 +17,11 @@ typedef struct TileDataStruct {
 /*	Tiles with spritesheets will treat tiles in here
 	as this tile e.g. dirt and stone */
 	unsigned char friends[MAX_FRIENDS];
-} TileData;
+};
 
-extern const TileData tiles[];
+extern const struct TileData tiles[];
 
-typedef struct TileStruct {
+typedef struct {
 //	Index in tiles array
 	unsigned char idx:6;
 //	For spritesheet tiles

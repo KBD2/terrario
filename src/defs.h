@@ -1,6 +1,6 @@
 #pragma once
 
-#define VERSION "v0.2.0-indev"
+#define VERSION "v0.2.1-indev"
 
 #define RAM_START 0x88040000
 #define REGION_SIZE 64

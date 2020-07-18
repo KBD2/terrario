@@ -4,6 +4,7 @@
 #include <gint/std/stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <gint/keyboard.h>
 
 #include "defs.h"
 #include "syscalls.h"
@@ -39,6 +40,7 @@ int main(void)
 		100,
 		{0, 0},
 		{0, 0},
+		0, 0, 0,
 		&updatePlayer,
 		&handlePhysics
 	};
@@ -93,7 +95,8 @@ int main(void)
 		ticks = RTC_GetTicks();
 		player.update(&player);
 		render(&player);
-		dprint(0, 0, C_BLACK, "%d", RTC_GetTicks() - ticks);
+		dprint(123, 0, C_BLACK, "%d", RTC_GetTicks() - ticks);
+		if(keydown(KEY_SHIFT)) gint_switch(&takeVRAMCapture);
 		dupdate();
 //		30FPS
 		while(!RTC_Elapsed_ms(ticks, 33)){}

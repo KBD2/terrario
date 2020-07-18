@@ -17,7 +17,7 @@ img_tile_stone,
 img_tile_dirt,
 img_tile_grass;
 
-const TileData tiles[] = {
+const struct TileData tiles[] = {
 //      Ptr to sprite       	Solid?		Render?		Sheet?		Friends (-1 to pad)
 	{	&img_tile_nothing	,	false	,	false	,	false	,	{-1, -1}					},
 	{   &img_tile_stone		,	true	,	true	,	true	,	{TILE_DIRT, -1}				},

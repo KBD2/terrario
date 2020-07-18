@@ -21,6 +21,7 @@ int mainMenu()
 
 	while(1)
 	{
+		dclear(C_WHITE);
 		dimage(0, 0, &img_mainmenu);
 		dimage(65, selectPositions[selected], &img_mainmenuselect);
 		dtext(SCREEN_WIDTH - versionWidth, 0, C_BLACK, VERSION);
