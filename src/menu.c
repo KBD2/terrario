@@ -12,7 +12,7 @@ int mainMenu()
 {
 	extern bopti_image_t img_mainmenu;
 	extern bopti_image_t img_mainmenuselect;
-	int selectPositions[] = {12, 29, 46};
+	int selectPositions[] = {13, 30, 47};
 	int selected = 0;
 	bool validSave = getSave();
 
@@ -100,23 +100,23 @@ void saveFailMenu()
 
 void aboutMenu()
 {
-	const int lines = 21;
+	extern bopti_image_t img_confetti;
+	const int lines = 20;
 	const char* text[] = {
 		"Terrario by KBD2",
 		" ",
 		"Controls:",
-		"4,6:Move",
-		"8:Jump",
-		"Arrows:Move Cursor",
-		"7:Mine Tile",
-		"9:Place Tile",
+		"4,6,8:Move",
+		"Arrows:Cursor",
+		"7,9:Mine/Place",
 		"F1,F2,F3:Hotbar",
 		"[MENU]:Exit",
-		"[SHIFT]:Screenshot",
 		" ",
 		"Special thanks to:",
-		"Lephenixnoir",
-		"Memallox",
+		"Re-Logic - Terraria",
+		"Lephenixnoir - Gint",
+		"Memallox - Newlib",
+		"Dark Storm",
 		" ",
 		VERSION,
 		__DATE__,
@@ -138,6 +138,7 @@ void aboutMenu()
 			dsize(text[line], NULL, &width, &height);
 			dtext(64 - (width / 2), 64 - y + line * (height + 6), C_BLACK, text[line]);
 		}
+		dimage(1, 74 - y + (lines - 1) * (height + 6), &img_confetti);
 		dupdate();
 
 		clearevents();
@@ -148,7 +149,7 @@ void aboutMenu()
 		}
 		else if(keydown(KEY_DOWN))
 		{
-			scroll = 1;
+			scroll = 3;
 		}
 		else scroll = 0.5;
 		y += scroll;
@@ -156,5 +157,5 @@ void aboutMenu()
 	}
 
 	ticks = RTC_GetTicks();
-	while(!RTC_Elapsed_ms(ticks, 1500)){}
+	while(!RTC_Elapsed_ms(ticks, 3000)){}
 }
