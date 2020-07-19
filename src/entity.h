@@ -2,10 +2,7 @@
 
 #include <gint/display.h>
 
-struct Item {
-	bopti_image_t* sprite;
-	
-};
+#include "inventory.h"
 
 struct Coords {
 	int x;
@@ -27,14 +24,19 @@ struct EntPhysicsProps {
 	unsigned char height;
 };
 
+struct AnimationData {
+	int animation;
+	int animationFrame;
+	int direction;
+};
+
 struct Player {
 	struct EntPhysicsProps props;
 	int health;
 	struct Coords cursor;
 	struct Coords cursorTile;
-	int animation;
-	int animationFrame;
-	int direction;
+	struct AnimationData anim;
+	struct Inventory inventory;
 
 	void (*update)(struct Player* self);
 	void (*physics)(struct EntPhysicsProps* self);

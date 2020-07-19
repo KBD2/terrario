@@ -12,27 +12,39 @@ int mainMenu()
 {
 	extern bopti_image_t img_mainmenu;
 	extern bopti_image_t img_mainmenuselect;
-	int versionWidth;
-	int selectPositions[] = {26, 44};
+	int selectPositions[] = {12, 29, 46};
 	int selected = 0;
 	bool validSave = getSave();
-
-	dsize(VERSION, NULL, &versionWidth, NULL);
 
 	while(1)
 	{
 		dclear(C_WHITE);
 		dimage(0, 0, &img_mainmenu);
 		dimage(65, selectPositions[selected], &img_mainmenuselect);
-		dtext(SCREEN_WIDTH - versionWidth, 0, C_BLACK, VERSION);
 		dupdate();
 
 		clearevents();
 		if(keydown(KEY_MENU)) RebootOS();
+		if(keydown(KEY_EXE)) 
+		{
+			if(selected == 2)
+			{
+				aboutMenu();
+				continue;
+			}
+			else return selected;
+		}
+
 		if(keydown(KEY_UP)) selected--;
 		if(keydown(KEY_DOWN)) selected++;
-		selected = min(max(selected, 0), validSave);
-		if(keydown(KEY_EXE)) return selected;
+		if(selected == 1 && !validSave)
+		{
+			if(keydown(KEY_UP)) selected--;
+			if(keydown(KEY_DOWN)) selected++;
+		}
+		selected = min(max(selected, 0), 2);
+
+		while(keydown(KEY_UP) || keydown(KEY_DOWN)) clearevents();
 	}
 }
 
@@ -84,4 +96,65 @@ void saveFailMenu()
 		clearevents();
 		if(keydown(KEY_EXIT)) RebootOS();
 	}
+}
+
+void aboutMenu()
+{
+	const int lines = 21;
+	const char* text[] = {
+		"Terrario by KBD2",
+		" ",
+		"Controls:",
+		"4,6:Move",
+		"8:Jump",
+		"Arrows:Move Cursor",
+		"7:Mine Tile",
+		"9:Place Tile",
+		"F1,F2,F3:Hotbar",
+		"[MENU]:Exit",
+		"[SHIFT]:Screenshot",
+		" ",
+		"Special thanks to:",
+		"Lephenixnoir",
+		"Memallox",
+		" ",
+		VERSION,
+		__DATE__,
+		" ",
+		" ",
+		"Enjoy!"
+	};
+	float y = 0;
+	int width, height;
+	int ticks;
+	float scroll;
+
+	while(y < lines * 13 + 25)
+	{
+		ticks = RTC_GetTicks();
+		dclear(C_WHITE);
+		for(int line = 0; line < lines; line++)
+		{
+			dsize(text[line], NULL, &width, &height);
+			dtext(64 - (width / 2), 64 - y + line * (height + 6), C_BLACK, text[line]);
+		}
+		dupdate();
+
+		clearevents();
+		if(keydown(KEY_EXIT)) return;
+		if(keydown(KEY_UP))
+		{
+			scroll = 0;
+		}
+		else if(keydown(KEY_DOWN))
+		{
+			scroll = 1;
+		}
+		else scroll = 0.5;
+		y += scroll;
+		while(!RTC_Elapsed_ms(ticks, 50)){}
+	}
+
+	ticks = RTC_GetTicks();
+	while(!RTC_Elapsed_ms(ticks, 1500)){}
 }

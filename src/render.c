@@ -35,7 +35,7 @@ void render(struct Player* player)
 	unsigned int tileBottomY = min(WORLD_HEIGHT - 1, tileTopY + (SCREEN_HEIGHT >> 3) + 1);
 
 	Tile* tile;
-	const struct TileData* currTile;
+	const TileData* currTile;
 	unsigned int currTileX, currTileY;
 	int camOffsetX = (camX - (SCREEN_WIDTH >> 1));
 	int camOffsetY = (camY - (SCREEN_HEIGHT >> 1));
@@ -47,36 +47,36 @@ void render(struct Player* player)
 
 	if(player->props.xVel > 0)
 	{
-		player->direction = 0;
+		player->anim.direction = 0;
 	}
 	else if(player->props.xVel < 0)
 	{
-		player->direction = 1;
+		player->anim.direction = 1;
 	}
 
 	if(!player->props.touchingTileTop)
 	{
-		player->animation = 2;
-		player->animationFrame = 5;
+		player->anim.animation = 2;
+		player->anim.animationFrame = 5;
 	}
-	else if(player->props.xVel != 0 && player->animation != 3)
+	else if(player->props.xVel != 0 && player->anim.animation != 3)
 	{
-		player->animation = 3;
-		player->animationFrame = 6;
+		player->anim.animation = 3;
+		player->anim.animationFrame = 6;
 	}
 	else if(player->props.xVel == 0)
 	{
-		player->animation = 0;
-		player->animationFrame = 0;
+		player->anim.animation = 0;
+		player->anim.animationFrame = 0;
 	}
 	else 
 	{
-		player->animationFrame++;
+		player->anim.animationFrame++;
 	}
 
-	if(player->animationFrame > animFrames[player->animation][1]) 
+	if(player->anim.animationFrame > animFrames[player->anim.animation][1]) 
 	{
-		player->animationFrame = animFrames[player->animation][0];
+		player->anim.animationFrame = animFrames[player->anim.animation][0];
 	}
 
 //	This probably shouldn't be here but cam positions can't be accessed anywhere else right now
@@ -126,8 +126,8 @@ void render(struct Player* player)
 	}
 	playerX = player->props.x - (camX - (SCREEN_WIDTH >> 1)) - 2;
 	playerY = player->props.y - (camY - (SCREEN_HEIGHT >> 1));
-	playerSubrectX = (player->direction == 0) ? 0 : 16;
-	playerSubrectY = player->animationFrame * (player->props.height + 2) + 1;
+	playerSubrectX = (player->anim.direction == 0) ? 0 : 16;
+	playerSubrectY = player->anim.animationFrame * (player->props.height + 2) + 1;
 	dsubimage(playerX, playerY, &img_player, playerSubrectX, playerSubrectY, 16, 22, DIMAGE_NONE);
 	dimage(player->cursor.x - 2, player->cursor.y - 2, &img_cursor);
 	//dimage(0, 0, &img_hotbar);

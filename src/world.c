@@ -17,12 +17,12 @@ img_tile_stone,
 img_tile_dirt,
 img_tile_grass;
 
-const struct TileData tiles[] = {
+const TileData tiles[] = {
 //      Ptr to sprite       	Solid?		Render?		Sheet?		Friends (-1 to pad)
-	{	&img_tile_nothing	,	false	,	false	,	false	,	{-1, -1}					},
-	{   &img_tile_stone		,	true	,	true	,	true	,	{TILE_DIRT, -1}				},
-	{   &img_tile_dirt 		,	true	,	true	,	true	,	{TILE_STONE, TILE_GRASS}	},
-	{	&img_tile_grass		,	true	,	true	,	true	,	{TILE_DIRT, -1}				}
+	{	&img_tile_nothing	,	false	,	false	,	false	,	{-1, -1}					,	ITEM_NULL	},	// TILE_NOTHING
+	{   &img_tile_stone		,	true	,	true	,	true	,	{TILE_DIRT, -1}				,	ITEM_STONE	},	// TILE_STONE
+	{   &img_tile_dirt 		,	true	,	true	,	true	,	{TILE_STONE, TILE_GRASS}	,	ITEM_DIRT	},	// TILE_DIRT
+	{	&img_tile_grass		,	true	,	true	,	true	,	{TILE_DIRT, -1}				,	ITEM_DIRT	}	// TILE_GRASS
 };
 
 float interpolate(float a, float b, float x){

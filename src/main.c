@@ -35,18 +35,11 @@ bool testRAM()
 
 int main(void)
 {
-	struct Player player = {
-		{0, 0, 0.0, 0.0, false, 12, 21},
-		100,
-		{0, 0},
-		{0, 0},
-		0, 0, 0,
-		&updatePlayer,
-		&handlePhysics
-	};
 	int ticks;
 	int menuSelect;
 	extern bopti_image_t img_generating;
+	extern font_t font_smalltext;
+	int playerX, playerY;
 
 	save.tileDataSize = WORLD_HEIGHT * WORLD_WIDTH * sizeof(Tile);
 	save.regionsX = WORLD_WIDTH / REGION_SIZE + 1;
@@ -65,6 +58,8 @@ int main(void)
 	dgray(DGRAY_ON);
 
 	menuSelect = mainMenu();
+	
+	dfont(&font_smalltext);
 
 	world.tiles = (Tile*)save.tileData;
 
@@ -88,7 +83,29 @@ int main(void)
 
 		dgray(DGRAY_ON);
 	}
+
+	playerX = (WORLD_WIDTH / 2);
+	playerY = 0;
+	while(1)
+	{
+		if(world.tiles[playerY * WORLD_WIDTH + playerX].idx != 0)
+		{
+			playerY = (playerY - 3);
+			break;
+		}
+		playerY++;
+	}
 	
+	struct Player player = {
+		.props = {playerX << 3, playerY << 3, 0.0, 0.0, false, 12, 21},
+		.health = 100,
+		.cursor = { 0 },
+		.cursorTile = { 0 },
+		.anim = { 0 },
+		.inventory = {{{ 0 }}}, // array of structs
+		.update = &updatePlayer,
+		.physics = &handlePhysics
+	};
 
 	while(1)
 	{
