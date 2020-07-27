@@ -1,12 +1,8 @@
 #include <stdlib.h>
 #include <math.h>
-#include <string.h>
-
-#include <gint/display.h>
 
 #include "world.h"
 #include "defs.h"
-#include "syscalls.h"
 #include "save.h"
 
 #define PI 3.14159265358979323846
@@ -54,13 +50,13 @@ void generateWorld()
 		{
 			if(y >= WORLD_HEIGHT / 2)
 			{
-				getTile(x, y) = (Tile){TILE_STONE, 0};
+				getTile(x, y) = (Tile){TILE_STONE};
 			} else if(y >= WORLD_HEIGHT / 2 - WORLD_HEIGHT / 12)
 			{
-				getTile(x, y) = (Tile){TILE_DIRT, 0};
+				getTile(x, y) = (Tile){TILE_DIRT};
 			} else
 			{
-				getTile(x, y) = (Tile){TILE_NOTHING, 0};
+				getTile(x, y) = (Tile){TILE_NOTHING};
 			}
 		}
 	}
@@ -79,8 +75,8 @@ void generateWorld()
 		{
 			perlinY = WORLD_HEIGHT / 3 + interpolate(a, b, (float)(x % wavelength) / wavelength) * amplitude;
 		}
-		getTile(x, perlinY) = (Tile){TILE_GRASS, 0};
-		for(int hillY = perlinY + 1; hillY < WORLD_HEIGHT / 2; hillY++) getTile(x, hillY) = (Tile){TILE_DIRT, 0};
+		getTile(x, perlinY) = (Tile){TILE_GRASS};
+		for(int hillY = perlinY + 1; hillY < WORLD_HEIGHT / 2; hillY++) getTile(x, hillY) = (Tile){TILE_DIRT};
 	}
 
 	for(int x = 0; x < WORLD_WIDTH; x++)
@@ -91,18 +87,10 @@ void generateWorld()
 			{
 				if(getTile(x + 1, y).idx == TILE_NOTHING || getTile(x - 1, y).idx == TILE_NOTHING)
 				{
-					getTile(x, y + 1) = (Tile){TILE_GRASS, 0};
+					getTile(x, y + 1) = (Tile){TILE_GRASS};
 				}
 				break;
 			}
-		}
-	}
-
-	for(int y = 0; y < WORLD_HEIGHT; y++)
-	{
-		for(int x = 0; x < WORLD_WIDTH; x++)
-		{
-			updateStates(x, y);
 		}
 	}
 }
@@ -126,9 +114,8 @@ bool isSameOrFriend(int x, int y, unsigned char idx)
 	return 0;
 }
 
-void findState(int x, int y)
+unsigned char findState(int x, int y)
 {
-	if(x < 0 || x >= WORLD_WIDTH || y < 0 || y > WORLD_HEIGHT) return;
 	Tile* tile = &getTile(x, y);
 	unsigned char sides = 0;
 
@@ -137,18 +124,7 @@ void findState(int x, int y)
 	sides |= isSameOrFriend(x + 1, y, tile->idx) << 2;
 	sides |= isSameOrFriend(x, y + 1, tile->idx) << 3;
 
-	tile->state = sides;
-}
-
-void updateStates(int x, int y)
-{
-	for(int dY = -1; dY < 2; dY++)
-	{
-		for(int dX = -1; dX < 2; dX++)
-		{
-			findState(x + dX, y + dY);
-		}
-	}
+	return sides;
 }
 
 void regionChange(int x, int y)

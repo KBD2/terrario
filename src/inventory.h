@@ -3,8 +3,11 @@
 #include <stdbool.h>
 #include <gint/display.h>
 
+#include "defs.h"
+#include "menu.h"
+
 enum Items {
-	ITEM_NULL = -1,
+	ITEM_NULL,
 	ITEM_STONE,
 	ITEM_DIRT
 };
@@ -23,5 +26,15 @@ typedef struct {
 extern const ItemData items[];
 
 struct Inventory {
-	Item items[10];
+	Item items[INVENTORY_SIZE];
+	int hotbarSlot;
+
+	int (*getFirstFreeSlot)(enum Items item);
+	void (*removeItem)(int slot);
+	void (*stackItem)(Item* dest, Item* source);
 };
+
+int getFirstFreeSlot(enum Items item);
+int findSlot(enum Items item);
+void removeItem(int slot);
+void stackItem(Item* dest, Item* source);

@@ -1,58 +1,17 @@
 #include <gint/keyboard.h>
 #include <gint/defs/util.h>
 #include <gint/gray.h>
-#include <gint/gint.h>
 #include <stdbool.h>
+#include <math.h>
+#include <gint/timer.h>
+#include <gint/gint.h>
 
-#include "syscalls.h"
 #include "entity.h"
 #include "defs.h"
-#include "save.h"
 #include "world.h"
-#include "menu.h"
-
-void updatePlayer(struct Player* self)
-{
-	clearevents();
-
-	if(keydown(KEY_4)) self->props.xVel = -3;
-	if(keydown(KEY_6)) self->props.xVel = 3;
-	if(keydown(KEY_8) && self->props.touchingTileTop) self->props.yVel = -7;
-
-	if(keydown(KEY_7))
-	{
-		getTile(self->cursorTile.x, self->cursorTile.y) = (Tile){TILE_NOTHING, 0};
-		updateStates(self->cursorTile.x, self->cursorTile.y);
-		regionChange(self->cursorTile.x, self->cursorTile.y);
-	}
-	if(keydown(KEY_9))
-	{
-		getTile(self->cursorTile.x, self->cursorTile.y) = (Tile){TILE_STONE, 0};
-		updateStates(self->cursorTile.x, self->cursorTile.y);
-		regionChange(self->cursorTile.x, self->cursorTile.y);
-	}
-
-	if(keydown(KEY_LEFT)) self->cursor.x--;
-	if(keydown(KEY_RIGHT)) self->cursor.x++;
-	if(keydown(KEY_UP)) self->cursor.y--;
-	if(keydown(KEY_DOWN)) self->cursor.y++;
-	self->cursor.x = min(max(0, self->cursor.x), SCREEN_WIDTH - 1);
-	self->cursor.y = min(max(0, self->cursor.y), SCREEN_HEIGHT - 1);
-
-//	Easiest way to exit from here
-	if(keydown(KEY_MENU))
-	{
-		dgray(DGRAY_OFF);
-		dclear(C_WHITE);
-		dtext(0, 0, C_BLACK, "Saving world...");
-		dupdate();
-		gint_switch(&saveGame);
-		if(save.error > -1) saveFailMenu();
-		RebootOS();
-	} 
-
-	self->physics(&self->props);
-}
+#include "render.h"
+#include "inventory.h"
+#include "menu.h" 
 
 /* Having a generic physics property struct lets me have one function to handle
 collisions, instead of one for each entity/player struct */
@@ -73,9 +32,9 @@ void handlePhysics(struct EntPhysicsProps* self)
 	int overlapX, overlapY;
 
 	self->yVel = min(10, self->yVel + GRAVITY_ACCEL);
-	if(abs(self->xVel) < 1) self->xVel = 0;
-	self->x += self->xVel;
-	self->y += self->yVel;
+	if((self->xVel < 0 ? -self->xVel : self->xVel) < 0.5) self->xVel = 0;
+	self->x += roundf(self->xVel);
+	self->y += roundf(self->yVel);
 	self->y++;
 
 	self->touchingTileTop = false;

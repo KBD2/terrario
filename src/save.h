@@ -1,5 +1,7 @@
 #pragma once
 
+#include "entity.h"
+
 struct SaveData {
 	int tileDataSize;
 	int regionsX;
@@ -9,7 +11,13 @@ struct SaveData {
 	int error;
 };
 
+struct PlayerSave {
+	Item items[INVENTORY_SIZE];
+	int health;
+};
+
 extern struct SaveData save;
+extern struct Player player;
 
 void saveGame();
 void loadSave();

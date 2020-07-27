@@ -3,12 +3,13 @@
 #include <stdbool.h>
 #include <gint/bfile.h>
 #include <gint/std/string.h>
+#include <gint/timer.h>
 
-#include "syscalls.h"
 #include "render.h"
 #include "defs.h"
 #include "world.h"
 #include "entity.h"
+#include "inventory.h"
 
 const unsigned int camMinX = SCREEN_WIDTH >> 1;
 const unsigned int camMaxX = (WORLD_WIDTH << 3) - (SCREEN_WIDTH >> 1);
@@ -22,17 +23,23 @@ int animFrames[][2] = {
 	{6, 19}
 };
 
-void render(struct Player* player)
+void renderItem(int x, int y, Item item)
+{
+	dimage(x + 3, y, items[item.id].sprite);
+	dprint(x + 1, y + 9, C_BLACK, "%d", item.number);
+}
+
+int render()
 {
 	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect;
-	int camX = min(max(player->props.x + (player->props.width >> 1), camMinX), camMaxX);
-	int camY = min(max(player->props.y + (player->props.height >> 1), camMinY), camMaxY);
+	int camX = min(max(player.props.x + (player.props.width >> 1), camMinX), camMaxX);
+	int camY = min(max(player.props.y + (player.props.height >> 1), camMinY), camMaxY);
 
 //	Translating cam bounds to tile bounds is painful
-	unsigned int tileLeftX = max(0, ((camX - (SCREEN_WIDTH >> 1)) >> 3) - 1);
-	unsigned int tileRightX = min(WORLD_WIDTH - 1, tileLeftX + (SCREEN_WIDTH >> 3) + 1);
-	unsigned int tileTopY = max(0, ((camY - (SCREEN_HEIGHT >> 1)) >> 3) - 1);
-	unsigned int tileBottomY = min(WORLD_HEIGHT - 1, tileTopY + (SCREEN_HEIGHT >> 3) + 1);
+	unsigned int tileLeftX = max(0, ((camX - (SCREEN_WIDTH >> 1)) >> 3));
+	unsigned int tileRightX = min(WORLD_WIDTH - 1, tileLeftX + (SCREEN_WIDTH >> 3));
+	unsigned int tileTopY = max(0, ((camY - (SCREEN_HEIGHT >> 1)) >> 3));
+	unsigned int tileBottomY = min(WORLD_HEIGHT - 1, tileTopY + (SCREEN_HEIGHT >> 3));
 
 	Tile* tile;
 	const TileData* currTile;
@@ -41,47 +48,50 @@ void render(struct Player* player)
 	int camOffsetY = (camY - (SCREEN_HEIGHT >> 1));
 	bool marginLeft, marginRight, marginTop, marginBottom;
 	int flags;
+	int state;
+
 	int subrectX, subrectY;
 	int playerX, playerY;
 	int playerSubrectX, playerSubrectY;
 
-	if(player->props.xVel > 0)
+	Item item;
+
+	if(player.props.xVel > 0)
 	{
-		player->anim.direction = 0;
+		player.anim.direction = 0;
 	}
-	else if(player->props.xVel < 0)
+	else if(player.props.xVel < 0)
 	{
-		player->anim.direction = 1;
+		player.anim.direction = 1;
 	}
 
-	if(!player->props.touchingTileTop)
+	if(!player.props.touchingTileTop)
 	{
-		player->anim.animation = 2;
-		player->anim.animationFrame = 5;
+		player.anim.animation = 2;
+		player.anim.animationFrame = 5;
 	}
-	else if(player->props.xVel != 0 && player->anim.animation != 3)
+	else if(player.props.xVel != 0 && player.anim.animation != 3)
 	{
-		player->anim.animation = 3;
-		player->anim.animationFrame = 6;
+		player.anim.animation = 3;
+		player.anim.animationFrame = 6;
 	}
-	else if(player->props.xVel == 0)
+	else if(player.props.xVel == 0)
 	{
-		player->anim.animation = 0;
-		player->anim.animationFrame = 0;
+		player.anim.animation = 0;
+		player.anim.animationFrame = 0;
 	}
 	else 
 	{
-		player->anim.animationFrame++;
+		player.anim.animationFrame++;
 	}
 
-	if(player->anim.animationFrame > animFrames[player->anim.animation][1]) 
+	if(player.anim.animationFrame > animFrames[player.anim.animation][1]) 
 	{
-		player->anim.animationFrame = animFrames[player->anim.animation][0];
+		player.anim.animationFrame = animFrames[player.anim.animation][0];
 	}
 
-//	This probably shouldn't be here but cam positions can't be accessed anywhere else right now
-	player->cursorTile.x = (camX + player->cursor.x - (SCREEN_WIDTH >> 1)) >> 3;
-	player->cursorTile.y = (camY + player->cursor.y - (SCREEN_HEIGHT >> 1)) >> 3;
+	player.cursorTile.x = (camX + player.cursor.x - (SCREEN_WIDTH >> 1)) >> 3;
+	player.cursorTile.y = (camY + player.cursor.y - (SCREEN_HEIGHT >> 1)) >> 3;
 
 	dclear(C_WHITE);
 
@@ -111,9 +121,10 @@ void render(struct Player* player)
 				}
 				if(currTile->hasSpritesheet)
 				{
+					state = findState(x, y);
 //					Spritesheet layout allows for very fast calculation of the position of the sprite
-					subrectX = ((tile->state & 3) << 3) + (tile->state & 3) + 1;
-					subrectY = ((tile->state >> 2) << 3) + (tile->state >> 2) + 1;
+					subrectX = ((state & 3) << 3) + (state & 3) + 1;
+					subrectY = ((state >> 2) << 3) + (state >> 2) + 1;
 					dsubimage(currTileX, currTileY, currTile->sprite, subrectX, subrectY, 8, 8, flags);
 				}
 				else
@@ -124,14 +135,24 @@ void render(struct Player* player)
 			}
 		}
 	}
-	playerX = player->props.x - (camX - (SCREEN_WIDTH >> 1)) - 2;
-	playerY = player->props.y - (camY - (SCREEN_HEIGHT >> 1));
-	playerSubrectX = (player->anim.direction == 0) ? 0 : 16;
-	playerSubrectY = player->anim.animationFrame * (player->props.height + 2) + 1;
+	playerX = player.props.x - (camX - (SCREEN_WIDTH >> 1)) - 2;
+	playerY = player.props.y - (camY - (SCREEN_HEIGHT >> 1));
+	playerSubrectX = (player.anim.direction == 0) ? 0 : 16;
+	playerSubrectY = player.anim.animationFrame * (player.props.height + 2) + 1;
 	dsubimage(playerX, playerY, &img_player, playerSubrectX, playerSubrectY, 16, 22, DIMAGE_NONE);
-	dimage(player->cursor.x - 2, player->cursor.y - 2, &img_cursor);
-	//dimage(0, 0, &img_hotbar);
-	//dimage(0, 0, &img_hotbarselect);
+	dimage(player.cursor.x - 2, player.cursor.y - 2, &img_cursor);
+
+	dimage(0, 0, &img_hotbar);
+	dimage(16 * player.inventory.hotbarSlot, 0, &img_hotbarselect);
+	for(int slot = 0; slot < 3; slot++)
+	{
+		item = player.inventory.items[slot];
+		if(item.id != ITEM_NULL) renderItem(16 * slot + 1, 1, item);
+	}
+
+	dupdate();
+
+	return TIMER_CONTINUE;
 }
 
 void takeVRAMCapture()

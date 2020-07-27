@@ -1,8 +1,7 @@
 #pragma once
 
-#include <gint/display.h>
-
 #include "inventory.h"
+#include "menu.h"
 
 struct Coords {
 	int x;
@@ -38,9 +37,9 @@ struct Player {
 	struct AnimationData anim;
 	struct Inventory inventory;
 
-	void (*update)(struct Player* self);
 	void (*physics)(struct EntPhysicsProps* self);
 };
 
-void updatePlayer(struct Player* self);
+extern struct Player player;
+
 void handlePhysics(struct EntPhysicsProps* self);

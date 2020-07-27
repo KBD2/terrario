@@ -1,6 +1,7 @@
 #include <gint/bfile.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "save.h"
 #include "defs.h"
@@ -23,6 +24,7 @@ bool getSave()
 void saveGame()
 {
 	const uint16_t* folderPath = u"\\\\fls0\\TERRARIO";
+	const uint16_t* playerPath = u"\\\\fls0\\TERRARIO\\player.dat";
 	int handle;
 	uint16_t foundPath[30];
 	struct BFile_FileInfo fileInfo;
@@ -37,9 +39,21 @@ void saveGame()
 	int descriptor;
 	int size = sizeof(regionBuffer);
 
+	struct PlayerSave playerSave;
+	playerSave.health = player.health;
+	memcpy(playerSave.items, player.inventory.items, INVENTORY_SIZE * sizeof(Item));
+
+	int playerSaveSize = sizeof(struct PlayerSave);
+
 	error = BFile_FindFirst(folderPath, &handle, foundPath, &fileInfo);
 	BFile_FindClose(handle);
 	if(error == -1) BFile_Create(folderPath, BFile_Folder, NULL);
+
+	BFile_Remove(playerPath);
+	BFile_Create(playerPath, BFile_File, &playerSaveSize);
+	descriptor = BFile_Open(playerPath, BFile_WriteOnly);
+	BFile_Write(descriptor, (void*)&playerSave, playerSaveSize);
+	BFile_Close(descriptor);
 
 	for(int y = 0; y < save.regionsY; y++)
 	{
@@ -87,6 +101,7 @@ void saveGame()
 void loadSave()
 {
 	char* regionFilePath = "\\\\fls0\\TERRARIO\\reg%d.dat";
+	const uint16_t* playerPath = u"\\\\fls0\\TERRARIO\\player.dat";
 	char buffer[30];
 	uint16_t filePath[30];
 
@@ -99,6 +114,22 @@ void loadSave()
 	Tile regionBuffer[REGION_SIZE * REGION_SIZE];
 
 	int regionStartX, regionStartY;
+
+	struct PlayerSave playerSave;
+
+	error = BFile_FindFirst(playerPath, &handle, foundPath, &fileInfo);
+	BFile_FindClose(handle);
+	if(error < 0)
+	{
+		save.error = -1;
+		return;
+	}
+	descriptor = BFile_Open(playerPath, BFile_ReadOnly);
+	BFile_Read(descriptor, (void*)&playerSave, sizeof(struct PlayerSave), 0);
+	BFile_Close(descriptor);
+
+	player.health = playerSave.health;
+	memcpy(player.inventory.items, playerSave.items, INVENTORY_SIZE * sizeof(Item));
 
 	for(int y = 0; y < save.regionsY; y++)
 	{

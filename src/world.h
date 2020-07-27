@@ -27,8 +27,6 @@ extern const TileData tiles[];
 typedef struct {
 //	Index in tiles array
 	unsigned char idx:6;
-//	For spritesheet tiles
-	unsigned char state:4;
 } Tile;
 
 enum Tilenames {
@@ -48,3 +46,5 @@ extern struct World world;
 void generateWorld();
 void updateStates(int x, int y);
 void regionChange(int x, int y);
+
+unsigned char findState(int x, int y);

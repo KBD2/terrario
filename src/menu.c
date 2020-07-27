@@ -1,20 +1,25 @@
 #include <gint/gray.h>
+#include <gint/gint.h>
 #include <gint/keyboard.h>
 #include <gint/defs/util.h>
+#include <gint/timer.h>
 #include <stdbool.h>
 
 #include "menu.h"
 #include "syscalls.h"
 #include "defs.h"
 #include "save.h"
+#include "inventory.h"
+#include "entity.h"
+#include "render.h"
 
 int mainMenu()
 {
 	extern bopti_image_t img_mainmenu;
 	extern bopti_image_t img_mainmenuselect;
 	int selectPositions[] = {13, 30, 47};
-	int selected = 0;
 	bool validSave = getSave();
+	int selected = validSave ? 1 : 0;
 
 	while(1)
 	{
@@ -24,7 +29,8 @@ int mainMenu()
 		dupdate();
 
 		clearevents();
-		if(keydown(KEY_MENU)) RebootOS();
+		if(keydown(KEY_ALPHA)) gint_switch(takeVRAMCapture);
+		if(keydown(KEY_MENU)) return -1;
 		if(keydown(KEY_EXE)) 
 		{
 			if(selected == 2)
@@ -48,6 +54,114 @@ int mainMenu()
 	}
 }
 
+void inventoryMenuUpdate()
+{
+	extern bopti_image_t img_inventory, img_cursor;
+	Item* item;
+	int cursorSlotX, cursorSlotY;
+	int cursorX = 64, cursorY = 32;
+	Item held = {ITEM_NULL, 0};
+	bool keypress = false;
+	int freeSlot;
+	int timer;
+	int ticks = 0;
+	int slot;
+
+	while(true)
+	{
+		timer = timer_setup(TIMER_ANY, (1000 / 30) * 1000, NULL);
+		timer_start(timer);
+		clearevents();
+		if(keydown(KEY_ALPHA)) gint_switch(&takeVRAMCapture);
+		if(keydown(KEY_EXIT))
+		{
+			while(held.id != ITEM_NULL)
+			{
+				freeSlot = player.inventory.getFirstFreeSlot(held.id);
+				if(freeSlot > -1)
+				{
+					player.inventory.stackItem(&player.inventory.items[freeSlot], &held);
+				}
+				else break;
+			}
+			return;
+		}
+		if(keydown(KEY_LEFT)) cursorX -= 2;
+		if(keydown(KEY_RIGHT)) cursorX += 2;
+		if(keydown(KEY_UP)) cursorY -= 2;
+		if(keydown(KEY_DOWN)) cursorY += 2;
+		cursorX = min(max(cursorX, 2), 125);
+		cursorY = min(max(cursorY, 2), 48);
+
+		if(!keypress && (keydown(KEY_F1) || keydown(KEY_F2)))
+		{
+			ticks = 0;
+			cursorSlotX = cursorX / 16;
+			cursorSlotY = cursorY / 17;
+			slot = cursorSlotY * 8 + cursorSlotX;
+			item = &player.inventory.items[slot];
+			keypress = true;
+			if(keydown(KEY_F1))
+			{
+				if(item->id == held.id)
+				{
+					player.inventory.stackItem(item, &held);
+				}
+				else
+				{
+					swap(*item, held);
+				}
+			}
+			else if(keydown(KEY_F2))
+			{
+				if((item->id == held.id && held.number < items[held.id].maxStack) || held.id == ITEM_NULL)
+				{
+					player.inventory.stackItem(&held, &(Item){item->id, 1});
+					player.inventory.removeItem(slot);
+				}
+			}
+		}
+		else if(keypress)
+		{
+			ticks++;
+			if(keydown(KEY_F2))
+			{
+				if(ticks % 5 == 0) keypress = false;
+			}
+			else
+			{
+				if(!keydown(KEY_F1)) keypress = false;
+			}
+		}
+		if(keydown(KEY_DEL))
+		{
+			cursorSlotX = cursorX / 16;
+			cursorSlotY = cursorY / 17;
+			slot = cursorSlotY * 8 + cursorSlotX;
+			player.inventory.items[cursorSlotX] = (Item){ITEM_NULL, 0};
+		}
+		
+	//	Render
+		dimage(0, 0, &img_inventory);
+		for(int slot = 0; slot < INVENTORY_SIZE; slot++)
+		{
+			item = &player.inventory.items[slot];
+			if(item->id != ITEM_NULL)
+			{
+				renderItem((slot % 8) * 16 + 1, (slot / 8) * 17 + 1, *item);
+			}
+		}
+		if(held.id != ITEM_NULL)
+		{
+			renderItem(cursorX - 7, min(35, cursorY - 7), held);
+		}
+		dimage(cursorX - 2, cursorY - 2, &img_cursor);
+		dupdate();
+		timer_wait(timer);
+		ticks++;
+	}
+}
+
 void RAMErrorMenu()
 {
 	dclear(C_WHITE);
@@ -59,7 +173,7 @@ void RAMErrorMenu()
 	while(1)
 	{
 		clearevents();
-		if(keydown(KEY_EXIT)) RebootOS();
+		if(keydown(KEY_EXIT)) return;
 	}
 }
 
@@ -67,7 +181,8 @@ void loadFailMenu()
 {
 	dclear(C_WHITE);
 	dtext(0, 0, C_BLACK, "Failed to load");
-	dprint(0, 8, C_BLACK, "\\TERRARIO\\reg%d.dat", save.error);
+	if(save.error > -1) dprint(0, 8, C_BLACK, "\\TERRARIO\\reg%d.dat", save.error);
+	if(save.error == -1) dtext(0, 8, C_BLACK, "\\TERRARIO\\player.dat");
 	dtext(0, 16, C_BLACK, "Please report bug or");
 	dtext(0, 24, C_BLACK, "delete \\TERRARIO.");
 	dtext(0, 40, C_BLACK, "[EXIT] to exit");
@@ -76,7 +191,7 @@ void loadFailMenu()
 	while(1)
 	{
 		clearevents();
-		if(keydown(KEY_EXIT)) RebootOS();
+		if(keydown(KEY_EXIT)) return;
 	}
 }
 
@@ -94,23 +209,30 @@ void saveFailMenu()
 	while(1)
 	{
 		clearevents();
-		if(keydown(KEY_EXIT)) RebootOS();
+		if(keydown(KEY_EXIT)) return;
 	}
 }
 
 void aboutMenu()
 {
 	extern bopti_image_t img_confetti;
-	const int lines = 20;
 	const char* text[] = {
 		"Terrario by KBD2",
 		" ",
-		"Controls:",
+		"World:",
 		"4,6,8:Move",
 		"Arrows:Cursor",
 		"7,9:Mine/Place",
 		"F1,F2,F3:Hotbar",
+		"[SHIFT]:Inventory",
 		"[MENU]:Exit",
+		" ",
+		"Inventory:",
+		"Arrows:Cursor",
+		"F1:Take/Place Stack",
+		"F2:Take Single",
+		"[DEL]:Delete",
+		"[EXIT]:Exit",
 		" ",
 		"Special thanks to:",
 		"Re-Logic - Terraria",
@@ -124,6 +246,7 @@ void aboutMenu()
 		" ",
 		"Enjoy!"
 	};
+	const int lines = sizeof(text) / sizeof(char*);
 	float y = 0;
 	int width, height;
 	int ticks;

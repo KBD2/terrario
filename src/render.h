@@ -1,6 +1,5 @@
 #pragma once
 
-#include "entity.h"
-
-void render(struct Player* player);
+int render();
 void takeVRAMCapture();
+void renderItem();
