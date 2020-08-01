@@ -9,13 +9,17 @@
 enum Items {
 	ITEM_NULL,
 	ITEM_STONE,
-	ITEM_DIRT
+	ITEM_DIRT,
+	ITEM_WOOD,
+
+	ITEMS_COUNT
 };
 
 typedef struct {
 	bopti_image_t* sprite;
 	int maxStack;
 	short tile;
+	char* name;
 } ItemData;
 
 typedef struct {

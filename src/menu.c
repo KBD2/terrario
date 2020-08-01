@@ -4,6 +4,7 @@
 #include <gint/defs/util.h>
 #include <gint/timer.h>
 #include <stdbool.h>
+#include <gint/std/string.h>
 
 #include "menu.h"
 #include "syscalls.h"
@@ -12,6 +13,7 @@
 #include "inventory.h"
 #include "entity.h"
 #include "render.h"
+#include "world.h"
 
 int mainMenu()
 {
@@ -20,9 +22,12 @@ int mainMenu()
 	int selectPositions[] = {13, 30, 47};
 	bool validSave = getSave();
 	int selected = validSave ? 1 : 0;
+	int timer;
 
 	while(1)
 	{
+		timer = timer_setup(TIMER_ANY, (1000 / 30) * 1000, NULL);
+		timer_start(timer);
 		dclear(C_WHITE);
 		dimage(0, 0, &img_mainmenu);
 		dimage(65, selectPositions[selected], &img_mainmenuselect);
@@ -50,7 +55,65 @@ int mainMenu()
 		}
 		selected = min(max(selected, 0), 2);
 
+		if(keydown(KEY_OPTN) && keydown(KEY_ACON)) debugMenu();
+
 		while(keydown(KEY_UP) || keydown(KEY_DOWN)) clearevents();
+		timer_wait(timer);
+	}
+}
+
+void debugMenu()
+{
+	int selected = 0;
+	int which = 0;
+	int timer;
+
+	memset(save.tileData, 0, WORLD_WIDTH * WORLD_HEIGHT);
+
+	while(true)
+	{
+		timer = timer_setup(TIMER_ANY, (1000 / 30) * 1000, NULL);
+		timer_start(timer);
+		dclear(C_WHITE);
+		if(which == 0)
+		{
+			dimage(0, 8, tiles[selected].sprite);
+			for(int y = 0; y < 5; y++) dhline(y * 9 + 8, C_WHITE);
+			for(int variant = 0; variant < 3; variant++)
+			{
+				for(int x = 0; x < 5; x++) dvline(x * 9 + variant * 37, C_WHITE);
+			}
+			dprint(0, 0, C_BLACK, "Debug: Tile %s", tiles[selected].name);
+		}
+		else
+		{
+			dprint(0, 0, C_BLACK, "Debug: Item %s", items[selected].name);
+			dimage(0, 8, items[selected].sprite);
+		}
+		
+		dupdate();
+
+		clearevents();
+		if(keydown(KEY_EXIT)) break;
+		if(keydown(KEY_LEFT))
+		{
+			selected--;
+			if(which == 0 && selected < 0) selected = TILES_COUNT - 1;
+			if(which == 1 && selected < 0) selected = ITEMS_COUNT - 1;
+		}
+		if(keydown(KEY_RIGHT))
+		{
+			selected++;
+			if(which == 0 && selected == TILES_COUNT) selected = 0;
+			if(which == 1 && selected == ITEMS_COUNT) selected = 0;
+		}
+		if(keydown(KEY_SHIFT))
+		{
+			which = !which;
+			selected = 0;
+		} 
+		while(keydown(KEY_LEFT) || keydown(KEY_RIGHT) || keydown(KEY_SHIFT)) clearevents();
+		timer_wait(timer);
 	}
 }
 
@@ -67,14 +130,17 @@ void inventoryMenuUpdate()
 	int ticks = 0;
 	int slot;
 
+	while(keydown(KEY_SHIFT)) clearevents();
+
 	while(true)
 	{
 		timer = timer_setup(TIMER_ANY, (1000 / 30) * 1000, NULL);
 		timer_start(timer);
 		clearevents();
 		if(keydown(KEY_ALPHA)) gint_switch(&takeVRAMCapture);
-		if(keydown(KEY_EXIT))
+		if(keydown(KEY_SHIFT))
 		{
+			while(keydown(KEY_SHIFT)) clearevents();
 			while(held.id != ITEM_NULL)
 			{
 				freeSlot = player.inventory.getFirstFreeSlot(held.id);
@@ -159,6 +225,34 @@ void inventoryMenuUpdate()
 		dupdate();
 		timer_wait(timer);
 		ticks++;
+	}
+}
+
+bool exitMenu()
+{
+	int timer;
+	int width;
+	extern bopti_image_t img_quit;
+
+	while(keydown(KEY_MENU)) clearevents();
+	drect_border(19, 9, 107, 52, C_WHITE, 1, C_BLACK);
+	dsize("Quit?", NULL, &width, NULL);
+	dtext(64 - width / 2, 12, C_BLACK, "Quit?");
+	dtext(22, 45, C_BLACK, "MENU: Yes");
+	dsize("EXIT: No", NULL, &width, NULL);
+	dtext(109 - width, 45, C_BLACK, "EXIT: No");
+	dimage(47, 19, &img_quit);
+	dupdate();
+
+	while(1)
+	{
+		timer = timer_setup(TIMER_ANY, (1000 / 30) * 1000, NULL);
+		timer_start(timer);
+		clearevents();
+		if(keydown(KEY_MENU)) return true;
+		if(keydown(KEY_EXIT)) return false;
+		if(keydown(KEY_ACON)) RebootOS();
+		timer_wait(timer);
 	}
 }
 

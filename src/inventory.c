@@ -5,13 +5,15 @@
 extern bopti_image_t
 img_item_null,
 img_item_dirt,
-img_item_stone;
+img_item_stone,
+img_item_wood;
 
 const ItemData items[] = {
 //		Sprite				Max		Tile
-	{	&img_item_null	,	0	,	TILE_NULL	},	// ITEM_NULL
-	{	&img_item_stone	,	999	,	TILE_STONE	},	// ITEM_STONE
-	{	&img_item_dirt	,	999	,	TILE_DIRT	}	// ITEM_DIRT
+	{	&img_item_null	,	0	,	TILE_NULL	,	"Null"	},	// ITEM_NULL
+	{	&img_item_stone	,	999	,	TILE_STONE	,	"Stone"	},	// ITEM_STONE
+	{	&img_item_dirt	,	999	,	TILE_DIRT	,	"Dirt"	},	// ITEM_DIRT
+	{	&img_item_wood	,	999	,	TILE_WOOD	,	"Wood"	}	// ITEM_WOOD
 };
 
 int getFirstFreeSlot(enum Items item)

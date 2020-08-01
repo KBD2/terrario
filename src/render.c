@@ -31,7 +31,7 @@ void renderItem(int x, int y, Item item)
 
 int render()
 {
-	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect;
+	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect, img_leaves;
 	int camX = min(max(player.props.x + (player.props.width >> 1), camMinX), camMaxX);
 	int camY = min(max(player.props.y + (player.props.height >> 1), camMinY), camMaxY);
 
@@ -95,14 +95,33 @@ int render()
 
 	dclear(C_WHITE);
 
+	for(unsigned int y = tileTopY; y <= tileBottomY + 4; y++)
+	{
+		for(unsigned int x = tileLeftX - 2; x <= tileRightX + 2; x++)
+		{
+			if(getTile(x, y).idx == TILE_LEAVES)
+			{
+				currTileX = (x << 3) - camOffsetX;
+				currTileY = (y << 3) - camOffsetY;
+				dimage(currTileX - 16, currTileY - 32, &img_leaves);
+				continue;
+			}
+		}
+	}
+
 	for(unsigned int y = tileTopY; y <= tileBottomY; y++)
 	{
 		for(unsigned int x = tileLeftX; x <= tileRightX; x++)
 		{
-			tile = &world.tiles[y * WORLD_WIDTH + x];
+			tile = &getTile(x, y);
 			currTile = &tiles[tile->idx];
 			currTileX = (x << 3) - camOffsetX;
 			currTileY = (y << 3) - camOffsetY;
+			if(tile->idx == TILE_LEAVES)
+			{
+				dimage(currTileX - 16, currTileY - 32, &img_leaves);
+				continue;
+			}
 			if(currTile->render)
 			{
 				/* Disable clipping unless it's a block on the edges of the screen.
@@ -119,12 +138,20 @@ int render()
 				{
 					flags = DIMAGE_NOCLIP;
 				}
-				if(currTile->hasSpritesheet)
+				if(currTile->spriteType != TILE)
 				{
-					state = findState(x, y);
-//					Spritesheet layout allows for very fast calculation of the position of the sprite
-					subrectX = ((state & 3) << 3) + (state & 3) + 1;
-					subrectY = ((state >> 2) << 3) + (state >> 2) + 1;
+					subrectX = 0;
+					subrectY = 0;
+					if(currTile->spriteType == SHEET || currTile->spriteType == SHEET_VAR)
+					{
+						
+						state = findState(x, y);
+//						Spritesheet layout allows for very fast calculation of the position of the sprite
+						subrectX = ((state & 3) << 3) + (state & 3) + 1;
+						subrectY = ((state >> 2) << 3) + (state >> 2) + 1;
+					}
+					if(currTile->spriteType == TILE_VAR) subrectX = 9 * tile->variant + 1;
+					if(currTile->spriteType == SHEET_VAR) subrectX += 37 * tile->variant;
 					dsubimage(currTileX, currTileY, currTile->sprite, subrectX, subrectY, 8, 8, flags);
 				}
 				else
@@ -135,6 +162,7 @@ int render()
 			}
 		}
 	}
+
 	playerX = player.props.x - (camX - (SCREEN_WIDTH >> 1)) - 2;
 	playerY = player.props.y - (camY - (SCREEN_HEIGHT >> 1));
 	playerSubrectX = (player.anim.direction == 0) ? 0 : 16;

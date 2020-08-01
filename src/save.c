@@ -59,7 +59,7 @@ void saveGame()
 	{
 		for(int x = 0; x < save.regionsX; x++)
 		{
-			if(save.regionData[y * save.regionsX + x])
+			if(save.regionData[y * save.regionsX + x] == 1)
 			{
 				regionStartX = x * REGION_SIZE;
 				regionStartY = y * REGION_SIZE;

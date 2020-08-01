@@ -20,6 +20,7 @@ const unsigned int sc003B[] = { SCA, SCB, SCE, 0x003B };
 const unsigned int sc003C[] = { SCA, SCB, SCE, 0x003C };
 const unsigned int sc0236[] = { SCA, SCB, SCE, 0x0236 };
 const unsigned int sc019F[] = { SCA, SCB, SCE, 0x019F };
+const unsigned int sc000E[] = { SCA, SCB, SCE, 0x000E };
 
 // Global variables
 struct SaveData save;
@@ -42,6 +43,7 @@ bool update()
 	Item* item;
 	int freeSlot;
 	bool validLeft, validRight, validTop, validBottom;
+	int x, y;
 
 	clearevents();
 
@@ -59,14 +61,26 @@ bool update()
 
 	if(keydown(KEY_7))
 	{
-		tile = &getTile(player.cursorTile.x, player.cursorTile.y);
-		if(tiles[tile->idx].item != ITEM_NULL)
+		x = player.cursorTile.x;
+		y =  player.cursorTile.y;
+		tile = &getTile(x, y);
+		if(tile->idx == TILE_TRUNK)
 		{
-			freeSlot = player.inventory.getFirstFreeSlot(tiles[tile->idx].item);
-			if(freeSlot > -1) player.inventory.stackItem(&player.inventory.items[freeSlot], &((Item){tiles[tile->idx].item, 1}));
+			breakTree(x, y);
 		}
-		*tile = (Tile){TILE_NOTHING};
-		regionChange(player.cursorTile.x, player.cursorTile.y);
+		else
+		{
+			if(!tiles[getTile(x, y - 1).idx].forceSupport)
+			{
+				if(tiles[tile->idx].item != ITEM_NULL)
+				{
+					freeSlot = player.inventory.getFirstFreeSlot(tiles[tile->idx].item);
+					if(freeSlot > -1) player.inventory.stackItem(&player.inventory.items[freeSlot], &((Item){tiles[tile->idx].item, 1}));
+				}
+				*tile = (Tile){TILE_NOTHING, 0};
+				regionChange(player.cursorTile.x, player.cursorTile.y);
+			}
+		}
 	}
 	if(keydown(KEY_9))
 	{
@@ -82,7 +96,7 @@ bool update()
 				item = &player.inventory.items[player.inventory.hotbarSlot];
 				if(item->id != ITEM_NULL && items[item->id].tile > -1)
 				{
-					*tile = (Tile){items[item->id].tile};
+					*tile = (Tile){items[item->id].tile, makeVar()};
 					regionChange(player.cursorTile.x, player.cursorTile.y);
 					player.inventory.removeItem(player.inventory.hotbarSlot);
 				}
@@ -97,7 +111,10 @@ bool update()
 	player.cursor.x = min(max(0, player.cursor.x), SCREEN_WIDTH - 1);
 	player.cursor.y = min(max(0, player.cursor.y), SCREEN_HEIGHT - 1);
 
-	if(keydown(KEY_MENU)) return false;
+	if(keydown(KEY_MENU))
+	{
+		if(exitMenu()) return false;
+	}
 
 	player.physics(&player.props);
 
@@ -119,9 +136,11 @@ int main(void)
 		.regionsX = WORLD_WIDTH / REGION_SIZE + 1,
 		.regionsY = WORLD_HEIGHT / REGION_SIZE + 1,
 		.tileData = (void*)RAM_START,
-		.regionData = (unsigned char*)malloc(save.regionsX * save.regionsY),
+		.regionData = NULL,
 		.error = -99,
 	};
+
+	save.regionData = (unsigned char*)malloc(save.regionsX * save.regionsY);
 
 	memset(save.tileData, 0, WORLD_WIDTH * WORLD_HEIGHT * sizeof(Tile));
 
@@ -226,6 +245,9 @@ int main(void)
 	if(save.error != -99) saveFailMenu();
 	
 	free(save.regionData);
+
+	SMEM_Optimization();
+	RebootOS();
 
 	return 1;
 }
