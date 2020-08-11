@@ -263,6 +263,7 @@ void aboutMenu()
 		"7,9:Mine/Place",
 		"F1,F2,F3:Hotbar",
 		"[SHIFT]:Inventory",
+		"[ALPHA]:Crafting",
 		"[MENU]:Exit",
 		" ",
 		"Inventory:",
@@ -270,7 +271,14 @@ void aboutMenu()
 		"F1:Take/Place Stack",
 		"F2:Take Single",
 		"[DEL]:Delete",
-		"[EXIT]:Exit",
+		"[SHIFT]:Exit",
+		"[ALPHA]:Crafting",
+		" ",
+		"Crafting:",
+		"Left/Right:Scroll",
+		"[EXE]:Craft",
+		"[SHIFT]:Inventory",
+		"[ALPHA]:Exit",
 		" ",
 		"Special thanks to:",
 		"Re-Logic - Terraria",
@@ -309,23 +317,10 @@ void aboutMenu()
 		scroll = 0.5;
 
 		key = pollevent();
-		while(key.type != KEYEV_NONE)
-		{
-			switch(key.key)
-			{
-				case KEY_EXIT:
-					return;
-
-				case KEY_UP:
-					scroll = 0;
-					break;
-				case KEY_DOWN:
-					scroll = 3;
-					break;
-			}
-
-			key = pollevent();
-		}
+		while(key.type != KEYEV_NONE) key = pollevent();
+		if(keydown(KEY_EXIT)) return;
+		if(keydown(KEY_UP)) scroll = 0;
+		if(keydown(KEY_DOWN)) scroll = 3;
 		y += scroll;
 
 		while(!flag) sleep();
