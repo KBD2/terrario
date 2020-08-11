@@ -1,10 +1,10 @@
 #pragma once
 
 enum SpriteTypes {
-	TILE,
-	TILE_VAR,
-	SHEET,
-	SHEET_VAR
+	TYPE_TILE,
+	TYPE_TILE_VAR,
+	TYPE_SHEET,
+	TYPE_SHEET_VAR
 };
 
 int render();

@@ -3,26 +3,19 @@
 
 from PIL import Image
 
-with open('light.vram', 'rb') as file:
-    lightRaw = list(i for i in file.read())
-    lightFull = []
-    for byte in lightRaw:
+with open('capt.vram', 'rb') as file:
+    raw = list(i for i in file.read())
+    decompressed = []
+    for byte in raw:
         for i in range(8):
-            lightFull.append(byte >> (7 - i) & 1)
-
-with open('dark.vram', 'rb') as file:
-    darkRaw = list(i for i in file.read())
-    darkFull = []
-    for byte in darkRaw:
-        for i in range(8):
-            darkFull.append(byte >> (7 - i) & 1)
+            decompressed.append(byte >> (7 - i) & 1)
 
 img = Image.new('RGB', (128, 64))
 pixels = img.load()
 for y in range(64):
     for x in range(128):
-        lightOn = lightFull[y * 128 + x]
-        darkOn = darkFull[y * 128 + x]
+        lightOn = decompressed[y * 128 + x]
+        darkOn = decompressed[y * 128 + x + 8192]
         if lightOn and darkOn:
             pixels[x, y] = (0, 0, 0)
         elif darkOn:

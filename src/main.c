@@ -6,6 +6,7 @@
 #include <gint/timer.h>
 #include <stdbool.h>
 #include <gint/std/string.h>
+#include <gint/clock.h>
 
 #include "defs.h"
 #include "syscalls.h"
@@ -14,18 +15,29 @@
 #include "render.h"
 #include "menu.h"
 #include "save.h"
+#include "crafting.h"
+
+enum UpdateReturnCodes {
+	UPDATE_EXIT, 		// Exit the game
+	UPDATE_CONTINUE,	// Continue as normal
+	UPDATE_AGAIN		// Run update again ASAP
+};
 
 // Syscalls
 const unsigned int sc003B[] = { SCA, SCB, SCE, 0x003B };
-const unsigned int sc003C[] = { SCA, SCB, SCE, 0x003C };
-const unsigned int sc0236[] = { SCA, SCB, SCE, 0x0236 };
 const unsigned int sc019F[] = { SCA, SCB, SCE, 0x019F };
-const unsigned int sc000E[] = { SCA, SCB, SCE, 0x000E };
+const unsigned int sc0236[] = { SCA, SCB, SCE, 0x0236 };
 
 // Global variables
 struct SaveData save;
 struct World world;
 struct Player player;
+
+int frameCallback(int* flag)
+{
+	*flag = 1;
+	return TIMER_CONTINUE;
+}
 
 // Checks if the RAM we'll be using to store world tiles works
 bool testRAM()
@@ -37,72 +49,93 @@ bool testRAM()
 	return false;
 }
 
-bool update()
+enum UpdateReturnCodes update()
 {
-	Tile* tile;
-	Item* item;
-	int freeSlot;
 	bool validLeft, validRight, validTop, validBottom;
 	int x, y;
+	key_event_t key;
+	enum Tiles tile;
 
-	clearevents();
+	key = pollevent();
+	while(key.type != KEYEV_NONE)
+	{
+		switch(key.key)
+		{
+			case KEY_OPTN:
+				if(key.type == KEYEV_DOWN) gint_switch(&takeVRAMCapture);
+				break;
+			
+			case KEY_SHIFT:
+				if(key.type != KEYEV_DOWN) break;
+				inventoryMenu();
+//				Immediately go to crafting
+				if(keydown(KEY_ALPHA))
+				{
+					key.key = KEY_ALPHA;
+					continue;
+				}
+				break;
+			case KEY_ALPHA:
+				if(key.type != KEYEV_DOWN) break;
+				craftingMenu();
+//				Immediately go to inventory
+				if(keydown(KEY_SHIFT))
+				{
+					key.key = KEY_SHIFT;
+					continue;
+				}
+				break;
+			
+			case KEY_F1: case KEY_F2: case KEY_F3:
+				player.inventory.hotbarSlot = keycode_function(key.key) - 1;
+				break;
 
-	if(keydown(KEY_ALPHA)) gint_switch(&takeVRAMCapture);
+			case KEY_MENU:
+				if(exitMenu()) return UPDATE_EXIT;
+				break;
+			
+			default:
+				break;
+		}
+		key = pollevent();
+	}
 
-	if(keydown(KEY_SHIFT)) inventoryMenuUpdate();
-
-	if(keydown(KEY_F1)) player.inventory.hotbarSlot = 0;
-	if(keydown(KEY_F2)) player.inventory.hotbarSlot = 1;
-	if(keydown(KEY_F3)) player.inventory.hotbarSlot = 2;
-
-	if(keydown(KEY_4)) player.props.xVel = -1;
-	if(keydown(KEY_6)) player.props.xVel = 1;
-	if(keydown(KEY_8) && player.props.touchingTileTop) player.props.yVel = -4.5;
+// These need to run as long as the button is held
 
 	if(keydown(KEY_7))
 	{
 		x = player.cursorTile.x;
 		y =  player.cursorTile.y;
-		tile = &getTile(x, y);
-		if(tile->idx == TILE_TRUNK)
-		{
-			breakTree(x, y);
-		}
-		else
-		{
-			if(!tiles[getTile(x, y - 1).idx].forceSupport)
-			{
-				if(tiles[tile->idx].item != ITEM_NULL)
-				{
-					freeSlot = player.inventory.getFirstFreeSlot(tiles[tile->idx].item);
-					if(freeSlot > -1) player.inventory.stackItem(&player.inventory.items[freeSlot], &((Item){tiles[tile->idx].item, 1}));
-				}
-				*tile = (Tile){TILE_NOTHING, 0};
-				regionChange(player.cursorTile.x, player.cursorTile.y);
-			}
-		}
+		world.removeTile(x, y);
 	}
+			
 	if(keydown(KEY_9))
 	{
-		validLeft = player.cursorTile.x < player.props.x >> 3;
-		validRight = player.cursorTile.x > (player.props.x + player.props.width) >> 3;
-		validTop = player.cursorTile.y < player.props.y >> 3;
-		validBottom = player.cursorTile.y > (player.props.y + player.props.height) >> 3;
-		if(validLeft || validRight || validTop || validBottom)
+		x = player.cursorTile.x;
+		y = player.cursorTile.y;
+		validLeft = x < player.props.x >> 3;
+		validRight = x > (player.props.x + player.props.width) >> 3;
+		validTop = y < player.props.y >> 3;
+		validBottom = y > (player.props.y + player.props.height) >> 3;
+		tile = items[player.inventory.getSelected()->id].tile;
+		if(tile != TILE_NULL && tile != TILE_NOTHING)
 		{
-			tile = &getTile(player.cursorTile.x, player.cursorTile.y);
-			if(tile->idx == TILE_NOTHING)
+			if(validLeft || validRight || validTop || validBottom || tiles[tile].physics != PHYS_SOLID)
 			{
-				item = &player.inventory.items[player.inventory.hotbarSlot];
-				if(item->id != ITEM_NULL && items[item->id].tile > -1)
-				{
-					*tile = (Tile){items[item->id].tile, makeVar()};
-					regionChange(player.cursorTile.x, player.cursorTile.y);
-					player.inventory.removeItem(player.inventory.hotbarSlot);
-				}
+				world.placeTile(x, y, player.inventory.getSelected());
 			}
 		}
 	}
+	
+	if(keydown(KEY_4)) player.props.xVel = -1;
+	if(keydown(KEY_6)) player.props.xVel = 1;
+	if(keydown(KEY_8) && player.props.touchingTileTop) 
+	{
+		player.props.yVel = -4.5;
+		player.props.dropping = true;
+	}
+	if(keydown(KEY_2)) player.props.dropping = true;
+	if((!keydown(KEY_8) && !keydown(KEY_2)) || (keydown(KEY_8) && !keydown(KEY_2) && player.props.yVel <= 0)) player.props.dropping = false;
 
 	if(keydown(KEY_LEFT)) player.cursor.x--;
 	if(keydown(KEY_RIGHT)) player.cursor.x++;
@@ -111,14 +144,9 @@ bool update()
 	player.cursor.x = min(max(0, player.cursor.x), SCREEN_WIDTH - 1);
 	player.cursor.y = min(max(0, player.cursor.y), SCREEN_HEIGHT - 1);
 
-	if(keydown(KEY_MENU))
-	{
-		if(exitMenu()) return false;
-	}
-
 	player.physics(&player.props);
 
-	return true;
+	return UPDATE_CONTINUE;
 }
 
 int main(void)
@@ -130,6 +158,8 @@ int main(void)
 	bool renderThisFrame = true;
 	int w, h;
 	int timer;
+	enum UpdateReturnCodes updateRet;
+	int flag = 0;
 
 	save = (struct SaveData){
 		.tileDataSize = WORLD_HEIGHT * WORLD_WIDTH * sizeof(Tile),
@@ -159,7 +189,16 @@ int main(void)
 	if(menuSelect == -1) return 1;
 	
 	player = (struct Player){
-		.props = {0, 0, 0.0, 0.0, false, 12, 21},
+		.props = {
+			.x = 0, 
+			.y = 0, 
+			.xVel = 0.0, 
+			.yVel = 0.0, 
+			.touchingTileTop = false, 
+			.width = 12, 
+			.height = 21, 
+			.dropping = false
+		},
 		.health = 100,
 		.cursor = {75, 32},
 		.cursorTile = { 0 },
@@ -169,14 +208,22 @@ int main(void)
 			0,
 			.getFirstFreeSlot = &getFirstFreeSlot,
 			.removeItem = &removeItem,
-			.stackItem = &stackItem
+			.stackItem = &stackItem,
+			.tallyItem = &tallyItem,
+			.findSlot = &findSlot,
+			.getSelected = &getSelected
 		},
 		.physics = &handlePhysics
 	};
 
 	for(int slot = 0; slot < INVENTORY_SIZE; slot++) player.inventory.items[slot] = (Item){ITEM_NULL, 0};
 
-	world.tiles = (Tile*)save.tileData;
+	world = (struct World)
+	{
+		.tiles = (Tile*)save.tileData,
+		.placeTile = &placeTile,
+		.removeTile = &removeTile
+	};
 
 	if(menuSelect == 0)
 	{
@@ -221,20 +268,27 @@ int main(void)
 	player.props.x = playerX << 3;
 	player.props.y = playerY << 3;
 
+	timer = timer_setup(TIMER_ANY, (1000 / 60) * 1000, &frameCallback, &flag);
+	timer_start(timer);
+
 	while(true)
 	{
-		timer = timer_setup(TIMER_ANY, (1000 / 60) * 1000, NULL);
-		timer_start(timer);
-		if(!update()) break;
+		updateRet = update();
+		if(updateRet == UPDATE_EXIT) break;
+		else if(updateRet == UPDATE_AGAIN) continue;
 		if(renderThisFrame)
 		{
 			render();
+			dupdate();
 			renderThisFrame = false;
 		}
 		else renderThisFrame = true;
-		timer_wait(timer);
+
+		while(!flag) sleep();
+		flag = 0;
 	}
 
+	timer_stop(timer);
 	dgray(DGRAY_OFF);
 	dclear(C_WHITE);
 	dfont(NULL);

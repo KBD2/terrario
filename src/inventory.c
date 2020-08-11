@@ -1,3 +1,9 @@
+#include <gint/keyboard.h>
+#include <gint/gray.h>
+#include <gint/timer.h>
+#include <gint/defs/util.h>
+#include <gint/gint.h>
+
 #include "inventory.h"
 #include "world.h"
 #include "entity.h"
@@ -6,14 +12,20 @@ extern bopti_image_t
 img_item_null,
 img_item_dirt,
 img_item_stone,
-img_item_wood;
+img_item_wood,
+img_item_wbench,
+img_item_platform,
+img_item_chair;
 
 const ItemData items[] = {
 //		Sprite				Max		Tile
-	{	&img_item_null	,	0	,	TILE_NULL	,	"Null"	},	// ITEM_NULL
-	{	&img_item_stone	,	999	,	TILE_STONE	,	"Stone"	},	// ITEM_STONE
-	{	&img_item_dirt	,	999	,	TILE_DIRT	,	"Dirt"	},	// ITEM_DIRT
-	{	&img_item_wood	,	999	,	TILE_WOOD	,	"Wood"	}	// ITEM_WOOD
+	{	&img_item_null,		0,		TILE_NULL,		"Null"		},	// ITEM_NULL
+	{	&img_item_stone,	999,	TILE_STONE,		"Stone"		},	// ITEM_STONE
+	{	&img_item_dirt,		999,	TILE_DIRT,		"Dirt"		},	// ITEM_DIRT
+	{	&img_item_wood,		999,	TILE_WOOD,		"Wood"		},	// ITEM_WOOD
+	{	&img_item_wbench,	99,		TILE_WBENCH_L,	"Workbench"	},	// ITEM_WORKBENCH
+	{	&img_item_platform,	999,	TILE_PLATFORM,	"Plaftorm"	},	// TILE_PLATFORM
+	{	&img_item_chair,	99,		TILE_CHAIR_L,	"Chair"		}	// TILE_CHAIR
 };
 
 int getFirstFreeSlot(enum Items item)
@@ -36,7 +48,6 @@ int getFirstFreeSlot(enum Items item)
 	return -1;
 }
 
-// Might be needed later on
 int findSlot(enum Items item)
 {
 	for(int slot = 0; slot < INVENTORY_SIZE; slot++)
@@ -74,5 +85,129 @@ void stackItem(Item* dest, Item* source)
 	{
 		source->number -= (items[dest->id].maxStack - dest->number);
 		dest->number = items[dest->id].maxStack;
+	}
+}
+
+int tallyItem(enum Items item)
+{
+	int count = 0;
+
+	for(int slot = 0; slot < INVENTORY_SIZE; slot++)
+	{
+		if(player.inventory.items[slot].id == item) count += player.inventory.items[slot].number;
+	}
+
+	return count;
+}
+
+Item* getSelected()
+{
+	return &player.inventory.items[player.inventory.hotbarSlot];
+}
+
+int inventoryKeyFilter(int key, int duration, int count)
+{
+	if(key == KEY_F1) return -1;
+	return 0;
+	if(duration || count){} // Compiler warning workaround
+}
+
+void inventoryMenu()
+{
+	extern bopti_image_t img_inventory, img_cursor;
+	Item* item;
+	int hoverSlot;
+	int cursorX = 64, cursorY = 32;
+	Item held = {ITEM_NULL, 0};
+	int freeSlot;
+	key_event_t key;
+
+	getkey_repeat_filter(&inventoryKeyFilter);
+
+	while(true)
+	{
+		render();
+		dimage(0, 0, &img_inventory);
+		for(int slot = 0; slot < INVENTORY_SIZE; slot++)
+		{
+			item = &player.inventory.items[slot];
+			if(item->id != ITEM_NULL)
+			{
+				renderItem((slot % 8) * 16 + 1, (slot / 8) * 17 + 1, item);
+			}
+		}
+		if(held.id != ITEM_NULL)
+		{
+			renderItem(cursorX - 7, min(35, cursorY - 7), &held);
+		}
+		dimage(cursorX - 2, cursorY - 2, &img_cursor);
+		dupdate();
+
+		key = getkey_opt(GETKEY_REP_ALL | GETKEY_REP_FILTER, NULL);
+		hoverSlot = (cursorY / 17) * 8 + (cursorX / 16);
+		item = &player.inventory.items[hoverSlot];
+		switch(key.key)
+		{
+			case KEY_OPTN:
+				if(key.type == KEYEV_DOWN) gint_switch(&takeVRAMCapture);
+				break;
+
+			case KEY_SHIFT: case KEY_ALPHA:
+				if(key.type == KEYEV_DOWN)
+				{
+					while(held.id != ITEM_NULL)
+					{
+						freeSlot = player.inventory.getFirstFreeSlot(held.id);
+						if(freeSlot > -1)
+						{
+							player.inventory.stackItem(&player.inventory.items[freeSlot], &held);
+						}
+						else break;
+					}
+					getkey_repeat_filter(NULL);
+					return;
+				}
+				break;
+
+			case KEY_LEFT:
+				cursorX -= 2;
+				break;
+			case KEY_RIGHT:
+				cursorX += 2;
+				break;
+			case KEY_UP:
+				cursorY -= 2;
+				break;
+			case KEY_DOWN:
+				cursorY += 2;
+				break;
+
+			case KEY_F1:
+				if(item->id == held.id)
+				{
+					player.inventory.stackItem(item, &held);
+				}
+				else
+				{
+					swap(*item, held);
+				}
+				break;
+			case KEY_F2:
+				if((item->id == held.id && held.number < items[held.id].maxStack) || held.id == ITEM_NULL)
+				{
+					player.inventory.stackItem(&held, &(Item){item->id, 1});
+					player.inventory.removeItem(hoverSlot);
+				}
+				break;
+
+			case KEY_DEL:
+				*item = (Item){ITEM_NULL, 0};
+				break;
+
+			default:
+				break;
+		}
+		cursorX = min(max(cursorX, 2), 125);
+		cursorY = min(max(cursorY, 2), 48);
 	}
 }

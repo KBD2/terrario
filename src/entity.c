@@ -42,8 +42,10 @@ void handlePhysics(struct EntPhysicsProps* self)
 	{
 		for(int x = tileCheckBox.TL.x; x <= tileCheckBox.BR.x; x++)
 		{
-			if(tiles[world.tiles[y * WORLD_WIDTH + x].idx].solid)
+			if(tiles[world.tiles[y * WORLD_WIDTH + x].idx].physics != PHYS_NON_SOLID)
 			{
+				if(tiles[world.tiles[y * WORLD_WIDTH + x].idx].physics == PHYS_PLATFORM && (y < ((player.props.y + player.props.height) >> 3) || player.props.dropping)) continue;
+
 				struct Rect entBox = {
 					{
 						self->x,
@@ -98,7 +100,7 @@ void handlePhysics(struct EntPhysicsProps* self)
 	self->xVel *= 0.8;
 	self->x = min(max(self->x, 0), 8 * WORLD_WIDTH - self->width);
 	self->y = min(max(self->y, 0), 8 * WORLD_HEIGHT - self->height);
-	if(self->y + self->height == (WORLD_HEIGHT << 3) - 1)
+	if(self->y + self->height >= (WORLD_HEIGHT << 3) - 1)
 	{
 		self->yVel = 0;
 		self->touchingTileTop = true;

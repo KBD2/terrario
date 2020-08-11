@@ -3,6 +3,12 @@
 #include "inventory.h"
 #include "menu.h"
 
+enum PhysicsTypes {
+	PHYS_NON_SOLID,
+	PHYS_SOLID,
+	PHYS_PLATFORM
+};
+
 struct Coords {
 	int x;
 	int y;
@@ -21,6 +27,7 @@ struct EntPhysicsProps {
 	bool touchingTileTop;
 	unsigned char width;
 	unsigned char height;
+	bool dropping;
 };
 
 struct AnimationData {

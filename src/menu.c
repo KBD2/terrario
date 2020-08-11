@@ -1,3 +1,5 @@
+// Miscellaneous menus
+
 #include <gint/gray.h>
 #include <gint/gint.h>
 #include <gint/keyboard.h>
@@ -5,6 +7,8 @@
 #include <gint/timer.h>
 #include <stdbool.h>
 #include <gint/std/string.h>
+#include <gint/std/stdlib.h>
+#include <gint/clock.h>
 
 #include "menu.h"
 #include "syscalls.h"
@@ -14,6 +18,7 @@
 #include "entity.h"
 #include "render.h"
 #include "world.h"
+#include "crafting.h"
 
 int mainMenu()
 {
@@ -22,43 +27,51 @@ int mainMenu()
 	int selectPositions[] = {13, 30, 47};
 	bool validSave = getSave();
 	int selected = validSave ? 1 : 0;
-	int timer;
+	key_event_t key;
 
 	while(1)
 	{
-		timer = timer_setup(TIMER_ANY, (1000 / 30) * 1000, NULL);
-		timer_start(timer);
 		dclear(C_WHITE);
 		dimage(0, 0, &img_mainmenu);
 		dimage(65, selectPositions[selected], &img_mainmenuselect);
 		dupdate();
 
-		clearevents();
-		if(keydown(KEY_ALPHA)) gint_switch(takeVRAMCapture);
-		if(keydown(KEY_MENU)) return -1;
-		if(keydown(KEY_EXE)) 
+		key = getkey_opt(GETKEY_NONE, NULL);
+		switch(key.key)
 		{
-			if(selected == 2)
-			{
-				aboutMenu();
-				continue;
-			}
-			else return selected;
+			case KEY_OPTN:
+				if(key.type == KEYEV_DOWN) gint_switch(&takeVRAMCapture);
+				break;
+
+			case KEY_MENU:
+				return -1;
+			
+			case KEY_EXE:
+				if(selected == 2)
+				{
+					aboutMenu();
+					break;
+				}
+				else return selected;
+			
+			case KEY_UP:
+				selected--;
+				if(selected == 1 && !validSave) selected--;
+				break;
+			case KEY_DOWN:
+				selected++;
+				if(selected == 1 && !validSave) selected++;
+				break;
+			
+			case KEY_ACON:
+				debugMenu();
+				break;
+			
+			default:
+				break;
 		}
 
-		if(keydown(KEY_UP)) selected--;
-		if(keydown(KEY_DOWN)) selected++;
-		if(selected == 1 && !validSave)
-		{
-			if(keydown(KEY_UP)) selected--;
-			if(keydown(KEY_DOWN)) selected++;
-		}
 		selected = min(max(selected, 0), 2);
-
-		if(keydown(KEY_OPTN) && keydown(KEY_ACON)) debugMenu();
-
-		while(keydown(KEY_UP) || keydown(KEY_DOWN)) clearevents();
-		timer_wait(timer);
 	}
 }
 
@@ -66,173 +79,69 @@ void debugMenu()
 {
 	int selected = 0;
 	int which = 0;
-	int timer;
+	key_event_t key;
 
 	memset(save.tileData, 0, WORLD_WIDTH * WORLD_HEIGHT);
 
 	while(true)
 	{
-		timer = timer_setup(TIMER_ANY, (1000 / 30) * 1000, NULL);
-		timer_start(timer);
 		dclear(C_WHITE);
 		if(which == 0)
 		{
-			dimage(0, 8, tiles[selected].sprite);
-			for(int y = 0; y < 5; y++) dhline(y * 9 + 8, C_WHITE);
+			dimage(0, 9, tiles[selected].sprite);
+			if(tiles[selected].spriteType == TYPE_SHEET || tiles[selected].spriteType == TYPE_SHEET_VAR)
+			{
+				for(int y = 0; y < 5; y++) dhline(y * 9 + 9, C_WHITE);
+			}
 			for(int variant = 0; variant < 3; variant++)
 			{
 				for(int x = 0; x < 5; x++) dvline(x * 9 + variant * 37, C_WHITE);
 			}
-			dprint(0, 0, C_BLACK, "Debug: Tile %s", tiles[selected].name);
+			dprint(0, 0, C_BLACK, "Tile %s", tiles[selected].name);
 		}
 		else
 		{
-			dprint(0, 0, C_BLACK, "Debug: Item %s", items[selected].name);
+			dprint(0, 0, C_BLACK, "Item %s", items[selected].name);
 			dimage(0, 8, items[selected].sprite);
 		}
-		
 		dupdate();
-
-		clearevents();
-		if(keydown(KEY_EXIT)) break;
-		if(keydown(KEY_LEFT))
+		while(true)
 		{
-			selected--;
-			if(which == 0 && selected < 0) selected = TILES_COUNT - 1;
-			if(which == 1 && selected < 0) selected = ITEMS_COUNT - 1;
+			key = getkey_opt(GETKEY_NONE, NULL);
+			if(key.type == KEYEV_DOWN) break;
 		}
-		if(keydown(KEY_RIGHT))
+		switch(key.key)
 		{
-			selected++;
-			if(which == 0 && selected == TILES_COUNT) selected = 0;
-			if(which == 1 && selected == ITEMS_COUNT) selected = 0;
+			case KEY_EXIT:
+				return;
+			
+			case KEY_LEFT:
+				selected--;
+				if(which == 0 && selected < 0) selected = TILES_COUNT - 1;
+				if(which == 1 && selected < 0) selected = ITEMS_COUNT - 1;
+				break;
+			case KEY_RIGHT:
+				selected++;
+				if(which == 0 && selected == TILES_COUNT) selected = 0;
+				if(which == 1 && selected == ITEMS_COUNT) selected = 0;
+				break;
+			
+			case KEY_SHIFT:
+				which = !which;
+				selected = 0;
+				break;
+			
+			default:
+				break;
 		}
-		if(keydown(KEY_SHIFT))
-		{
-			which = !which;
-			selected = 0;
-		} 
-		while(keydown(KEY_LEFT) || keydown(KEY_RIGHT) || keydown(KEY_SHIFT)) clearevents();
-		timer_wait(timer);
-	}
-}
-
-void inventoryMenuUpdate()
-{
-	extern bopti_image_t img_inventory, img_cursor;
-	Item* item;
-	int cursorSlotX, cursorSlotY;
-	int cursorX = 64, cursorY = 32;
-	Item held = {ITEM_NULL, 0};
-	bool keypress = false;
-	int freeSlot;
-	int timer;
-	int ticks = 0;
-	int slot;
-
-	while(keydown(KEY_SHIFT)) clearevents();
-
-	while(true)
-	{
-		timer = timer_setup(TIMER_ANY, (1000 / 30) * 1000, NULL);
-		timer_start(timer);
-		clearevents();
-		if(keydown(KEY_ALPHA)) gint_switch(&takeVRAMCapture);
-		if(keydown(KEY_SHIFT))
-		{
-			while(keydown(KEY_SHIFT)) clearevents();
-			while(held.id != ITEM_NULL)
-			{
-				freeSlot = player.inventory.getFirstFreeSlot(held.id);
-				if(freeSlot > -1)
-				{
-					player.inventory.stackItem(&player.inventory.items[freeSlot], &held);
-				}
-				else break;
-			}
-			return;
-		}
-		if(keydown(KEY_LEFT)) cursorX -= 2;
-		if(keydown(KEY_RIGHT)) cursorX += 2;
-		if(keydown(KEY_UP)) cursorY -= 2;
-		if(keydown(KEY_DOWN)) cursorY += 2;
-		cursorX = min(max(cursorX, 2), 125);
-		cursorY = min(max(cursorY, 2), 48);
-
-		if(!keypress && (keydown(KEY_F1) || keydown(KEY_F2)))
-		{
-			ticks = 0;
-			cursorSlotX = cursorX / 16;
-			cursorSlotY = cursorY / 17;
-			slot = cursorSlotY * 8 + cursorSlotX;
-			item = &player.inventory.items[slot];
-			keypress = true;
-			if(keydown(KEY_F1))
-			{
-				if(item->id == held.id)
-				{
-					player.inventory.stackItem(item, &held);
-				}
-				else
-				{
-					swap(*item, held);
-				}
-			}
-			else if(keydown(KEY_F2))
-			{
-				if((item->id == held.id && held.number < items[held.id].maxStack) || held.id == ITEM_NULL)
-				{
-					player.inventory.stackItem(&held, &(Item){item->id, 1});
-					player.inventory.removeItem(slot);
-				}
-			}
-		}
-		else if(keypress)
-		{
-			ticks++;
-			if(keydown(KEY_F2))
-			{
-				if(ticks % 5 == 0) keypress = false;
-			}
-			else
-			{
-				if(!keydown(KEY_F1)) keypress = false;
-			}
-		}
-		if(keydown(KEY_DEL))
-		{
-			cursorSlotX = cursorX / 16;
-			cursorSlotY = cursorY / 17;
-			slot = cursorSlotY * 8 + cursorSlotX;
-			player.inventory.items[cursorSlotX] = (Item){ITEM_NULL, 0};
-		}
-		
-	//	Render
-		dimage(0, 0, &img_inventory);
-		for(int slot = 0; slot < INVENTORY_SIZE; slot++)
-		{
-			item = &player.inventory.items[slot];
-			if(item->id != ITEM_NULL)
-			{
-				renderItem((slot % 8) * 16 + 1, (slot / 8) * 17 + 1, *item);
-			}
-		}
-		if(held.id != ITEM_NULL)
-		{
-			renderItem(cursorX - 7, min(35, cursorY - 7), held);
-		}
-		dimage(cursorX - 2, cursorY - 2, &img_cursor);
-		dupdate();
-		timer_wait(timer);
-		ticks++;
 	}
 }
 
 bool exitMenu()
 {
-	int timer;
 	int width;
 	extern bopti_image_t img_quit;
+	key_event_t key;
 
 	while(keydown(KEY_MENU)) clearevents();
 	drect_border(19, 9, 107, 52, C_WHITE, 1, C_BLACK);
@@ -246,18 +155,28 @@ bool exitMenu()
 
 	while(1)
 	{
-		timer = timer_setup(TIMER_ANY, (1000 / 30) * 1000, NULL);
-		timer_start(timer);
-		clearevents();
-		if(keydown(KEY_MENU)) return true;
-		if(keydown(KEY_EXIT)) return false;
-		if(keydown(KEY_ACON)) RebootOS();
-		timer_wait(timer);
+		key = getkey_opt(GETKEY_NONE, NULL);
+		switch(key.key)
+		{
+			case KEY_MENU:
+				return true;
+			
+			case KEY_EXIT:
+				return false;
+			
+			case KEY_ACON:
+				RebootOS(); // Don't save/optimize
+			
+			default:
+				break;
+		}
 	}
 }
 
 void RAMErrorMenu()
 {
+	key_event_t key;
+
 	dclear(C_WHITE);
 	dtext(0, 0, C_BLACK, "RAM test failed!");
 	dtext(0, 8, C_BLACK, "Please report bug.");
@@ -266,13 +185,22 @@ void RAMErrorMenu()
 
 	while(1)
 	{
-		clearevents();
-		if(keydown(KEY_EXIT)) return;
+		key = getkey_opt(GETKEY_NONE, NULL);
+		switch(key.key)
+		{
+			case KEY_EXIT:
+				return;
+			
+			default:
+				break;
+		}
 	}
 }
 
 void loadFailMenu()
 {
+	key_event_t key;
+
 	dclear(C_WHITE);
 	dtext(0, 0, C_BLACK, "Failed to load");
 	if(save.error > -1) dprint(0, 8, C_BLACK, "\\TERRARIO\\reg%d.dat", save.error);
@@ -284,13 +212,22 @@ void loadFailMenu()
 
 	while(1)
 	{
-		clearevents();
-		if(keydown(KEY_EXIT)) return;
+		key = getkey_opt(GETKEY_NONE, NULL);
+		switch(key.key)
+		{
+			case KEY_EXIT:
+				return;
+			
+			default:
+				break;
+		}
 	}
 }
 
 void saveFailMenu()
 {
+	key_event_t key;
+
 	dclear(C_WHITE);
 	dtext(0, 0, C_BLACK, "Failed to write");
 	dprint(0, 8, C_BLACK, "\\TERRARIO\\reg%d.dat", save.error);
@@ -302,8 +239,15 @@ void saveFailMenu()
 
 	while(1)
 	{
-		clearevents();
-		if(keydown(KEY_EXIT)) return;
+		key = getkey_opt(GETKEY_NONE, NULL);
+		switch(key.key)
+		{
+			case KEY_EXIT:
+				return;
+			
+			default:
+				break;
+		}
 	}
 }
 
@@ -343,12 +287,16 @@ void aboutMenu()
 	const int lines = sizeof(text) / sizeof(char*);
 	float y = 0;
 	int width, height;
-	int ticks;
+	int timer;
 	float scroll;
+	key_event_t key;
+	int flag = 0;
 
+	timer = timer_setup(TIMER_ANY, 50 * 1000, &frameCallback, &flag);
+	timer_start(timer);
 	while(y < lines * 13 + 25)
 	{
-		ticks = RTC_GetTicks();
+		
 		dclear(C_WHITE);
 		for(int line = 0; line < lines; line++)
 		{
@@ -358,21 +306,34 @@ void aboutMenu()
 		dimage(1, 74 - y + (lines - 1) * (height + 6), &img_confetti);
 		dupdate();
 
-		clearevents();
-		if(keydown(KEY_EXIT)) return;
-		if(keydown(KEY_UP))
-		{
-			scroll = 0;
-		}
-		else if(keydown(KEY_DOWN))
-		{
-			scroll = 3;
-		}
-		else scroll = 0.5;
-		y += scroll;
-		while(!RTC_Elapsed_ms(ticks, 50)){}
-	}
+		scroll = 0.5;
 
-	ticks = RTC_GetTicks();
-	while(!RTC_Elapsed_ms(ticks, 3000)){}
+		key = pollevent();
+		while(key.type != KEYEV_NONE)
+		{
+			switch(key.key)
+			{
+				case KEY_EXIT:
+					return;
+
+				case KEY_UP:
+					scroll = 0;
+					break;
+				case KEY_DOWN:
+					scroll = 3;
+					break;
+			}
+
+			key = pollevent();
+		}
+		y += scroll;
+
+		while(!flag) sleep();
+		flag = 0;
+	}
+	timer_stop(timer);
+
+	timer = timer_setup(TIMER_ANY, 3000 * 1000, NULL);
+	timer_start(timer);
+	timer_wait(timer);
 }

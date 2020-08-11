@@ -11,6 +11,9 @@ enum Items {
 	ITEM_STONE,
 	ITEM_DIRT,
 	ITEM_WOOD,
+	ITEM_WBENCH,
+	ITEM_PLATFORM,
+	ITEM_CHAIR,
 
 	ITEMS_COUNT
 };
@@ -36,9 +39,16 @@ struct Inventory {
 	int (*getFirstFreeSlot)(enum Items item);
 	void (*removeItem)(int slot);
 	void (*stackItem)(Item* dest, Item* source);
+	int (*tallyItem)(enum Items item);
+	int (*findSlot)(enum Items item);
+	Item* (*getSelected)();
 };
 
 int getFirstFreeSlot(enum Items item);
 int findSlot(enum Items item);
 void removeItem(int slot);
 void stackItem(Item* dest, Item* source);
+int tallyItem(enum Items item);
+Item* getSelected();
+
+void inventoryMenu();

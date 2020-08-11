@@ -4,6 +4,7 @@
 #include <gint/bfile.h>
 #include <gint/std/string.h>
 #include <gint/timer.h>
+#include <gint/std/stdlib.h>
 
 #include "render.h"
 #include "defs.h"
@@ -23,10 +24,10 @@ int animFrames[][2] = {
 	{6, 19}
 };
 
-void renderItem(int x, int y, Item item)
+void renderItem(int x, int y, Item* item)
 {
-	dimage(x + 3, y, items[item.id].sprite);
-	dprint(x + 1, y + 9, C_BLACK, "%d", item.number);
+	dimage(x + 3, y, items[item->id].sprite);
+	dprint(x + 1, y + 9, C_BLACK, "%d", item->number);
 }
 
 int render()
@@ -95,15 +96,15 @@ int render()
 
 	dclear(C_WHITE);
 
-	for(unsigned int y = tileTopY; y <= tileBottomY + 4; y++)
+	for(unsigned int y = tileTopY; y <= min(tileBottomY + 4, WORLD_HEIGHT - 1); y++)
 	{
-		for(unsigned int x = tileLeftX - 2; x <= tileRightX + 2; x++)
+		for(unsigned int x = max(0, tileLeftX - 2); x <= min(tileRightX + 2, WORLD_WIDTH - 1); x++)
 		{
 			if(getTile(x, y).idx == TILE_LEAVES)
 			{
 				currTileX = (x << 3) - camOffsetX;
 				currTileY = (y << 3) - camOffsetY;
-				dimage(currTileX - 16, currTileY - 32, &img_leaves);
+				dsubimage(currTileX - 16, currTileY - 32, &img_leaves, 41 * getTile(x, y).variant + 1, 0, 40, 40, DIMAGE_NONE);
 				continue;
 			}
 		}
@@ -117,11 +118,6 @@ int render()
 			currTile = &tiles[tile->idx];
 			currTileX = (x << 3) - camOffsetX;
 			currTileY = (y << 3) - camOffsetY;
-			if(tile->idx == TILE_LEAVES)
-			{
-				dimage(currTileX - 16, currTileY - 32, &img_leaves);
-				continue;
-			}
 			if(currTile->render)
 			{
 				/* Disable clipping unless it's a block on the edges of the screen.
@@ -138,20 +134,19 @@ int render()
 				{
 					flags = DIMAGE_NOCLIP;
 				}
-				if(currTile->spriteType != TILE)
+				if(currTile->spriteType != TYPE_TILE)
 				{
 					subrectX = 0;
 					subrectY = 0;
-					if(currTile->spriteType == SHEET || currTile->spriteType == SHEET_VAR)
+					if(currTile->spriteType == TYPE_SHEET || currTile->spriteType == TYPE_SHEET_VAR)
 					{
-						
 						state = findState(x, y);
 //						Spritesheet layout allows for very fast calculation of the position of the sprite
 						subrectX = ((state & 3) << 3) + (state & 3) + 1;
 						subrectY = ((state >> 2) << 3) + (state >> 2) + 1;
 					}
-					if(currTile->spriteType == TILE_VAR) subrectX = 9 * tile->variant + 1;
-					if(currTile->spriteType == SHEET_VAR) subrectX += 37 * tile->variant;
+					if(currTile->spriteType == TYPE_TILE_VAR) subrectX = 9 * tile->variant + 1;
+					if(currTile->spriteType == TYPE_SHEET_VAR) subrectX += 37 * tile->variant;
 					dsubimage(currTileX, currTileY, currTile->sprite, subrectX, subrectY, 8, 8, flags);
 				}
 				else
@@ -175,10 +170,8 @@ int render()
 	for(int slot = 0; slot < 3; slot++)
 	{
 		item = player.inventory.items[slot];
-		if(item.id != ITEM_NULL) renderItem(16 * slot + 1, 1, item);
+		if(item.id != ITEM_NULL) renderItem(16 * slot + 1, 1, &item);
 	}
-
-	dupdate();
 
 	return TIMER_CONTINUE;
 }
@@ -188,24 +181,19 @@ void takeVRAMCapture()
 	uint32_t* light;
 	uint32_t* dark;
 
-	uint16_t* pathLight = u"\\\\fls0\\light.vram";
-	uint16_t* pathDark = u"\\\\fls0\\dark.vram";
+	uint16_t* path = u"\\\\fls0\\capt.vram";
 	int descriptor;
-	int size = 1024;
+	int size = 2048;
+	void* buffer = malloc(size);
 
 	dgray_getvram(&light, &dark);
+	memcpy(buffer, light, 1024);
+	memcpy(buffer + 1024, dark, 1024);
 
-	BFile_Remove(pathLight);
-	BFile_Create(pathLight, BFile_File, &size);
+	BFile_Remove(path);
+	BFile_Create(path, BFile_File, &size);
 
-	BFile_Remove(pathDark);
-	BFile_Create(pathDark, BFile_File, &size);
-
-	descriptor = BFile_Open(pathLight, BFile_WriteOnly);
-	BFile_Write(descriptor, light, size);
-	BFile_Close(descriptor);
-
-	descriptor = BFile_Open(pathDark, BFile_WriteOnly);
-	BFile_Write(descriptor, dark, size);
+	descriptor = BFile_Open(path, BFile_WriteOnly);
+	BFile_Write(descriptor, buffer, size);
 	BFile_Close(descriptor);
 }
