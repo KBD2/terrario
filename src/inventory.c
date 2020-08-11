@@ -24,8 +24,8 @@ const ItemData items[] = {
 	{	&img_item_dirt,		999,	TILE_DIRT,		"Dirt"		},	// ITEM_DIRT
 	{	&img_item_wood,		999,	TILE_WOOD,		"Wood"		},	// ITEM_WOOD
 	{	&img_item_wbench,	99,		TILE_WBENCH_L,	"Workbench"	},	// ITEM_WORKBENCH
-	{	&img_item_platform,	999,	TILE_PLATFORM,	"Plaftorm"	},	// TILE_PLATFORM
-	{	&img_item_chair,	99,		TILE_CHAIR_L,	"Chair"		}	// TILE_CHAIR
+	{	&img_item_platform,	999,	TILE_PLATFORM,	"Plaftorm"	},	// ITEM_PLATFORM
+	{	&img_item_chair,	99,		TILE_CHAIR,		"Chair"		}	// ITEM_CHAIR
 };
 
 int getFirstFreeSlot(enum Items item)

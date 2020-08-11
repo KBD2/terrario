@@ -36,8 +36,7 @@ const TileData tiles[] = {
 	{	&img_tile_wbench,	PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_WBENCH,	"Workbench L"	},	// TILE_WBENCH_L
 	{	&img_tile_wbench,	PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_WBENCH,	"Workbench R"	},	// TILE_WBENCH_R
 	{	&img_tile_platform,	PHYS_PLATFORM,	true,	TYPE_SHEET,		SUPPORT_NONE,	{-1, -1, -1},								ITEM_PLATFORM,	"Platform"		},	// TILE_PLATFORM
-	{	&img_tile_chair,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_CHAIR,		"Chair"			},	// TILE_CHAIR_L
-	{	&img_tile_chair,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_CHAIR,		"Chair"			}	// TILE_CHAIR_R
+	{	&img_tile_chair,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_CHAIR,		"Chair"			}	// TILE_CHAIR
 };
 
 unsigned char makeVar()
@@ -264,13 +263,13 @@ void placeTile(int x, int y, Item* item)
 					}
 					if(player.anim.direction)
 					{
-						*tile = (Tile){TILE_CHAIR_L, 2};
-						getTile(x, y - 1) = (Tile){TILE_CHAIR_L, 3};
+						*tile = (Tile){TILE_CHAIR, 0};
+						getTile(x, y - 1) = (Tile){TILE_CHAIR, 1};
 					}
 					else
 					{
-						*tile = (Tile){TILE_CHAIR_R, 0};
-						getTile(x, y - 1) = (Tile){TILE_CHAIR_R, 1};
+						*tile = (Tile){TILE_CHAIR, 2};
+						getTile(x, y - 1) = (Tile){TILE_CHAIR, 3};
 					}
 					break;
 
@@ -318,7 +317,7 @@ void removeTile(int x, int y)
 				regionChange(x - 1, y);
 				break;
 
-			case TILE_CHAIR_L: case TILE_CHAIR_R:
+			case TILE_CHAIR:
 				if(getTile(x, y - 1).idx == TILE_NOTHING)
 				{
 					getTile(x, y + 1) = nothing;
