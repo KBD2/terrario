@@ -63,9 +63,12 @@ enum Tiles {
 
 struct World {
 	Tile* tiles;
+	Entity* entities;
 
 	void (*placeTile)(int x, int y, Item* item);
 	void (*removeTile)(int x, int y);
+	int (*spawnEntity)(enum Entities entity, int x, int y);
+	bool (*removeEntity)(int idx);
 };
 	
 extern struct World world;
@@ -79,3 +82,6 @@ unsigned char findState(int x, int y);
 
 void placeTile(int x, int y, Item* item);
 void removeTile(int x, int y);
+
+int spawnEntity(enum Entities entity, int x, int y);
+bool removeEntity(int idx);

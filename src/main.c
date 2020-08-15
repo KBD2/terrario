@@ -17,6 +17,13 @@
 #include "save.h"
 #include "crafting.h"
 
+int animFrames[][2] = {
+	{0, 0},
+	{1, 4},
+	{5, 5},
+	{6, 19}
+};
+
 enum UpdateReturnCodes {
 	UPDATE_EXIT, 		// Exit the game
 	UPDATE_CONTINUE,	// Continue as normal
@@ -146,6 +153,40 @@ enum UpdateReturnCodes update()
 
 	player.physics(&player.props);
 
+	if(player.props.xVel > 0)
+	{
+		player.anim.direction = 0;
+	}
+	else if(player.props.xVel < 0)
+	{
+		player.anim.direction = 1;
+	}
+
+	if(!player.props.touchingTileTop)
+	{
+		player.anim.animation = 2;
+		player.anim.animationFrame = 5;
+	}
+	else if(player.props.xVel != 0 && player.anim.animation != 3)
+	{
+		player.anim.animation = 3;
+		player.anim.animationFrame = 6;
+	}
+	else if(player.props.xVel == 0)
+	{
+		player.anim.animation = 0;
+		player.anim.animationFrame = 0;
+	}
+	else 
+	{
+		player.anim.animationFrame++;
+	}
+
+	if(player.anim.animationFrame > animFrames[player.anim.animation][1]) 
+	{
+		player.anim.animationFrame = animFrames[player.anim.animation][0];
+	}
+
 	return UPDATE_CONTINUE;
 }
 
@@ -190,13 +231,13 @@ int main(void)
 	
 	player = (struct Player){
 		.props = {
+			.width = 12, 
+			.height = 21, 
 			.x = 0, 
 			.y = 0, 
 			.xVel = 0.0, 
 			.yVel = 0.0, 
 			.touchingTileTop = false, 
-			.width = 12, 
-			.height = 21, 
 			.dropping = false
 		},
 		.health = 100,
@@ -221,9 +262,16 @@ int main(void)
 	world = (struct World)
 	{
 		.tiles = (Tile*)save.tileData,
+		.entities = (Entity*)malloc(MAX_ENTITIES * sizeof(Entity)),
+
 		.placeTile = &placeTile,
-		.removeTile = &removeTile
+		.removeTile = &removeTile,
+		
+		.spawnEntity = &spawnEntity,
+		.removeEntity = &removeEntity
 	};
+
+	for(int idx = 0; idx < MAX_ENTITIES; idx++) world.entities[idx] = (Entity){ -1 };
 
 	if(menuSelect == 0)
 	{
@@ -271,11 +319,20 @@ int main(void)
 	timer = timer_setup(TIMER_ANY, (1000 / 60) * 1000, &frameCallback, &flag);
 	timer_start(timer);
 
+	world.spawnEntity(ENT_SLIME, player.props.x, player.props.y - 100);
+
 	while(true)
 	{
 		updateRet = update();
 		if(updateRet == UPDATE_EXIT) break;
 		else if(updateRet == UPDATE_AGAIN) continue;
+		for(int idx = 0; idx < MAX_ENTITIES; idx++)
+		{
+			if(world.entities[idx].id != -1)
+			{
+				world.entities[idx].behaviour(&world.entities[idx]);
+			}
+		}
 		if(renderThisFrame)
 		{
 			render();
@@ -295,10 +352,13 @@ int main(void)
 	dsize("Saving World...", NULL, &w, &h);
 	dtext(64 - w / 2, 32 - h / 2, C_BLACK, "Saving World...");
 	dupdate();
+
+	free(save.regionData);
+	free(world.entities);
+
 	gint_switch(&saveGame);
 	if(save.error != -99) saveFailMenu();
 	
-	free(save.regionData);
 
 	SMEM_Optimization();
 	RebootOS();

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <gint/display.h>
+
 #include "inventory.h"
 #include "menu.h"
 
@@ -19,14 +21,14 @@ struct Rect {
 	struct Coords BR;
 };
 
-struct EntPhysicsProps {
+struct EntityPhysicsProps {
+	unsigned char width;
+	unsigned char height;
 	int x;
 	int y;
 	float xVel;
 	float yVel;
 	bool touchingTileTop;
-	unsigned char width;
-	unsigned char height;
 	bool dropping;
 };
 
@@ -36,17 +38,38 @@ struct AnimationData {
 	int direction;
 };
 
+enum Entities {
+	ENT_SLIME
+};
+
+struct EntityBase {
+	int id;
+//	To store states in, generic so that entities can use it however
+	int mem[4];
+	struct EntityPhysicsProps props;
+	struct AnimationData anim;
+	int health;
+	bopti_image_t* sprite;
+
+	bool (*behaviour)(struct EntityBase* self);
+	void (*init)(struct EntityBase* self);
+};
+
+typedef struct EntityBase Entity;
+
 struct Player {
-	struct EntPhysicsProps props;
+	struct EntityPhysicsProps props;
+	struct AnimationData anim;
 	int health;
 	struct Coords cursor;
 	struct Coords cursorTile;
-	struct AnimationData anim;
 	struct Inventory inventory;
 
-	void (*physics)(struct EntPhysicsProps* self);
+	void (*physics)(struct EntityPhysicsProps* self);
 };
+
+extern const struct EntityBase entityTemplates[];
 
 extern struct Player player;
 
-void handlePhysics(struct EntPhysicsProps* self);
+void handlePhysics(struct EntityPhysicsProps* self);

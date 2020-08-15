@@ -17,13 +17,6 @@ const unsigned int camMaxX = (WORLD_WIDTH << 3) - (SCREEN_WIDTH >> 1);
 const unsigned int camMinY = SCREEN_HEIGHT >> 1;
 const unsigned int camMaxY = (WORLD_HEIGHT << 3) - (SCREEN_HEIGHT >> 1);
 
-int animFrames[][2] = {
-	{0, 0},
-	{1, 4},
-	{5, 5},
-	{6, 19}
-};
-
 void renderItem(int x, int y, Item* item)
 {
 	dimage(x + 3, y, items[item->id].sprite);
@@ -52,44 +45,11 @@ int render()
 	int state;
 
 	int subrectX, subrectY;
-	int playerX, playerY;
-	int playerSubrectX, playerSubrectY;
+	int entX, entY;
+	int entSubrectX, entSubrectY;
+	Entity* ent;
 
 	Item item;
-
-	if(player.props.xVel > 0)
-	{
-		player.anim.direction = 0;
-	}
-	else if(player.props.xVel < 0)
-	{
-		player.anim.direction = 1;
-	}
-
-	if(!player.props.touchingTileTop)
-	{
-		player.anim.animation = 2;
-		player.anim.animationFrame = 5;
-	}
-	else if(player.props.xVel != 0 && player.anim.animation != 3)
-	{
-		player.anim.animation = 3;
-		player.anim.animationFrame = 6;
-	}
-	else if(player.props.xVel == 0)
-	{
-		player.anim.animation = 0;
-		player.anim.animationFrame = 0;
-	}
-	else 
-	{
-		player.anim.animationFrame++;
-	}
-
-	if(player.anim.animationFrame > animFrames[player.anim.animation][1]) 
-	{
-		player.anim.animationFrame = animFrames[player.anim.animation][0];
-	}
 
 	player.cursorTile.x = (camX + player.cursor.x - (SCREEN_WIDTH >> 1)) >> 3;
 	player.cursorTile.y = (camY + player.cursor.y - (SCREEN_HEIGHT >> 1)) >> 3;
@@ -158,13 +118,27 @@ int render()
 		}
 	}
 
-	playerX = player.props.x - (camX - (SCREEN_WIDTH >> 1)) - 2;
-	playerY = player.props.y - (camY - (SCREEN_HEIGHT >> 1));
-	playerSubrectX = (player.anim.direction == 0) ? 0 : 16;
-	playerSubrectY = player.anim.animationFrame * (player.props.height + 2) + 1;
-	dsubimage(playerX, playerY, &img_player, playerSubrectX, playerSubrectY, 16, 22, DIMAGE_NONE);
-	dimage(player.cursor.x - 2, player.cursor.y - 2, &img_cursor);
+	for(int idx = 0; idx < MAX_ENTITIES; idx++)
+	{
+		if(world.entities[idx].id != -1)
+		{
+			ent = &world.entities[idx];
 
+			entX = ent->props.x - (camX - (SCREEN_WIDTH >> 1));
+			entY = ent->props.y - (camY - (SCREEN_HEIGHT >> 1));
+			entSubrectX = !ent->anim.direction ? 0 : ent->props.width;
+			entSubrectY = ent->anim.animationFrame * (ent->props.height + 1) + 1;
+			dsubimage(entX, entY, ent->sprite, entSubrectX, entSubrectY, ent->props.width, ent->props.height, DIMAGE_NONE);
+		}
+	}
+
+	entX = player.props.x - (camX - (SCREEN_WIDTH >> 1)) - 2;
+	entY = player.props.y - (camY - (SCREEN_HEIGHT >> 1));
+	entSubrectX = !player.anim.direction ? 0 : 16;
+	entSubrectY = player.anim.animationFrame * (player.props.height + 2) + 1;
+	dsubimage(entX, entY, &img_player, entSubrectX, entSubrectY, player.props.width + 4, player.props.height + 1, DIMAGE_NONE);
+
+	dimage(player.cursor.x - 2, player.cursor.y - 2, &img_cursor);
 	dimage(0, 0, &img_hotbar);
 	dimage(16 * player.inventory.hotbarSlot, 0, &img_hotbarselect);
 	for(int slot = 0; slot < 3; slot++)

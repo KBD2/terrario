@@ -5,17 +5,64 @@
 #include <math.h>
 #include <gint/timer.h>
 #include <gint/gint.h>
+#include <gint/std/stdlib.h>
 
 #include "entity.h"
 #include "defs.h"
 #include "world.h"
 #include "render.h"
 #include "inventory.h"
-#include "menu.h" 
+#include "menu.h"
+
+extern bopti_image_t
+img_ent_slime;
+
+void slimeInit(struct EntityBase* self)
+{
+	self->mem[2] = rand() % 2;
+}
+
+bool slimeBehaviour(struct EntityBase* self)
+{
+	int* jumpTimer = &self->mem[0];
+	int* animTimer = &self->mem[1];
+	int* direction = &self->mem[2];
+
+	handlePhysics(&self->props);
+
+	if(self->props.touchingTileTop && *jumpTimer == 0)
+	{
+		*jumpTimer = 240;
+	}
+	else if(*jumpTimer > 0)
+	{
+		(*jumpTimer)--;
+		if(*jumpTimer == 0)
+		{
+			self->props.yVel = -4.5;
+			self->props.xVel = *direction == 0 ? -2 : 2;
+			self->anim.animationFrame = 1;
+		}
+	}
+	else if(!self->props.touchingTileTop) *jumpTimer = 0;
+
+	if(*animTimer == 0 && self->props.touchingTileTop)
+	{
+		self->anim.animationFrame = !self->anim.animationFrame;
+		if(*jumpTimer > 0 && *jumpTimer <= 60) *animTimer = 8;
+		else *animTimer = 32;
+	}
+	else if(self->props.touchingTileTop) (*animTimer)--;
+	return true;
+}
+
+const struct EntityBase entityTemplates[] = {
+	{	ENT_SLIME, { 0 },	{16, 12},	{ 0 },	20,	&img_ent_slime,	&slimeBehaviour,	&slimeInit	}	// ENT_SLIME
+};
 
 /* Having a generic physics property struct lets me have one function to handle
 collisions, instead of one for each entity/player struct */
-void handlePhysics(struct EntPhysicsProps* self)
+void handlePhysics(struct EntityPhysicsProps* self)
 {
 	struct Rect tileCheckBox = {
 		{
@@ -44,7 +91,7 @@ void handlePhysics(struct EntPhysicsProps* self)
 		{
 			if(tiles[world.tiles[y * WORLD_WIDTH + x].idx].physics != PHYS_NON_SOLID)
 			{
-				if(tiles[world.tiles[y * WORLD_WIDTH + x].idx].physics == PHYS_PLATFORM && (y < ((player.props.y + player.props.height) >> 3) || player.props.dropping)) continue;
+				if(tiles[world.tiles[y * WORLD_WIDTH + x].idx].physics == PHYS_PLATFORM && (y < ((self->y + self->height) >> 3) || self->dropping)) continue;
 
 				struct Rect entBox = {
 					{
@@ -83,7 +130,7 @@ void handlePhysics(struct EntPhysicsProps* self)
 					}
 					else
 					{
-						self->xVel = 0;
+						//self->xVel = 0;
 						if(entBox.TL.x <= checkLeft)
 						{
 							self->x -= overlapX;
@@ -97,7 +144,8 @@ void handlePhysics(struct EntPhysicsProps* self)
 			}
 		}
 	}
-	self->xVel *= 0.8;
+	if(self->touchingTileTop) self->xVel *= 0.7;
+	else self->xVel *= 0.95;
 	self->x = min(max(self->x, 0), 8 * WORLD_WIDTH - self->width);
 	self->y = min(max(self->y, 0), 8 * WORLD_HEIGHT - self->height);
 	if(self->y + self->height >= (WORLD_HEIGHT << 3) - 1)

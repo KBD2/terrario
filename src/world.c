@@ -339,3 +339,32 @@ void removeTile(int x, int y)
 		if(tiles[getTile(x, y - 1).idx].support == SUPPORT_NEED) removeTile(x, y - 1); // Recursion FTW
 	}
 }
+
+int spawnEntity(enum Entities entity, int x, int y)
+{
+	Entity* ent;
+
+	for(int idx = 0; idx < MAX_ENTITIES; idx++)
+	{
+		if(world.entities[idx].id == -1)
+		{
+			ent = &world.entities[idx];
+			*ent = entityTemplates[entity];
+			ent->props.x = x;
+			ent->props.y = y;
+			ent->init(ent);
+
+			return idx;
+		}
+	}
+
+	return -1;
+}
+
+bool removeEntity(int idx)
+{
+	if(idx < 0 || idx >= MAX_ENTITIES) return false;
+	if(world.entities[idx].id == -1) return false;
+	world.entities[idx].id = -1;
+	return true;
+}
