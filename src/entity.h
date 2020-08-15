@@ -38,20 +38,34 @@ struct AnimationData {
 	int direction;
 };
 
+enum EntityAlignments {
+	ALIGN_PEACEFUL,
+	ALIGN_NEUTRAL,
+	ALIGN_HOSTILE,
+	ALIGN_SCARED
+};
+
 enum Entities {
-	ENT_SLIME
+	ENT_SLIME,
+
+	ENTITIES_COUNT
 };
 
 struct EntityBase {
 	int id;
+	enum EntityAlignments alignment;
 //	To store states in, generic so that entities can use it however
 	int mem[4];
 	struct EntityPhysicsProps props;
 	struct AnimationData anim;
 	int health;
+	int iFrames;
+	int currIFrames;
+	int attack;
+	int defense;
 	bopti_image_t* sprite;
 
-	bool (*behaviour)(struct EntityBase* self);
+	bool (*behaviour)(struct EntityBase* self, int frames);
 	void (*init)(struct EntityBase* self);
 };
 
@@ -61,6 +75,9 @@ struct Player {
 	struct EntityPhysicsProps props;
 	struct AnimationData anim;
 	int health;
+	int iFrames;
+	int currIFrames;
+	int defense;
 	struct Coords cursor;
 	struct Coords cursorTile;
 	struct Inventory inventory;
@@ -73,3 +90,4 @@ extern const struct EntityBase entityTemplates[];
 extern struct Player player;
 
 void handlePhysics(struct EntityPhysicsProps* self);
+bool checkCollision(struct EntityPhysicsProps* first, struct EntityPhysicsProps* second);

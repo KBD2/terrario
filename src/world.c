@@ -329,14 +329,13 @@ void removeTile(int x, int y)
 					regionChange(x, y - 1);
 				}
 				break;
-				
 
 			default:
 				break;
 		}
 		*tile = nothing;
 		regionChange(x, y);
-		if(tiles[getTile(x, y - 1).idx].support == SUPPORT_NEED) removeTile(x, y - 1); // Recursion FTW
+		if(tiles[getTile(x, y - 1).idx].support == SUPPORT_NEED) removeTile(x, y - 1);
 	}
 }
 

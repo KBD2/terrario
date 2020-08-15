@@ -7,6 +7,6 @@ enum SpriteTypes {
 	TYPE_SHEET_VAR
 };
 
-int render();
+void render();
 void takeVRAMCapture();
 void renderItem();

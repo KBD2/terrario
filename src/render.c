@@ -23,7 +23,7 @@ void renderItem(int x, int y, Item* item)
 	dprint(x + 1, y + 9, C_BLACK, "%d", item->number);
 }
 
-int render()
+void render()
 {
 	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect, img_leaves;
 	int camX = min(max(player.props.x + (player.props.width >> 1), camMinX), camMaxX);
@@ -136,7 +136,7 @@ int render()
 	entY = player.props.y - (camY - (SCREEN_HEIGHT >> 1));
 	entSubrectX = !player.anim.direction ? 0 : 16;
 	entSubrectY = player.anim.animationFrame * (player.props.height + 2) + 1;
-	dsubimage(entX, entY, &img_player, entSubrectX, entSubrectY, player.props.width + 4, player.props.height + 1, DIMAGE_NONE);
+	if(!(player.currIFrames & 2)) dsubimage(entX, entY, &img_player, entSubrectX, entSubrectY, player.props.width + 4, player.props.height + 1, DIMAGE_NONE);
 
 	dimage(player.cursor.x - 2, player.cursor.y - 2, &img_cursor);
 	dimage(0, 0, &img_hotbar);
@@ -147,7 +147,7 @@ int render()
 		if(item.id != ITEM_NULL) renderItem(16 * slot + 1, 1, &item);
 	}
 
-	return TIMER_CONTINUE;
+	dprint(49, 1, C_BLACK, "%i", player.health);
 }
 
 void takeVRAMCapture()

@@ -22,7 +22,7 @@ void slimeInit(struct EntityBase* self)
 	self->mem[2] = rand() % 2;
 }
 
-bool slimeBehaviour(struct EntityBase* self)
+bool slimeBehaviour(struct EntityBase* self, int frames)
 {
 	int* jumpTimer = &self->mem[0];
 	int* animTimer = &self->mem[1];
@@ -34,17 +34,17 @@ bool slimeBehaviour(struct EntityBase* self)
 	{
 		*jumpTimer = 240;
 	}
+	else if(!self->props.touchingTileTop) *jumpTimer = 0;
 	else if(*jumpTimer > 0)
 	{
 		(*jumpTimer)--;
 		if(*jumpTimer == 0)
 		{
 			self->props.yVel = -4.5;
-			self->props.xVel = *direction == 0 ? -2 : 2;
+			self->props.xVel = *direction == 0 ? -3 : 3;
 			self->anim.animationFrame = 1;
 		}
 	}
-	else if(!self->props.touchingTileTop) *jumpTimer = 0;
 
 	if(*animTimer == 0 && self->props.touchingTileTop)
 	{
@@ -57,7 +57,8 @@ bool slimeBehaviour(struct EntityBase* self)
 }
 
 const struct EntityBase entityTemplates[] = {
-	{	ENT_SLIME, { 0 },	{16, 12},	{ 0 },	20,	&img_ent_slime,	&slimeBehaviour,	&slimeInit	}	// ENT_SLIME
+//		ID			Alignment		Memory	Props		Anim	HLT	IMF	Cur	ATK	DEF	Sprite			Behaviour			Init
+	{	ENT_SLIME,	ALIGN_HOSTILE,	{ 0 },	{16, 12},	{ 0 },	14,	40,	0,	6,	0,	&img_ent_slime,	&slimeBehaviour,	&slimeInit	}	// ENT_SLIME
 };
 
 /* Having a generic physics property struct lets me have one function to handle
@@ -153,4 +154,14 @@ void handlePhysics(struct EntityPhysicsProps* self)
 		self->yVel = 0;
 		self->touchingTileTop = true;
 	}
+}
+
+bool checkCollision(struct EntityPhysicsProps* first, struct EntityPhysicsProps* second)
+{
+	return (
+		first->x + first->width > second->x
+		&& first->x < second->x + second->width
+		&& first->y + first->height > second->y
+		&& first->y < second->y + second->height
+	);
 }

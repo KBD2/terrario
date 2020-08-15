@@ -56,12 +56,14 @@ bool testRAM()
 	return false;
 }
 
-enum UpdateReturnCodes update()
+enum UpdateReturnCodes update(int frames)
 {
 	bool validLeft, validRight, validTop, validBottom;
 	int x, y;
 	key_event_t key;
 	enum Tiles tile;
+	Entity* ent;
+	struct AnimationData* anim = &player.anim;
 
 	key = pollevent();
 	while(key.type != KEYEV_NONE)
@@ -134,8 +136,8 @@ enum UpdateReturnCodes update()
 		}
 	}
 	
-	if(keydown(KEY_4)) player.props.xVel = -1;
-	if(keydown(KEY_6)) player.props.xVel = 1;
+	if(keydown(KEY_4) && player.props.xVel > -1) player.props.xVel = max(-1, player.props.xVel - 1);
+	if(keydown(KEY_6) && player.props.xVel < 1) player.props.xVel = min(1, player.props.xVel + 1);
 	if(keydown(KEY_8) && player.props.touchingTileTop) 
 	{
 		player.props.yVel = -4.5;
@@ -151,40 +153,60 @@ enum UpdateReturnCodes update()
 	player.cursor.x = min(max(0, player.cursor.x), SCREEN_WIDTH - 1);
 	player.cursor.y = min(max(0, player.cursor.y), SCREEN_HEIGHT - 1);
 
+	if(player.currIFrames > 0) player.currIFrames--;
+	else
+	{
+		for(int idx = 0; idx < MAX_ENTITIES; idx++)
+		{
+			if(world.entities[idx].id != -1)
+			{
+				ent = &world.entities[idx];
+				if(ent->alignment == ALIGN_HOSTILE && checkCollision(&player.props, &ent->props))
+				{
+					player.health -= ent->attack - ((float)player.defense / 2 + 0.9);
+					player.currIFrames = player.iFrames;
+					player.props.yVel += 4 * sgn(player.props.y - ent->props.y);
+					player.props.xVel += 8 * sgn(player.props.x - ent->props.x);
+				}
+			}
+		}
+	}
+	
+
 	player.physics(&player.props);
 
 	if(player.props.xVel > 0)
 	{
-		player.anim.direction = 0;
+		anim->direction = 0;
 	}
 	else if(player.props.xVel < 0)
 	{
-		player.anim.direction = 1;
+		anim->direction = 1;
 	}
 
 	if(!player.props.touchingTileTop)
 	{
-		player.anim.animation = 2;
-		player.anim.animationFrame = 5;
+		anim->animation = 2;
+		anim->animationFrame = 5;
 	}
-	else if(player.props.xVel != 0 && player.anim.animation != 3)
+	else if(player.props.xVel != 0 && anim->animation != 3)
 	{
-		player.anim.animation = 3;
-		player.anim.animationFrame = 6;
+		anim->animation = 3;
+		anim->animationFrame = 6;
 	}
 	else if(player.props.xVel == 0)
 	{
-		player.anim.animation = 0;
-		player.anim.animationFrame = 0;
+		anim->animation = 0;
+		anim->animationFrame = 0;
 	}
 	else 
 	{
-		player.anim.animationFrame++;
+		if(frames & 1) anim->animationFrame++;
 	}
 
-	if(player.anim.animationFrame > animFrames[player.anim.animation][1]) 
+	if(anim->animationFrame > animFrames[anim->animation][1]) 
 	{
-		player.anim.animationFrame = animFrames[player.anim.animation][0];
+		anim->animationFrame = animFrames[anim->animation][0];
 	}
 
 	return UPDATE_CONTINUE;
@@ -201,6 +223,7 @@ int main(void)
 	int timer;
 	enum UpdateReturnCodes updateRet;
 	int flag = 0;
+	int frames = 0;
 
 	save = (struct SaveData){
 		.tileDataSize = WORLD_HEIGHT * WORLD_WIDTH * sizeof(Tile),
@@ -241,6 +264,9 @@ int main(void)
 			.dropping = false
 		},
 		.health = 100,
+		.iFrames = 40,
+		.currIFrames = 0,
+		.defense = 0,
 		.cursor = {75, 32},
 		.cursorTile = { 0 },
 		.anim = { 0 },
@@ -323,14 +349,14 @@ int main(void)
 
 	while(true)
 	{
-		updateRet = update();
+		updateRet = update(frames);
 		if(updateRet == UPDATE_EXIT) break;
 		else if(updateRet == UPDATE_AGAIN) continue;
 		for(int idx = 0; idx < MAX_ENTITIES; idx++)
 		{
 			if(world.entities[idx].id != -1)
 			{
-				world.entities[idx].behaviour(&world.entities[idx]);
+				world.entities[idx].behaviour(&world.entities[idx], frames);
 			}
 		}
 		if(renderThisFrame)
@@ -341,6 +367,7 @@ int main(void)
 		}
 		else renderThisFrame = true;
 
+		frames++;
 		while(!flag) sleep();
 		flag = 0;
 	}
