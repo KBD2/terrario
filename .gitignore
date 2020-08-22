@@ -1,4 +1,5 @@
 /copytotesting
+.vscode
 build-fx
 build-cg
 *.g1a

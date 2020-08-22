@@ -45,6 +45,19 @@ enum EntityAlignments {
 	ALIGN_SCARED
 };
 
+struct Combat {
+	int health;
+
+	enum EntityAlignments alignment;
+
+	int immuneFrames;
+	int currImmuneFrames;
+	
+	int attack;
+	int defense;
+	float knockbackResist;
+};
+
 enum Entities {
 	ENT_SLIME,
 
@@ -53,20 +66,15 @@ enum Entities {
 
 struct EntityBase {
 	int id;
-	enum EntityAlignments alignment;
 //	To store states in, generic so that entities can use it however
 	int mem[4];
 	struct EntityPhysicsProps props;
 	struct AnimationData anim;
-	int health;
-	int iFrames;
-	int currIFrames;
-	int attack;
-	int defense;
-	bopti_image_t* sprite;
+	struct Combat combat;
+	bopti_image_t *sprite;
 
-	bool (*behaviour)(struct EntityBase* self, int frames);
-	void (*init)(struct EntityBase* self);
+	bool (*behaviour)(struct EntityBase *self, int frames);
+	void (*init)(struct EntityBase *self);
 };
 
 typedef struct EntityBase Entity;
@@ -74,20 +82,19 @@ typedef struct EntityBase Entity;
 struct Player {
 	struct EntityPhysicsProps props;
 	struct AnimationData anim;
-	int health;
-	int iFrames;
-	int currIFrames;
-	int defense;
+	struct Combat combat;
 	struct Coords cursor;
 	struct Coords cursorTile;
 	struct Inventory inventory;
 
-	void (*physics)(struct EntityPhysicsProps* self);
+	void (*physics)(struct EntityPhysicsProps *self);
 };
 
 extern const struct EntityBase entityTemplates[];
 
 extern struct Player player;
 
-void handlePhysics(struct EntityPhysicsProps* self);
-bool checkCollision(struct EntityPhysicsProps* first, struct EntityPhysicsProps* second);
+void handlePhysics(struct EntityPhysicsProps *self);
+bool checkCollision(struct EntityPhysicsProps *first, struct EntityPhysicsProps *second);
+
+void attack(struct EntityBase *entity, bool isPlayerAttacking);

@@ -20,7 +20,7 @@ enum SupportTypes {
 /* I want to keep as much data as I can in here
 and not the Tile struct */
 typedef struct {
-	bopti_image_t* sprite;
+	bopti_image_t *sprite;
 	enum PhysicsTypes physics;
 	bool render;
 	enum SpriteTypes spriteType;
@@ -30,7 +30,7 @@ typedef struct {
 	as this tile e.g. dirt and stone */
 	unsigned char friends[MAX_FRIENDS];
 	enum Items item;
-	char* name;
+	char *name;
 } TileData;
 
 extern const TileData tiles[];
@@ -62,10 +62,10 @@ enum Tiles {
 };
 
 struct World {
-	Tile* tiles;
-	Entity* entities;
+	Tile *tiles;
+	Entity *entities;
 
-	void (*placeTile)(int x, int y, Item* item);
+	void (*placeTile)(int x, int y, Item *item);
 	void (*removeTile)(int x, int y);
 	int (*spawnEntity)(enum Entities entity, int x, int y);
 	bool (*removeEntity)(int idx);
@@ -80,7 +80,7 @@ unsigned char makeVar();
 void breakTree(int x, int y);
 unsigned char findState(int x, int y);
 
-void placeTile(int x, int y, Item* item);
+void placeTile(int x, int y, Item *item);
 void removeTile(int x, int y);
 
 int spawnEntity(enum Entities entity, int x, int y);

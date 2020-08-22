@@ -16,4 +16,4 @@
 
 #define MAX_ENTITIES 16
 
-int frameCallback(int* flag);
+int frameCallback(volatile int *flag);

@@ -60,13 +60,13 @@ int findSlot(enum Items item)
 
 void removeItem(int slot)
 {
-	Item* item = &player.inventory.items[slot];
+	Item *item = &player.inventory.items[slot];
 
 	item->number--;
 	if(item->number == 0) *item = (Item){ITEM_NULL, 0};
 }
 
-void stackItem(Item* dest, Item* source)
+void stackItem(Item *dest, Item *source)
 {
 	if(dest->id == ITEM_NULL)
 	{
@@ -100,22 +100,21 @@ int tallyItem(enum Items item)
 	return count;
 }
 
-Item* getSelected()
+Item *getSelected()
 {
 	return &player.inventory.items[player.inventory.hotbarSlot];
 }
 
-int inventoryKeyFilter(int key, int duration, int count)
+int inventoryKeyFilter(int key, GUNUSED int duration, GUNUSED int count)
 {
 	if(key == KEY_F1) return -1;
 	return 0;
-	if(duration || count){} // Compiler warning workaround
 }
 
 void inventoryMenu()
 {
 	extern bopti_image_t img_inventory, img_cursor;
-	Item* item;
+	Item *item;
 	int hoverSlot;
 	int cursorX = 64, cursorY = 32;
 	Item held = {ITEM_NULL, 0};

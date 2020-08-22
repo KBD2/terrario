@@ -21,9 +21,9 @@ const struct Recipe recipes[] = {
 	{	TILE_WBENCH_L,	{ITEM_CHAIR, 1},	1,	(const Item[]){	{ITEM_WOOD, 4}		}	}
 };
 
-bool* findNearTiles()
+bool *findNearTiles()
 {
-	bool* buffer = (bool*)malloc(TILES_COUNT * sizeof(bool));
+	bool *buffer = (bool*)malloc(TILES_COUNT * sizeof(bool));
 	int playerTileX = player.props.x >> 3;
 	int playerTileY = player.props.y >> 3;
 	int checkX, checkY;
@@ -52,7 +52,7 @@ bool* findNearTiles()
 
 bool checkRecipeIsCraftable(int recipe)
 {
-	const struct Recipe* checkRecipe = &recipes[recipe];
+	const struct Recipe *checkRecipe = &recipes[recipe];
 	bool craftable = true;
 
 	for(int ingredient = 0; ingredient < checkRecipe->numIngredients; ingredient++)
@@ -67,11 +67,11 @@ bool checkRecipeIsCraftable(int recipe)
 	return craftable;
 }
 
-void findCraftableRecipes(short* buffer)
+void findCraftableRecipes(short *buffer)
 {
-	const struct Recipe* currRecipe;
+	const struct Recipe *currRecipe;
 	bool craftable;
-	bool* nearTiles = findNearTiles();
+	bool *nearTiles = findNearTiles();
 	int count = 0;
 
 	for(int i = 0; i < RECIPE_BUFFER_SIZE; i++) buffer[i] = -1;
@@ -96,11 +96,11 @@ void craftingMenu()
 {
 	int selected = 0;
 	int currCraftable;
-	short* craftableRecipes = (short*)malloc(RECIPE_BUFFER_SIZE * sizeof(short));
+	short *craftableRecipes = (short*)malloc(RECIPE_BUFFER_SIZE * sizeof(short));
 	extern bopti_image_t img_slot, img_hotbarselect;
 	key_event_t key;
 	int recipesMax = 0;
-	const Item* currIngredient;
+	const Item *currIngredient;
 	int numLeft;
 	int slot;
 	Item result;

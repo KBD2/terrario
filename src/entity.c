@@ -17,16 +17,16 @@
 extern bopti_image_t
 img_ent_slime;
 
-void slimeInit(struct EntityBase* self)
+void slimeInit(struct EntityBase *self)
 {
 	self->mem[2] = rand() % 2;
 }
 
-bool slimeBehaviour(struct EntityBase* self, int frames)
+bool slimeBehaviour(struct EntityBase *self, GUNUSED int frames)
 {
-	int* jumpTimer = &self->mem[0];
-	int* animTimer = &self->mem[1];
-	int* direction = &self->mem[2];
+	int *jumpTimer = &self->mem[0];
+	int *animTimer = &self->mem[1];
+	int *direction = &self->mem[2];
 
 	handlePhysics(&self->props);
 
@@ -57,13 +57,13 @@ bool slimeBehaviour(struct EntityBase* self, int frames)
 }
 
 const struct EntityBase entityTemplates[] = {
-//		ID			Alignment		Memory	Props		Anim	HLT	IMF	Cur	ATK	DEF	Sprite			Behaviour			Init
-	{	ENT_SLIME,	ALIGN_HOSTILE,	{ 0 },	{16, 12},	{ 0 },	14,	40,	0,	6,	0,	&img_ent_slime,	&slimeBehaviour,	&slimeInit	}	// ENT_SLIME
+//		ID			Memory	Props		Anim	Combat										Sprite			Behaviour			Init
+	{	ENT_SLIME,	{ 0 },	{16, 12},	{ 0 },	{14, ALIGN_HOSTILE, 40, 0, 10, 0, 0.15},	&img_ent_slime,	&slimeBehaviour,	&slimeInit	}	// ENT_SLIME
 };
 
 /* Having a generic physics property struct lets me have one function to handle
 collisions, instead of one for each entity/player struct */
-void handlePhysics(struct EntityPhysicsProps* self)
+void handlePhysics(struct EntityPhysicsProps *self)
 {
 	struct Rect tileCheckBox = {
 		{
@@ -80,7 +80,7 @@ void handlePhysics(struct EntityPhysicsProps* self)
 	int overlapX, overlapY;
 
 	self->yVel = min(10, self->yVel + GRAVITY_ACCEL);
-	if((self->xVel < 0 ? -self->xVel : self->xVel) < 0.5) self->xVel = 0;
+	if(abs(self->xVel) < 0.1) self->xVel = 0;
 	self->x += roundf(self->xVel);
 	self->y += roundf(self->yVel);
 	self->y++;
@@ -147,8 +147,17 @@ void handlePhysics(struct EntityPhysicsProps* self)
 	}
 	if(self->touchingTileTop) self->xVel *= 0.7;
 	else self->xVel *= 0.95;
-	self->x = min(max(self->x, 0), 8 * WORLD_WIDTH - self->width);
-	self->y = min(max(self->y, 0), 8 * WORLD_HEIGHT - self->height);
+
+	if(self->x < 0 || self->x > (WORLD_WIDTH - self->width) << 3)
+	{
+		self->xVel = 0;
+		self->x = min(max(self->x, 0), (WORLD_WIDTH - self->width) << 3);
+	}
+	if(self->y < 0 || self->y > (WORLD_HEIGHT - self->height) << 3)
+	{
+		self->yVel = 0;
+		self->y = min(max(self->y, 0), (WORLD_HEIGHT - self->height) << 3);
+	}
 	if(self->y + self->height >= (WORLD_HEIGHT << 3) - 1)
 	{
 		self->yVel = 0;
@@ -156,7 +165,7 @@ void handlePhysics(struct EntityPhysicsProps* self)
 	}
 }
 
-bool checkCollision(struct EntityPhysicsProps* first, struct EntityPhysicsProps* second)
+bool checkCollision(struct EntityPhysicsProps *first, struct EntityPhysicsProps *second)
 {
 	return (
 		first->x + first->width > second->x
@@ -164,4 +173,23 @@ bool checkCollision(struct EntityPhysicsProps* first, struct EntityPhysicsProps*
 		&& first->y + first->height > second->y
 		&& first->y < second->y + second->height
 	);
+}
+
+// Assumes entities never attack each other
+void attack(struct EntityBase *entity, bool isPlayerAttacking)
+{
+	struct EntityPhysicsProps *attackerProps, *defenderProps;
+	struct Combat *attackerCombat, *defenderCombat;
+
+	attackerProps = isPlayerAttacking ? &player.props : &entity->props;
+	attackerCombat = isPlayerAttacking ? &player.combat : &entity->combat;
+
+	defenderProps = isPlayerAttacking ? &entity->props : &player.props;
+	defenderCombat = isPlayerAttacking ? &entity->combat : &player.combat;
+
+	defenderCombat->health -= (attackerCombat->attack - ceil((float)defenderCombat->defense / 2));
+
+	defenderCombat->currImmuneFrames = defenderCombat->immuneFrames;
+	defenderProps->yVel = (2.0 * sgn(defenderProps->y - attackerProps->y)) * (1 - defenderCombat->knockbackResist);
+	defenderProps->xVel = (4.0 * sgn(defenderProps->x - attackerProps->x)) * (1 - defenderCombat->knockbackResist);
 }

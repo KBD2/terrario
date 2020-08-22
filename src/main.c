@@ -17,13 +17,6 @@
 #include "save.h"
 #include "crafting.h"
 
-int animFrames[][2] = {
-	{0, 0},
-	{1, 4},
-	{5, 5},
-	{6, 19}
-};
-
 enum UpdateReturnCodes {
 	UPDATE_EXIT, 		// Exit the game
 	UPDATE_CONTINUE,	// Continue as normal
@@ -34,13 +27,15 @@ enum UpdateReturnCodes {
 const unsigned int sc003B[] = { SCA, SCB, SCE, 0x003B };
 const unsigned int sc019F[] = { SCA, SCB, SCE, 0x019F };
 const unsigned int sc0236[] = { SCA, SCB, SCE, 0x0236 };
+const unsigned int sc042E[] = { SCA, SCB, SCE, 0x042E };
 
 // Global variables
 struct SaveData save;
 struct World world;
 struct Player player;
 
-int frameCallback(int* flag)
+// Governs the 60UPS loop
+int frameCallback(volatile int *flag)
 {
 	*flag = 1;
 	return TIMER_CONTINUE;
@@ -49,21 +44,27 @@ int frameCallback(int* flag)
 // Checks if the RAM we'll be using to store world tiles works
 bool testRAM()
 {
-	unsigned int* RAMAddress = (void*)RAM_START;
-	unsigned int* RAMTestAddress = (void*)0x88000000;
+	unsigned int *RAMAddress = (void*)RAM_START;
+	unsigned int *RAMTestAddress = (void*)0x88000000;
 	*RAMAddress = 0xC0FFEE;
 	if(*RAMAddress == 0xC0FFEE && *RAMAddress != *RAMTestAddress) return true;
 	return false;
 }
 
+// Update player and do keyboard stuff
 enum UpdateReturnCodes update(int frames)
 {
 	bool validLeft, validRight, validTop, validBottom;
 	int x, y;
 	key_event_t key;
 	enum Tiles tile;
-	Entity* ent;
-	struct AnimationData* anim = &player.anim;
+	struct AnimationData *anim = &player.anim;
+	int animFrames[][2] = {
+		{0, 0},
+		{1, 4},
+		{5, 5},
+		{6, 19}
+	};
 
 	key = pollevent();
 	while(key.type != KEYEV_NONE)
@@ -109,15 +110,17 @@ enum UpdateReturnCodes update(int frames)
 		key = pollevent();
 	}
 
-// These need to run as long as the button is held
+//	These need to run as long as the button is held
 
+//	Remove tile
 	if(keydown(KEY_7))
 	{
 		x = player.cursorTile.x;
-		y =  player.cursorTile.y;
+		y = player.cursorTile.y;
 		world.removeTile(x, y);
 	}
-			
+
+//	Place tile
 	if(keydown(KEY_9))
 	{
 		x = player.cursorTile.x;
@@ -135,9 +138,10 @@ enum UpdateReturnCodes update(int frames)
 			}
 		}
 	}
-	
-	if(keydown(KEY_4) && player.props.xVel > -1) player.props.xVel = max(-1, player.props.xVel - 1);
-	if(keydown(KEY_6) && player.props.xVel < 1) player.props.xVel = min(1, player.props.xVel + 1);
+
+//	Movement
+	if(keydown(KEY_4) && player.props.xVel > -1) player.props.xVel -= 0.3;
+	if(keydown(KEY_6) && player.props.xVel < 1) player.props.xVel += 0.3;
 	if(keydown(KEY_8) && player.props.touchingTileTop) 
 	{
 		player.props.yVel = -4.5;
@@ -146,35 +150,18 @@ enum UpdateReturnCodes update(int frames)
 	if(keydown(KEY_2)) player.props.dropping = true;
 	if((!keydown(KEY_8) && !keydown(KEY_2)) || (keydown(KEY_8) && !keydown(KEY_2) && player.props.yVel <= 0)) player.props.dropping = false;
 
+//	Cursor
 	if(keydown(KEY_LEFT)) player.cursor.x--;
 	if(keydown(KEY_RIGHT)) player.cursor.x++;
 	if(keydown(KEY_UP)) player.cursor.y--;
 	if(keydown(KEY_DOWN)) player.cursor.y++;
 	player.cursor.x = min(max(0, player.cursor.x), SCREEN_WIDTH - 1);
 	player.cursor.y = min(max(0, player.cursor.y), SCREEN_HEIGHT - 1);
-
-	if(player.currIFrames > 0) player.currIFrames--;
-	else
-	{
-		for(int idx = 0; idx < MAX_ENTITIES; idx++)
-		{
-			if(world.entities[idx].id != -1)
-			{
-				ent = &world.entities[idx];
-				if(ent->alignment == ALIGN_HOSTILE && checkCollision(&player.props, &ent->props))
-				{
-					player.health -= ent->attack - ((float)player.defense / 2 + 0.9);
-					player.currIFrames = player.iFrames;
-					player.props.yVel += 4 * sgn(player.props.y - ent->props.y);
-					player.props.xVel += 8 * sgn(player.props.x - ent->props.x);
-				}
-			}
-		}
-	}
 	
-
+//	Handle the physics for the player
 	player.physics(&player.props);
 
+//	Figure out which animation frame the player should be in right now
 	if(player.props.xVel > 0)
 	{
 		anim->direction = 0;
@@ -212,6 +199,7 @@ enum UpdateReturnCodes update(int frames)
 	return UPDATE_CONTINUE;
 }
 
+// frames increases 60 times per second, take into account
 int main(void)
 {
 	int menuSelect;
@@ -222,20 +210,20 @@ int main(void)
 	int w, h;
 	int timer;
 	enum UpdateReturnCodes updateRet;
-	int flag = 0;
+	volatile int flag = 0;
 	int frames = 0;
+	int mediaFree[2];
 
 	save = (struct SaveData){
 		.tileDataSize = WORLD_HEIGHT * WORLD_WIDTH * sizeof(Tile),
-		.regionsX = WORLD_WIDTH / REGION_SIZE + 1,
-		.regionsY = WORLD_HEIGHT / REGION_SIZE + 1,
+		.regionsX = REGIONS_X,
+		.regionsY = REGIONS_Y,
 		.tileData = (void*)RAM_START,
-		.regionData = NULL,
+		.regionData = { 0 },
 		.error = -99,
 	};
 
-	save.regionData = (unsigned char*)malloc(save.regionsX * save.regionsY);
-
+//	Makes it easier to see if a world load error occurs
 	memset(save.tileData, 0, WORLD_WIDTH * WORLD_HEIGHT * sizeof(Tile));
 
 	if(!testRAM()) 
@@ -253,6 +241,7 @@ int main(void)
 	if(menuSelect == -1) return 1;
 	
 	player = (struct Player){
+
 		.props = {
 			.width = 12, 
 			.height = 21, 
@@ -263,13 +252,22 @@ int main(void)
 			.touchingTileTop = false, 
 			.dropping = false
 		},
-		.health = 100,
-		.iFrames = 40,
-		.currIFrames = 0,
-		.defense = 0,
+
+		.combat = {
+			.health = 100,
+			.alignment = ALIGN_NEUTRAL,
+			.immuneFrames = 40,
+			.currImmuneFrames = 0,
+			.attack = 0,
+			.defense = 0,
+			.knockbackResist = 0.0
+		},
+
 		.cursor = {75, 32},
 		.cursorTile = { 0 },
+
 		.anim = { 0 },
+
 		.inventory = {
 			{{ 0 }},
 			0,
@@ -280,6 +278,7 @@ int main(void)
 			.findSlot = &findSlot,
 			.getSelected = &getSelected
 		},
+
 		.physics = &handlePhysics
 	};
 
@@ -297,9 +296,10 @@ int main(void)
 		.removeEntity = &removeEntity
 	};
 
+//	An entity ID of -1 is considered a free slot
 	for(int idx = 0; idx < MAX_ENTITIES; idx++) world.entities[idx] = (Entity){ -1 };
 
-	if(menuSelect == 0)
+	if(menuSelect == 0) // New game
 	{
 		dclear(C_WHITE);
 		dimage(31, 15, &img_generating);
@@ -307,7 +307,7 @@ int main(void)
 		generateWorld();
 		memset(save.regionData, 1, save.regionsX * save.regionsY);
 	} 
-	else if(menuSelect == 1)
+	else if(menuSelect == 1) // Load game
 	{
 		dgray(DGRAY_OFF);
 		dclear(C_WHITE);
@@ -320,7 +320,6 @@ int main(void)
 			loadFailMenu();
 			return 1;
 		}
-		memset(save.regionData, 0, save.regionsX * save.regionsY);
 
 		dgray(DGRAY_ON);
 	}
@@ -357,8 +356,14 @@ int main(void)
 			if(world.entities[idx].id != -1)
 			{
 				world.entities[idx].behaviour(&world.entities[idx], frames);
+				if(player.combat.currImmuneFrames == 0)
+				{
+					if(checkCollision(&world.entities[idx].props, &player.props)) attack(&world.entities[idx], false);
+				}
+				if(world.entities[idx].combat.currImmuneFrames > 0) world.entities[idx].combat.currImmuneFrames--;
 			}
 		}
+		if(player.combat.currImmuneFrames > 0) player.combat.currImmuneFrames--;
 		if(renderThisFrame)
 		{
 			render();
@@ -380,14 +385,15 @@ int main(void)
 	dtext(64 - w / 2, 32 - h / 2, C_BLACK, "Saving World...");
 	dupdate();
 
-	free(save.regionData);
 	free(world.entities);
 
 	gint_switch(&saveGame);
 	if(save.error != -99) saveFailMenu();
 	
-
-	SMEM_Optimization();
+	Bfile_GetMediaFree_OS(u"\\\\fls0", mediaFree);
+	if(mediaFree[1] < 250000) lowSpaceMenu(mediaFree[1]);
+	
+	//SMEM_Optimization();
 	RebootOS();
 
 	return 1;

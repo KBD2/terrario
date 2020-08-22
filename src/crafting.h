@@ -9,7 +9,7 @@ struct Recipe {
 	enum Tiles required;
 	Item result;
 	unsigned char numIngredients;
-	const Item* ingredients;
+	const Item *ingredients;
 };
 
 extern const struct Recipe recipes[];

@@ -254,7 +254,7 @@ void saveFailMenu()
 void aboutMenu()
 {
 	extern bopti_image_t img_confetti;
-	const char* text[] = {
+	const char *text[] = {
 		"Terrario by KBD2",
 		" ",
 		"World:",
@@ -331,4 +331,30 @@ void aboutMenu()
 	timer = timer_setup(TIMER_ANY, 3000 * 1000, NULL);
 	timer_start(timer);
 	timer_wait(timer);
+}
+
+void lowSpaceMenu(int mediaFree)
+{
+	key_event_t key;
+
+	dclear(C_WHITE);
+	dprint(0, 0, C_BLACK, "Only %.1jkB", (int)((float)mediaFree/100));
+	dtext(0, 8, C_BLACK, "of SMEM free!");
+	dtext(0, 16, C_BLACK, "Please optimise SMEM");
+	dtext(0, 24, C_BLACK, "and ensure 300kB free");
+	dtext(0, 40, C_BLACK, "[EXIT] to exit");
+	dupdate();
+
+	while(1)
+	{
+		key = getkey_opt(GETKEY_NONE, NULL);
+		switch(key.key)
+		{
+			case KEY_EXIT:
+				return;
+			
+			default:
+				break;
+		}
+	}
 }

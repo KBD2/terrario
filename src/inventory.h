@@ -19,10 +19,10 @@ enum Items {
 };
 
 typedef struct {
-	bopti_image_t* sprite;
+	bopti_image_t *sprite;
 	int maxStack;
 	short tile;
-	char* name;
+	char *name;
 } ItemData;
 
 typedef struct {
@@ -38,17 +38,17 @@ struct Inventory {
 
 	int (*getFirstFreeSlot)(enum Items item);
 	void (*removeItem)(int slot);
-	void (*stackItem)(Item* dest, Item* source);
+	void (*stackItem)(Item *dest, Item *source);
 	int (*tallyItem)(enum Items item);
 	int (*findSlot)(enum Items item);
-	Item* (*getSelected)();
+	Item *(*getSelected)();
 };
 
 int getFirstFreeSlot(enum Items item);
 int findSlot(enum Items item);
 void removeItem(int slot);
-void stackItem(Item* dest, Item* source);
+void stackItem(Item *dest, Item *source);
 int tallyItem(enum Items item);
-Item* getSelected();
+Item *getSelected();
 
 void inventoryMenu();

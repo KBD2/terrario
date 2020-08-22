@@ -185,8 +185,8 @@ void generateWorld()
 
 bool isSameOrFriend(int x, int y, unsigned char idx)
 {
-	Tile* tile;
-	const unsigned char* friends;
+	Tile *tile;
+	const unsigned char *friends;
 
 //	Outside world?
 	if(x < 0 || x >= WORLD_WIDTH || y < 0 || y > WORLD_HEIGHT) return 0;
@@ -204,7 +204,7 @@ bool isSameOrFriend(int x, int y, unsigned char idx)
 
 unsigned char findState(int x, int y)
 {
-	Tile* tile = &getTile(x, y);
+	Tile *tile = &getTile(x, y);
 	unsigned char sides = 0;
 
 	sides |= isSameOrFriend(x - 1, y, tile->idx);
@@ -222,19 +222,19 @@ void regionChange(int x, int y)
 
 bool checkCanOverwrite(int x, int y)
 {
-	Tile* tile = &getTile(x, y);
+	Tile *tile = &getTile(x, y);
 	return tile->idx == TILE_NOTHING || tile->idx == TILE_PLANT;
 }
 
 bool checkCanSupport(int x, int y)
 {
-	Tile* tile = &getTile(x, y);
+	Tile *tile = &getTile(x, y);
 	return tile->idx == TILE_PLATFORM || tiles[tile->idx].physics == PHYS_SOLID;
 }
 
-void placeTile(int x, int y, Item* item)
+void placeTile(int x, int y, Item *item)
 {
-	Tile* tile = &getTile(x, y);
+	Tile *tile = &getTile(x, y);
 	bool success = true;
 
 	if(tile->idx == TILE_NOTHING || tile->idx == TILE_PLANT)
@@ -289,7 +289,7 @@ void placeTile(int x, int y, Item* item)
 
 void removeTile(int x, int y)
 {
-	Tile* tile = &getTile(x, y);
+	Tile *tile = &getTile(x, y);
 	int freeSlot;
 	const Tile nothing = {TILE_NOTHING, 0};
 
@@ -341,7 +341,7 @@ void removeTile(int x, int y)
 
 int spawnEntity(enum Entities entity, int x, int y)
 {
-	Entity* ent;
+	Entity *ent;
 
 	for(int idx = 0; idx < MAX_ENTITIES; idx++)
 	{

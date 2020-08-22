@@ -21,16 +21,28 @@ bool getSave()
 	return error == 0 ? true : false;
 }
 
+void dumpRegions()
+{
+	const uint16_t *regionPath = u"\\\\fls0\\regions.dat";
+	int size = (save.regionsX * save.regionsY + 1) & ~1;
+	BFile_Remove(regionPath);
+	BFile_Create(regionPath, BFile_File, &size);
+	int d = BFile_Open(regionPath, BFile_WriteOnly);
+	BFile_Write(d, (void*)save.regionData, size);
+	BFile_Close(d);
+}
+
 void saveGame()
 {
-	const uint16_t* folderPath = u"\\\\fls0\\TERRARIO";
-	const uint16_t* playerPath = u"\\\\fls0\\TERRARIO\\player.dat";
+	//dumpRegions();
+	const uint16_t *folderPath = u"\\\\fls0\\TERRARIO";
+	const uint16_t *playerPath = u"\\\\fls0\\TERRARIO\\player.dat";
 	int handle;
 	uint16_t foundPath[30];
 	struct BFile_FileInfo fileInfo;
 	int error;
 
-	Tile* tile;
+	Tile *tile;
 	int regionStartX, regionStartY;
 
 	char buffer[30];
@@ -40,7 +52,7 @@ void saveGame()
 	int size = sizeof(regionBuffer);
 
 	struct PlayerSave playerSave;
-	playerSave.health = player.health;
+	playerSave.health = player.combat.health;
 	memcpy(playerSave.items, player.inventory.items, INVENTORY_SIZE * sizeof(Item));
 
 	int playerSaveSize = sizeof(struct PlayerSave);
@@ -100,8 +112,8 @@ void saveGame()
 
 void loadSave()
 {
-	char* regionFilePath = "\\\\fls0\\TERRARIO\\reg%d.dat";
-	const uint16_t* playerPath = u"\\\\fls0\\TERRARIO\\player.dat";
+	char *regionFilePath = "\\\\fls0\\TERRARIO\\reg%d.dat";
+	const uint16_t *playerPath = u"\\\\fls0\\TERRARIO\\player.dat";
 	char buffer[30];
 	uint16_t filePath[30];
 
@@ -128,7 +140,7 @@ void loadSave()
 	BFile_Read(descriptor, (void*)&playerSave, sizeof(struct PlayerSave), 0);
 	BFile_Close(descriptor);
 
-	player.health = playerSave.health;
+	player.combat.health = playerSave.health;
 	memcpy(player.inventory.items, playerSave.items, INVENTORY_SIZE * sizeof(Item));
 
 	for(int y = 0; y < save.regionsY; y++)
