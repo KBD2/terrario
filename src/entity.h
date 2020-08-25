@@ -87,6 +87,9 @@ struct Player {
 	struct Coords cursorTile;
 	struct Inventory inventory;
 
+	int swingFrame;
+	bool swingDir;
+
 	void (*physics)(struct EntityPhysicsProps *self);
 };
 
@@ -97,4 +100,4 @@ extern struct Player player;
 void handlePhysics(struct EntityPhysicsProps *self);
 bool checkCollision(struct EntityPhysicsProps *first, struct EntityPhysicsProps *second);
 
-void attack(struct EntityBase *entity, bool isPlayerAttacking);
+void attack(Entity *entity, bool isPlayerAttacking);

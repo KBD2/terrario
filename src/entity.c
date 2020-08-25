@@ -58,7 +58,7 @@ bool slimeBehaviour(struct EntityBase *self, GUNUSED int frames)
 
 const struct EntityBase entityTemplates[] = {
 //		ID			Memory	Props		Anim	Combat										Sprite			Behaviour			Init
-	{	ENT_SLIME,	{ 0 },	{16, 12},	{ 0 },	{14, ALIGN_HOSTILE, 40, 0, 10, 0, 0.15},	&img_ent_slime,	&slimeBehaviour,	&slimeInit	}	// ENT_SLIME
+	{	ENT_SLIME,	{ 0 },	{16, 12},	{ 0 },	{14, ALIGN_HOSTILE, 40, 0, 6, 0, 0.15},	&img_ent_slime,	&slimeBehaviour,	&slimeInit	}	// ENT_SLIME
 };
 
 /* Having a generic physics property struct lets me have one function to handle
@@ -90,9 +90,9 @@ void handlePhysics(struct EntityPhysicsProps *self)
 	{
 		for(int x = tileCheckBox.TL.x; x <= tileCheckBox.BR.x; x++)
 		{
-			if(tiles[world.tiles[y * WORLD_WIDTH + x].idx].physics != PHYS_NON_SOLID)
+			if(tiles[getTile(x, y).idx].physics != PHYS_NON_SOLID)
 			{
-				if(tiles[world.tiles[y * WORLD_WIDTH + x].idx].physics == PHYS_PLATFORM && (y < ((self->y + self->height) >> 3) || self->dropping)) continue;
+				if(tiles[getTile(x, y).idx].physics == PHYS_PLATFORM && (y < ((self->y + self->height) >> 3) || self->dropping)) continue;
 
 				struct Rect entBox = {
 					{
@@ -131,7 +131,7 @@ void handlePhysics(struct EntityPhysicsProps *self)
 					}
 					else
 					{
-						//self->xVel = 0;
+						self->xVel = 0;
 						if(entBox.TL.x <= checkLeft)
 						{
 							self->x -= overlapX;
@@ -145,6 +145,8 @@ void handlePhysics(struct EntityPhysicsProps *self)
 			}
 		}
 	}
+
+//	Friction
 	if(self->touchingTileTop) self->xVel *= 0.7;
 	else self->xVel *= 0.95;
 
@@ -176,7 +178,7 @@ bool checkCollision(struct EntityPhysicsProps *first, struct EntityPhysicsProps 
 }
 
 // Assumes entities never attack each other
-void attack(struct EntityBase *entity, bool isPlayerAttacking)
+void attack(Entity *entity, bool isPlayerAttacking)
 {
 	struct EntityPhysicsProps *attackerProps, *defenderProps;
 	struct Combat *attackerCombat, *defenderCombat;
@@ -190,6 +192,6 @@ void attack(struct EntityBase *entity, bool isPlayerAttacking)
 	defenderCombat->health -= (attackerCombat->attack - ceil((float)defenderCombat->defense / 2));
 
 	defenderCombat->currImmuneFrames = defenderCombat->immuneFrames;
-	defenderProps->yVel = (2.0 * sgn(defenderProps->y - attackerProps->y)) * (1 - defenderCombat->knockbackResist);
+	defenderProps->yVel = -3.0 * (1.0 - defenderCombat->knockbackResist);
 	defenderProps->xVel = (4.0 * sgn(defenderProps->x - attackerProps->x)) * (1 - defenderCombat->knockbackResist);
 }

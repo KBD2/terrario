@@ -97,7 +97,7 @@ enum UpdateReturnCodes update(int frames)
 				break;
 			
 			case KEY_F1: case KEY_F2: case KEY_F3:
-				player.inventory.hotbarSlot = keycode_function(key.key) - 1;
+				if(player.swingFrame == 0) player.inventory.hotbarSlot = keycode_function(key.key) - 1;
 				break;
 
 			case KEY_MENU:
@@ -113,11 +113,19 @@ enum UpdateReturnCodes update(int frames)
 //	These need to run as long as the button is held
 
 //	Remove tile
-	if(keydown(KEY_7))
+	if(keydown(KEY_7) && player.swingFrame == 0)
 	{
-		x = player.cursorTile.x;
-		y = player.cursorTile.y;
-		world.removeTile(x, y);
+		if(items[player.inventory.getSelected()->id].canSwing)
+		{
+			player.swingFrame = 32;
+			player.swingDir = player.cursorTile.x < player.props.x >> 3;
+		}
+		else
+		{
+			x = player.cursorTile.x;
+			y = player.cursorTile.y;
+			world.removeTile(x, y);
+		}
 	}
 
 //	Place tile
@@ -210,9 +218,11 @@ int main(void)
 	int w, h;
 	int timer;
 	enum UpdateReturnCodes updateRet;
+	Entity* ent;
 	volatile int flag = 0;
 	int frames = 0;
 	int mediaFree[2];
+	struct EntityPhysicsProps weaponProps;
 
 	save = (struct SaveData){
 		.tileDataSize = WORLD_HEIGHT * WORLD_WIDTH * sizeof(Tile),
@@ -306,6 +316,7 @@ int main(void)
 		dupdate();
 		generateWorld();
 		memset(save.regionData, 1, save.regionsX * save.regionsY);
+		player.inventory.items[0] = (Item){ITEM_SWORD, 1};
 	} 
 	else if(menuSelect == 1) // Load game
 	{
@@ -351,19 +362,48 @@ int main(void)
 		updateRet = update(frames);
 		if(updateRet == UPDATE_EXIT) break;
 		else if(updateRet == UPDATE_AGAIN) continue;
+
+		if(player.swingFrame > 0)
+		{
+			switch(player.inventory.getSelected()->id)
+			{
+				case ITEM_SWORD:
+					player.combat.attack = 5;
+					break;
+				
+				default:
+					player.combat.attack = 0;
+			}
+
+			weaponProps = (struct EntityPhysicsProps) {
+				.x = player.props.x + (player.swingDir ? -16 : 0),
+				.y = player.props.y - 16,
+				.width = 16 + player.props.width,
+				.height = player.props.height + 16
+			};
+		}
+		else if(weaponProps.width > 0) weaponProps = (struct EntityPhysicsProps){ 0 };
+
 		for(int idx = 0; idx < MAX_ENTITIES; idx++)
 		{
 			if(world.entities[idx].id != -1)
 			{
-				world.entities[idx].behaviour(&world.entities[idx], frames);
+				ent = &world.entities[idx];
+				ent->behaviour(&world.entities[idx], frames);
 				if(player.combat.currImmuneFrames == 0)
 				{
-					if(checkCollision(&world.entities[idx].props, &player.props)) attack(&world.entities[idx], false);
+					if(checkCollision(&ent->props, &player.props)) attack(ent, false);
 				}
-				if(world.entities[idx].combat.currImmuneFrames > 0) world.entities[idx].combat.currImmuneFrames--;
+				if(ent->combat.currImmuneFrames > 0) ent->combat.currImmuneFrames--;
+				else
+				{
+					if(checkCollision(&weaponProps, &ent->props)) attack(ent, true);
+					if(ent->combat.health <= 0) world.removeEntity(idx);
+				}
 			}
 		}
 		if(player.combat.currImmuneFrames > 0) player.combat.currImmuneFrames--;
+		if(player.swingFrame > 0) player.swingFrame--;
 		if(renderThisFrame)
 		{
 			render();

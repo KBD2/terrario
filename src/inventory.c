@@ -15,17 +15,19 @@ img_item_stone,
 img_item_wood,
 img_item_wbench,
 img_item_platform,
-img_item_chair;
+img_item_chair,
+img_item_sword;
 
 const ItemData items[] = {
 //		Sprite				Max		Tile
-	{	&img_item_null,		0,		TILE_NULL,		"Null"		},	// ITEM_NULL
-	{	&img_item_stone,	999,	TILE_STONE,		"Stone"		},	// ITEM_STONE
-	{	&img_item_dirt,		999,	TILE_DIRT,		"Dirt"		},	// ITEM_DIRT
-	{	&img_item_wood,		999,	TILE_WOOD,		"Wood"		},	// ITEM_WOOD
-	{	&img_item_wbench,	99,		TILE_WBENCH_L,	"Workbench"	},	// ITEM_WORKBENCH
-	{	&img_item_platform,	999,	TILE_PLATFORM,	"Plaftorm"	},	// ITEM_PLATFORM
-	{	&img_item_chair,	99,		TILE_CHAIR,		"Chair"		}	// ITEM_CHAIR
+	{	&img_item_null,		0,		TILE_NULL,		"Null",			false	},	// ITEM_NULL
+	{	&img_item_stone,	999,	TILE_STONE,		"Stone",		false	},	// ITEM_STONE
+	{	&img_item_dirt,		999,	TILE_DIRT,		"Dirt",			false	},	// ITEM_DIRT
+	{	&img_item_wood,		999,	TILE_WOOD,		"Wood",			false	},	// ITEM_WOOD
+	{	&img_item_wbench,	99,		TILE_WBENCH_L,	"Workbench",	false	},	// ITEM_WORKBENCH
+	{	&img_item_platform,	999,	TILE_PLATFORM,	"Platform",		false	},	// ITEM_PLATFORM
+	{	&img_item_chair,	99,		TILE_CHAIR,		"Chair",		false	},	// ITEM_CHAIR
+	{	&img_item_sword,	1,		TILE_NULL,		"Sword",		true	}	// ITEM_SWORD
 };
 
 int getFirstFreeSlot(enum Items item)

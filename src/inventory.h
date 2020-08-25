@@ -14,6 +14,7 @@ enum Items {
 	ITEM_WBENCH,
 	ITEM_PLATFORM,
 	ITEM_CHAIR,
+	ITEM_SWORD,
 
 	ITEMS_COUNT
 };
@@ -23,6 +24,7 @@ typedef struct {
 	int maxStack;
 	short tile;
 	char *name;
+	bool canSwing;
 } ItemData;
 
 typedef struct {

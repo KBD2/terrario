@@ -25,7 +25,7 @@ void renderItem(int x, int y, Item *item)
 
 void render()
 {
-	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect, img_leaves;
+	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect, img_leaves, img_swing_sword;
 	int camX = min(max(player.props.x + (player.props.width >> 1), camMinX), camMaxX);
 	int camY = min(max(player.props.y + (player.props.height >> 1), camMinY), camMaxY);
 
@@ -50,6 +50,15 @@ void render()
 	Entity *ent;
 
 	Item item;
+
+//	For right-facing player
+	int swingHandleDeltaPositions[4][2] = {
+//		 	dX 		dY
+		{	-11,	-14	},
+		{	6,		-13	},
+		{	8,		4	},
+		{	6,		12	}
+	};
 
 	player.cursorTile.x = (camX + player.cursor.x - (SCREEN_WIDTH >> 1)) >> 3;
 	player.cursorTile.y = (camY + player.cursor.y - (SCREEN_HEIGHT >> 1)) >> 3;
@@ -90,7 +99,8 @@ void render()
 				if(marginLeft | marginRight | marginTop | marginBottom)
 				{
 					flags = DIMAGE_NONE;
-				} else
+				}
+				else
 				{
 					flags = DIMAGE_NOCLIP;
 				}
@@ -131,11 +141,33 @@ void render()
 		}
 	}
 
-	entX = player.props.x - (camX - (SCREEN_WIDTH >> 1)) - 2;
-	entY = player.props.y - (camY - (SCREEN_HEIGHT >> 1));
-	entSubrectX = !player.anim.direction ? 0 : 16;
-	entSubrectY = player.anim.animationFrame * (player.props.height + 2) + 1;
-	if(!(player.combat.currImmuneFrames & 2)) dsubimage(entX, entY, &img_player, entSubrectX, entSubrectY, player.props.width + 4, player.props.height + 1, DIMAGE_NONE);
+	if(!(player.combat.currImmuneFrames & 2))
+	{
+		entX = player.props.x - (camX - (SCREEN_WIDTH >> 1)) - 2;
+		entY = player.props.y - (camY - (SCREEN_HEIGHT >> 1));
+		entSubrectY = player.anim.animationFrame * (player.props.height + 2) + 1;
+		if(player.swingFrame == 0)
+		{
+			entSubrectX = !player.anim.direction ? 0 : 16;
+	 		dsubimage(entX, entY, &img_player, entSubrectX, entSubrectY, player.props.width + 4, player.props.height + 1, DIMAGE_NONE);
+		}
+		else
+		{
+//			Render top half of swing and bottom half of whatever animation would be playing otherwise
+			entSubrectX = !player.swingDir ? 0 : 16;
+			dsubimage(entX, entY + 15, &img_player, entSubrectX, entSubrectY + 15, player.props.width + 4, player.props.height - 14, DIMAGE_NONE);
+
+			entSubrectY = (4 - (player.swingFrame >> 3)) * (player.props.height + 2) + 1;
+			dsubimage(entX, entY, &img_player, entSubrectX, entSubrectY, player.props.width + 4, 15, DIMAGE_NONE);
+
+//			Might have to generalise for different sized sprites
+			entSubrectX = (3 - (player.swingFrame >> 3)) * 17 + 1;
+			entSubrectY = player.swingDir ? 17 : 0;
+			entX += (player.props.width >> 1) + (player.swingDir ? -12 : 0) + swingHandleDeltaPositions[3 - (player.swingFrame >> 3)][0] * (player.swingDir ? -1 : 1);
+			entY += swingHandleDeltaPositions[3 - (player.swingFrame >> 3)][1];
+			dsubimage(entX, entY, &img_swing_sword, entSubrectX, entSubrectY, 16, 16, DIMAGE_NONE);
+		}
+	}
 
 	dimage(player.cursor.x - 2, player.cursor.y - 2, &img_cursor);
 	dimage(0, 0, &img_hotbar);
