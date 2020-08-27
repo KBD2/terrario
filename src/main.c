@@ -51,20 +51,32 @@ bool testRAM()
 	return false;
 }
 
+void positionPlayerAtWorldMiddle()
+{
+	int playerX = (WORLD_WIDTH / 2);
+	int playerY = 0;
+	while(1)
+	{
+		if(getTile(playerX, playerY).idx != 0)
+		{
+			playerY = (playerY - 3);
+			break;
+		}
+		playerY++;
+	}
+
+	player.props.x = playerX << 3;
+	player.props.y = playerY << 3;
+}
+
 // Update player and do keyboard stuff
-enum UpdateReturnCodes update(int frames)
+enum UpdateReturnCodes keyboardUpdate()
 {
 	bool validLeft, validRight, validTop, validBottom;
 	int x, y;
 	key_event_t key;
 	enum Tiles tile;
-	struct AnimationData *anim = &player.anim;
-	int animFrames[][2] = {
-		{0, 0},
-		{1, 4},
-		{5, 5},
-		{6, 19}
-	};
+	bool playerDead =  player.combat.health <= 0;
 
 	key = pollevent();
 	while(key.type != KEYEV_NONE)
@@ -76,7 +88,7 @@ enum UpdateReturnCodes update(int frames)
 				break;
 			
 			case KEY_SHIFT:
-				if(key.type != KEYEV_DOWN) break;
+				if(key.type != KEYEV_DOWN || playerDead) break;
 				inventoryMenu();
 //				Immediately go to crafting
 				if(keydown(KEY_ALPHA))
@@ -86,7 +98,7 @@ enum UpdateReturnCodes update(int frames)
 				}
 				break;
 			case KEY_ALPHA:
-				if(key.type != KEYEV_DOWN) break;
+				if(key.type != KEYEV_DOWN || playerDead) break;
 				craftingMenu();
 //				Immediately go to inventory
 				if(keydown(KEY_SHIFT))
@@ -97,7 +109,7 @@ enum UpdateReturnCodes update(int frames)
 				break;
 			
 			case KEY_F1: case KEY_F2: case KEY_F3:
-				if(player.swingFrame == 0) player.inventory.hotbarSlot = keycode_function(key.key) - 1;
+				if(player.swingFrame == 0 && !playerDead) player.inventory.hotbarSlot = keycode_function(key.key) - 1;
 				break;
 
 			case KEY_MENU:
@@ -112,60 +124,76 @@ enum UpdateReturnCodes update(int frames)
 
 //	These need to run as long as the button is held
 
-//	Remove tile
-	if(keydown(KEY_7) && player.swingFrame == 0)
+	if(!playerDead)
 	{
-		if(items[player.inventory.getSelected()->id].canSwing)
+//		Remove tile
+		if(keydown(KEY_7) && player.swingFrame == 0)
 		{
-			player.swingFrame = 32;
-			player.swingDir = player.cursorTile.x < player.props.x >> 3;
+			if(items[player.inventory.getSelected()->id].canSwing)
+			{
+				player.swingFrame = 32;
+				player.swingDir = player.cursorTile.x < player.props.x >> 3;
+			}
+			else
+			{
+				x = player.cursorTile.x;
+				y = player.cursorTile.y;
+				world.removeTile(x, y);
+			}
 		}
-		else
+
+//		Place tile
+		if(keydown(KEY_9))
 		{
 			x = player.cursorTile.x;
 			y = player.cursorTile.y;
-			world.removeTile(x, y);
-		}
-	}
-
-//	Place tile
-	if(keydown(KEY_9))
-	{
-		x = player.cursorTile.x;
-		y = player.cursorTile.y;
-		validLeft = x < player.props.x >> 3;
-		validRight = x > (player.props.x + player.props.width) >> 3;
-		validTop = y < player.props.y >> 3;
-		validBottom = y > (player.props.y + player.props.height) >> 3;
-		tile = items[player.inventory.getSelected()->id].tile;
-		if(tile != TILE_NULL && tile != TILE_NOTHING)
-		{
-			if(validLeft || validRight || validTop || validBottom || tiles[tile].physics != PHYS_SOLID)
+			validLeft = x < player.props.x >> 3;
+			validRight = x > (player.props.x + player.props.width) >> 3;
+			validTop = y < player.props.y >> 3;
+			validBottom = y > (player.props.y + player.props.height) >> 3;
+			tile = items[player.inventory.getSelected()->id].tile;
+			if(tile != TILE_NULL && tile != TILE_NOTHING)
 			{
-				world.placeTile(x, y, player.inventory.getSelected());
+				if(validLeft || validRight || validTop || validBottom || tiles[tile].physics != PHYS_SOLID)
+				{
+					world.placeTile(x, y, player.inventory.getSelected());
+				}
 			}
 		}
+
+//		Movement
+		if(keydown(KEY_4) && player.props.xVel > -1) player.props.xVel -= 0.3;
+		if(keydown(KEY_6) && player.props.xVel < 1) player.props.xVel += 0.3;
+		if(keydown(KEY_8) && player.props.touchingTileTop) 
+		{
+			player.props.yVel = -4.5;
+			player.props.dropping = true;
+		}
+		if(keydown(KEY_2)) player.props.dropping = true;
+		if((!keydown(KEY_8) && !keydown(KEY_2)) || (keydown(KEY_8) && !keydown(KEY_2) && player.props.yVel <= 0)) player.props.dropping = false;
+
+//		Cursor
+		if(keydown(KEY_LEFT)) player.cursor.x--;
+		if(keydown(KEY_RIGHT)) player.cursor.x++;
+		if(keydown(KEY_UP)) player.cursor.y--;
+		if(keydown(KEY_DOWN)) player.cursor.y++;
+		player.cursor.x = min(max(0, player.cursor.x), SCREEN_WIDTH - 1);
+		player.cursor.y = min(max(0, player.cursor.y), SCREEN_HEIGHT - 1);
 	}
 
-//	Movement
-	if(keydown(KEY_4) && player.props.xVel > -1) player.props.xVel -= 0.3;
-	if(keydown(KEY_6) && player.props.xVel < 1) player.props.xVel += 0.3;
-	if(keydown(KEY_8) && player.props.touchingTileTop) 
-	{
-		player.props.yVel = -4.5;
-		player.props.dropping = true;
-	}
-	if(keydown(KEY_2)) player.props.dropping = true;
-	if((!keydown(KEY_8) && !keydown(KEY_2)) || (keydown(KEY_8) && !keydown(KEY_2) && player.props.yVel <= 0)) player.props.dropping = false;
+	return UPDATE_CONTINUE;
+}
 
-//	Cursor
-	if(keydown(KEY_LEFT)) player.cursor.x--;
-	if(keydown(KEY_RIGHT)) player.cursor.x++;
-	if(keydown(KEY_UP)) player.cursor.y--;
-	if(keydown(KEY_DOWN)) player.cursor.y++;
-	player.cursor.x = min(max(0, player.cursor.x), SCREEN_WIDTH - 1);
-	player.cursor.y = min(max(0, player.cursor.y), SCREEN_HEIGHT - 1);
-	
+void playerUpdate(int frames)
+{
+	struct AnimationData *anim = &player.anim;
+	int animFrames[][2] = {
+		{0, 0},
+		{1, 4},
+		{5, 5},
+		{6, 19}
+	};
+
 //	Handle the physics for the player
 	player.physics(&player.props);
 
@@ -203,8 +231,6 @@ enum UpdateReturnCodes update(int frames)
 	{
 		anim->animationFrame = animFrames[anim->animation][0];
 	}
-
-	return UPDATE_CONTINUE;
 }
 
 // frames increases 60 times per second, take into account
@@ -213,16 +239,14 @@ int main(void)
 	int menuSelect;
 	extern bopti_image_t img_generating;
 	extern font_t font_smalltext;
-	int playerX, playerY;
 	bool renderThisFrame = true;
 	int w, h;
 	int timer;
 	enum UpdateReturnCodes updateRet;
-	Entity* ent;
 	volatile int flag = 0;
 	int frames = 0;
 	int mediaFree[2];
-	struct EntityPhysicsProps weaponProps;
+	int respawnCounter = 0;
 
 	save = (struct SaveData){
 		.tileDataSize = WORLD_HEIGHT * WORLD_WIDTH * sizeof(Tile),
@@ -298,6 +322,7 @@ int main(void)
 	{
 		.tiles = (Tile*)save.tileData,
 		.entities = (Entity*)malloc(MAX_ENTITIES * sizeof(Entity)),
+		.explosion = { 0 },
 
 		.placeTile = &placeTile,
 		.removeTile = &removeTile,
@@ -337,20 +362,7 @@ int main(void)
 
 	dfont(&font_smalltext);
 
-	playerX = (WORLD_WIDTH / 2);
-	playerY = 0;
-	while(1)
-	{
-		if(world.tiles[playerY * WORLD_WIDTH + playerX].idx != 0)
-		{
-			playerY = (playerY - 3);
-			break;
-		}
-		playerY++;
-	}
-
-	player.props.x = playerX << 3;
-	player.props.y = playerY << 3;
+	positionPlayerAtWorldMiddle();
 
 	timer = timer_setup(TIMER_ANY, (1000 / 60) * 1000, &frameCallback, &flag);
 	timer_start(timer);
@@ -359,51 +371,27 @@ int main(void)
 
 	while(true)
 	{
-		updateRet = update(frames);
+		if(respawnCounter == 0) playerUpdate(frames);
+
+		updateRet = keyboardUpdate();
 		if(updateRet == UPDATE_EXIT) break;
 		else if(updateRet == UPDATE_AGAIN) continue;
 
-		if(player.swingFrame > 0)
+		doEntityCycle(frames);
+		if(player.combat.health <= 0)
 		{
-			switch(player.inventory.getSelected()->id)
+			if(respawnCounter == 1)
 			{
-				case ITEM_SWORD:
-					player.combat.attack = 5;
-					break;
-				
-				default:
-					player.combat.attack = 0;
+				positionPlayerAtWorldMiddle();
+				player.combat.health = 100;
+				player.props.xVel = 0;
+				player.props.yVel = 0;
+				player.props.dropping = false;
+				respawnCounter = 0;
 			}
-
-			weaponProps = (struct EntityPhysicsProps) {
-				.x = player.props.x + (player.swingDir ? -16 : 0),
-				.y = player.props.y - 16,
-				.width = 16 + player.props.width,
-				.height = player.props.height + 16
-			};
+			else if(respawnCounter > 0) respawnCounter--;
+			else respawnCounter = 300;
 		}
-		else if(weaponProps.width > 0) weaponProps = (struct EntityPhysicsProps){ 0 };
-
-		for(int idx = 0; idx < MAX_ENTITIES; idx++)
-		{
-			if(world.entities[idx].id != -1)
-			{
-				ent = &world.entities[idx];
-				ent->behaviour(&world.entities[idx], frames);
-				if(player.combat.currImmuneFrames == 0)
-				{
-					if(checkCollision(&ent->props, &player.props)) attack(ent, false);
-				}
-				if(ent->combat.currImmuneFrames > 0) ent->combat.currImmuneFrames--;
-				else
-				{
-					if(checkCollision(&weaponProps, &ent->props)) attack(ent, true);
-					if(ent->combat.health <= 0) world.removeEntity(idx);
-				}
-			}
-		}
-		if(player.combat.currImmuneFrames > 0) player.combat.currImmuneFrames--;
-		if(player.swingFrame > 0) player.swingFrame--;
 		if(renderThisFrame)
 		{
 			render();

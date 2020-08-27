@@ -101,3 +101,4 @@ void handlePhysics(struct EntityPhysicsProps *self);
 bool checkCollision(struct EntityPhysicsProps *first, struct EntityPhysicsProps *second);
 
 void attack(Entity *entity, bool isPlayerAttacking);
+void doEntityCycle(int frames);

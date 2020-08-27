@@ -193,5 +193,60 @@ void attack(Entity *entity, bool isPlayerAttacking)
 
 	defenderCombat->currImmuneFrames = defenderCombat->immuneFrames;
 	defenderProps->yVel = -3.0 * (1.0 - defenderCombat->knockbackResist);
-	defenderProps->xVel = (4.0 * sgn(defenderProps->x - attackerProps->x)) * (1 - defenderCombat->knockbackResist);
+	defenderProps->xVel = (4.0 * sgn(defenderProps->x - attackerProps->x)) * (1.0 - defenderCombat->knockbackResist);
+}
+
+void doEntityCycle(int frames)
+{
+	Entity* ent;
+	struct EntityPhysicsProps weaponProps = { 0 };
+
+	if(player.swingFrame > 0)
+	{
+		switch(player.inventory.getSelected()->id)
+		{
+			case ITEM_SWORD:
+				player.combat.attack = 5;
+				break;
+			
+			default:
+				player.combat.attack = 0;
+		}
+
+		weaponProps = (struct EntityPhysicsProps) {
+			.x = player.props.x + (player.swingDir ? -16 : 0),
+			.y = player.props.y - 16,
+			.width = 16 + player.props.width,
+			.height = player.props.height + 16
+		};
+	}
+
+	for(int idx = 0; idx < MAX_ENTITIES; idx++)
+	{
+		if(world.entities[idx].id != -1)
+		{
+			ent = &world.entities[idx];
+			ent->behaviour(&world.entities[idx], frames);
+			if(player.combat.health > 0 && player.combat.currImmuneFrames == 0)
+			{
+				if(checkCollision(&ent->props, &player.props))
+				{
+					attack(ent, false);
+					if(player.combat.health <= 0) createExplosion(&world.explosion, player.props.x + (player.props.width >> 1), player.props.y + (player.props.height >> 1));
+				}
+			}
+			if(ent->combat.currImmuneFrames > 0) ent->combat.currImmuneFrames--;
+			else
+			{
+				if(checkCollision(&weaponProps, &ent->props)) attack(ent, true);
+				if(ent->combat.health <= 0)
+				{
+					createExplosion(&world.explosion, ent->props.x + (ent->props.width >> 1), ent->props.y + (ent->props.height >> 1));
+					world.removeEntity(idx);
+				}
+			}
+		}
+	}
+	if(player.combat.currImmuneFrames > 0) player.combat.currImmuneFrames--;
+	if(player.swingFrame > 0) player.swingFrame--;
 }

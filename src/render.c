@@ -5,6 +5,7 @@
 #include <gint/std/string.h>
 #include <gint/timer.h>
 #include <gint/std/stdlib.h>
+#include <math.h>
 
 #include "render.h"
 #include "defs.h"
@@ -17,6 +18,15 @@ const unsigned int camMaxX = (WORLD_WIDTH << 3) - (SCREEN_WIDTH >> 1);
 const unsigned int camMinY = SCREEN_HEIGHT >> 1;
 const unsigned int camMaxY = (WORLD_HEIGHT << 3) - (SCREEN_HEIGHT >> 1);
 
+//	For right-facing player
+const int swingHandleDeltaPositions[4][2] = {
+//		 dX 	dY
+	{	-11,	-14	},
+	{	6,		-13	},
+	{	8,		4	},
+	{	6,		12	}
+};
+
 void renderItem(int x, int y, Item *item)
 {
 	dimage(x + 3, y, items[item->id].sprite);
@@ -25,7 +35,7 @@ void renderItem(int x, int y, Item *item)
 
 void render()
 {
-	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect, img_leaves, img_swing_sword;
+	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect, img_leaves, img_swing_sword, img_deathtext;
 	int camX = min(max(player.props.x + (player.props.width >> 1), camMinX), camMaxX);
 	int camY = min(max(player.props.y + (player.props.height >> 1), camMinY), camMaxY);
 
@@ -50,15 +60,6 @@ void render()
 	Entity *ent;
 
 	Item item;
-
-//	For right-facing player
-	int swingHandleDeltaPositions[4][2] = {
-//		 	dX 		dY
-		{	-11,	-14	},
-		{	6,		-13	},
-		{	8,		4	},
-		{	6,		12	}
-	};
 
 	player.cursorTile.x = (camX + player.cursor.x - (SCREEN_WIDTH >> 1)) >> 3;
 	player.cursorTile.y = (camY + player.cursor.y - (SCREEN_HEIGHT >> 1)) >> 3;
@@ -141,7 +142,7 @@ void render()
 		}
 	}
 
-	if(!(player.combat.currImmuneFrames & 2))
+	if(!(player.combat.currImmuneFrames & 2) && player.combat.health >= 0)
 	{
 		entX = player.props.x - (camX - (SCREEN_WIDTH >> 1)) - 2;
 		entY = player.props.y - (camY - (SCREEN_HEIGHT >> 1));
@@ -167,9 +168,16 @@ void render()
 			entY += swingHandleDeltaPositions[3 - (player.swingFrame >> 3)][1];
 			dsubimage(entX, entY, &img_swing_sword, entSubrectX, entSubrectY, 16, 16, DIMAGE_NONE);
 		}
+
+		dimage(player.cursor.x - 2, player.cursor.y - 2, &img_cursor);
 	}
 
-	dimage(player.cursor.x - 2, player.cursor.y - 2, &img_cursor);
+	if(world.explosion.numParticles > 0)
+	{
+		renderAndUpdateExplosion(&world.explosion, (camX - (SCREEN_WIDTH >> 1)), (camY - (SCREEN_HEIGHT >> 1)));
+		if(world.explosion.deltaTicks == 30) world.explosion.numParticles = 0;
+	}
+
 	dimage(0, 0, &img_hotbar);
 	dimage(16 * player.inventory.hotbarSlot, 0, &img_hotbarselect);
 	for(int slot = 0; slot < 3; slot++)
@@ -179,6 +187,11 @@ void render()
 	}
 
 	dprint(49, 1, C_BLACK, "%i", player.combat.health);
+
+	if(player.combat.health <= 0)
+	{
+		dimage(32, 26, &img_deathtext);
+	}
 }
 
 void takeVRAMCapture()
@@ -203,6 +216,44 @@ void takeVRAMCapture()
 	BFile_Close(descriptor);
 
 	free(buffer);
+}
+
+void createExplosion(struct ParticleExplosion *explosion, int x, int y)
+{
+	*explosion = (struct ParticleExplosion) {
+		50,
+		malloc(50 * sizeof(Particle)), 
+		0
+	};
+
+	for(int i = 0; i < 50; i++)
+	{
+		explosion->particles[i] = (Particle) {
+			x,
+			y,
+			(float)((rand() % 201) - 80) / 100.0,
+			(float)((rand() % 201) + 100) / -100.0
+		};
+	}
+}
+
+void renderAndUpdateExplosion(struct ParticleExplosion *explosion, int offsetX, int offsetY)
+{
+	Particle* particle;
+	
+	for(int i = 0; i < explosion->numParticles; i++)
+	{
+		particle = &explosion->particles[i];
+
+		dpixel(particle->x - offsetX, particle->y - offsetY, C_BLACK);
+
+		particle->x += round(particle->xVel);
+		particle->y += round(particle->yVel);
+
+		particle->yVel += 0.2;
+		particle->xVel *= 0.95;
+	}
+	explosion->deltaTicks++;
 }
 
 // Prefer the vram capture as this is original size and not good for the web

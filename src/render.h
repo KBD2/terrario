@@ -8,6 +8,19 @@ enum SpriteTypes {
 };
 
 typedef struct {
+	int x;
+	int y;
+	float xVel;
+	float yVel;
+} Particle;
+
+struct ParticleExplosion {
+	int numParticles;
+	Particle *particles;
+	int deltaTicks;
+};
+
+typedef struct {
 	unsigned char pixel0 : 4;
 	unsigned char pixel1 : 4;
 } Pair;
@@ -15,3 +28,6 @@ typedef struct {
 void render();
 void takeVRAMCapture();
 void renderItem();
+
+void createExplosion(struct ParticleExplosion *explosion, int x, int y);
+void renderAndUpdateExplosion(struct ParticleExplosion *explosion, int offsetX, int offsetY);

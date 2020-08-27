@@ -64,6 +64,7 @@ enum Tiles {
 struct World {
 	Tile *tiles;
 	Entity *entities;
+	struct ParticleExplosion explosion;
 
 	void (*placeTile)(int x, int y, Item *item);
 	void (*removeTile)(int x, int y);
