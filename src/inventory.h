@@ -15,6 +15,7 @@ enum Items {
 	ITEM_PLATFORM,
 	ITEM_CHAIR,
 	ITEM_SWORD,
+	ITEM_GEL,
 
 	ITEMS_COUNT
 };

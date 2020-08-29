@@ -367,3 +367,12 @@ bool removeEntity(int idx)
 	world.entities[idx].id = -1;
 	return true;
 }
+
+bool checkFreeEntitySlot()
+{
+	for(int idx = 0; idx < MAX_ENTITIES; idx++)
+	{
+		if(world.entities[idx].id == -1) return true;
+	}
+	return false;
+}

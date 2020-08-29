@@ -251,6 +251,31 @@ void saveFailMenu()
 	}
 }
 
+void memoryErrorMenu()
+{
+	key_event_t key;
+
+	dclear(C_WHITE);
+	dtext(0, 0, C_BLACK, "malloc() returned");
+	dtext(0, 8, C_BLACK, "NULL! Please report");
+	dtext(0, 16, C_BLACK, "this bug.");
+	dtext(0, 32, C_BLACK, "[EXIT] to reboot");
+	dupdate();
+
+	while(1)
+	{
+		key = getkey_opt(GETKEY_NONE, NULL);
+		switch(key.key)
+		{
+			case KEY_EXIT:
+				RebootOS();;
+			
+			default:
+				break;
+		}
+	}
+}
+
 void aboutMenu()
 {
 	extern bopti_image_t img_confetti;
@@ -261,6 +286,7 @@ void aboutMenu()
 		"4,6,8:Move",
 		"Arrows:Cursor",
 		"7,9:Mine/Place",
+		"7:Attack",
 		"F1,F2,F3:Hotbar",
 		"[SHIFT]:Inventory",
 		"[ALPHA]:Crafting",

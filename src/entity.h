@@ -11,6 +11,22 @@ enum PhysicsTypes {
 	PHYS_PLATFORM
 };
 
+typedef struct {
+	enum Items item;
+
+	int amountMin;
+	int amountMax;
+
+	int ratioLow;
+	int ratioHigh;
+} Drop;
+
+struct EntityDrops {
+	int num;
+
+	const Drop* dropList;
+};
+
 struct Coords {
 	int x;
 	int y;
@@ -66,15 +82,19 @@ enum Entities {
 
 struct EntityBase {
 	int id;
-//	To store states in, generic so that entities can use it however
-	int mem[4];
 	struct EntityPhysicsProps props;
-	struct AnimationData anim;
 	struct Combat combat;
 	bopti_image_t *sprite;
+	const struct EntityDrops *drops;
 
 	bool (*behaviour)(struct EntityBase *self, int frames);
 	void (*init)(struct EntityBase *self);
+
+//	Initialised to 0
+	struct AnimationData anim;
+	int despawnCounter;
+//	To store states in, generic so that entities can use it however
+	int mem[4];
 };
 
 typedef struct EntityBase Entity;
@@ -102,3 +122,5 @@ bool checkCollision(struct EntityPhysicsProps *first, struct EntityPhysicsProps 
 
 void attack(Entity *entity, bool isPlayerAttacking);
 void doEntityCycle(int frames);
+
+void doSpawningCycle();

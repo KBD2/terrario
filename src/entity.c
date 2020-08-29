@@ -17,6 +17,18 @@
 extern bopti_image_t
 img_ent_slime;
 
+/* ----- ENTITY DATA AND BEHAVIOUR DEFINITIONS ----- */
+
+// SLIMES
+
+const struct EntityDrops slimeDrops = {
+	.num = 1,
+	.dropList = (const Drop[]){
+//		 Item		Min Max Low Hi
+		{ITEM_GEL,	1,	2,	1,	1}
+	}
+};
+
 void slimeInit(struct EntityBase *self)
 {
 	self->mem[2] = rand() % 2;
@@ -27,8 +39,14 @@ bool slimeBehaviour(struct EntityBase *self, GUNUSED int frames)
 	int *jumpTimer = &self->mem[0];
 	int *animTimer = &self->mem[1];
 	int *direction = &self->mem[2];
+	int *angry = &self->mem[3];
 
 	handlePhysics(&self->props);
+
+	if(*angry)
+	{
+		*direction = self->props.x < player.props.x;
+	}
 
 	if(self->props.touchingTileTop && *jumpTimer == 0)
 	{
@@ -56,9 +74,11 @@ bool slimeBehaviour(struct EntityBase *self, GUNUSED int frames)
 	return true;
 }
 
+/* ---------- */
+
 const struct EntityBase entityTemplates[] = {
-//		ID			Memory	Props		Anim	Combat										Sprite			Behaviour			Init
-	{	ENT_SLIME,	{ 0 },	{16, 12},	{ 0 },	{14, ALIGN_HOSTILE, 40, 0, 6, 0, 0.15},	&img_ent_slime,	&slimeBehaviour,	&slimeInit	}	// ENT_SLIME
+//		ID			Props		Combat									Sprite			Drops			Behaviour			Init
+	{	ENT_SLIME,	{16, 12},	{14, ALIGN_HOSTILE, 40, 0, 6, 0, 0.15},	&img_ent_slime,	&slimeDrops,	&slimeBehaviour,	&slimeInit	}	// ENT_SLIME
 };
 
 /* Having a generic physics property struct lets me have one function to handle
@@ -78,6 +98,9 @@ void handlePhysics(struct EntityPhysicsProps *self)
 
 	int checkLeft, checkRight, checkTop, checkBottom;
 	int overlapX, overlapY;
+
+	int xMax = (WORLD_WIDTH << 3) - self->width;
+	int yMax = (WORLD_HEIGHT << 3) - self->height;
 
 	self->yVel = min(10, self->yVel + GRAVITY_ACCEL);
 	if(abs(self->xVel) < 0.1) self->xVel = 0;
@@ -131,7 +154,7 @@ void handlePhysics(struct EntityPhysicsProps *self)
 					}
 					else
 					{
-						self->xVel = 0;
+						//self->xVel = 0;
 						if(entBox.TL.x <= checkLeft)
 						{
 							self->x -= overlapX;
@@ -150,15 +173,15 @@ void handlePhysics(struct EntityPhysicsProps *self)
 	if(self->touchingTileTop) self->xVel *= 0.7;
 	else self->xVel *= 0.95;
 
-	if(self->x < 0 || self->x > (WORLD_WIDTH - self->width) << 3)
+	if(self->x < 0 || self->x > xMax)
 	{
 		self->xVel = 0;
-		self->x = min(max(self->x, 0), (WORLD_WIDTH - self->width) << 3);
+		self->x = min(max(self->x, 0), xMax);
 	}
-	if(self->y < 0 || self->y > (WORLD_HEIGHT - self->height) << 3)
+	if(self->y < 0 || self->y > yMax)
 	{
 		self->yVel = 0;
-		self->y = min(max(self->y, 0), (WORLD_HEIGHT - self->height) << 3);
+		self->y = min(max(self->y, 0), yMax);
 	}
 	if(self->y + self->height >= (WORLD_HEIGHT << 3) - 1)
 	{
@@ -190,6 +213,7 @@ void attack(Entity *entity, bool isPlayerAttacking)
 	defenderCombat = isPlayerAttacking ? &entity->combat : &player.combat;
 
 	defenderCombat->health -= (attackerCombat->attack - ceil((float)defenderCombat->defense / 2));
+	defenderCombat->health = max(0, defenderCombat->health);
 
 	defenderCombat->currImmuneFrames = defenderCombat->immuneFrames;
 	defenderProps->yVel = -3.0 * (1.0 - defenderCombat->knockbackResist);
@@ -198,15 +222,18 @@ void attack(Entity *entity, bool isPlayerAttacking)
 
 void doEntityCycle(int frames)
 {
-	Entity* ent;
+	Entity *ent;
 	struct EntityPhysicsProps weaponProps = { 0 };
+	const Drop *currDrop;
+	Item hold;
+	int freeSlot;
 
 	if(player.swingFrame > 0)
 	{
 		switch(player.inventory.getSelected()->id)
 		{
 			case ITEM_SWORD:
-				player.combat.attack = 5;
+				player.combat.attack = 6;
 				break;
 			
 			default:
@@ -229,18 +256,44 @@ void doEntityCycle(int frames)
 			ent->behaviour(&world.entities[idx], frames);
 			if(player.combat.health > 0 && player.combat.currImmuneFrames == 0)
 			{
-				if(checkCollision(&ent->props, &player.props))
-				{
-					attack(ent, false);
-					if(player.combat.health <= 0) createExplosion(&world.explosion, player.props.x + (player.props.width >> 1), player.props.y + (player.props.height >> 1));
-				}
+				if(checkCollision(&ent->props, &player.props)) attack(ent, false);
 			}
+
 			if(ent->combat.currImmuneFrames > 0) ent->combat.currImmuneFrames--;
 			else
 			{
-				if(checkCollision(&weaponProps, &ent->props)) attack(ent, true);
+				if(checkCollision(&weaponProps, &ent->props))
+				{
+					attack(ent, true);
+					switch(ent->id)
+					{
+						case ENT_SLIME:
+							ent->mem[3] = 1;
+
+						default:
+							break;
+					}
+				}
 				if(ent->combat.health <= 0)
 				{
+					for(int drop = 0; drop < ent->drops->num; drop++)
+					{
+						currDrop = &ent->drops->dropList[drop];
+						if(rand() % currDrop->ratioHigh >= currDrop->ratioLow - 1)
+						{
+							hold = (Item){currDrop->item, (rand() % (currDrop->amountMax - currDrop->amountMin + 1)) + currDrop->amountMin};
+
+							while(hold.id != ITEM_NULL)
+							{
+								freeSlot = player.inventory.getFirstFreeSlot(currDrop->item);
+								if(freeSlot > -1)
+								{
+									player.inventory.stackItem(&player.inventory.items[freeSlot], &hold);
+								}
+								else break;
+							}
+						}
+					}
 					createExplosion(&world.explosion, ent->props.x + (ent->props.width >> 1), ent->props.y + (ent->props.height >> 1));
 					world.removeEntity(idx);
 				}
@@ -249,4 +302,68 @@ void doEntityCycle(int frames)
 	}
 	if(player.combat.currImmuneFrames > 0) player.combat.currImmuneFrames--;
 	if(player.swingFrame > 0) player.swingFrame--;
+}
+
+void doSpawningCycle()
+{
+	Entity* ent;
+	int spawnX, spawnY;
+	int playerTileX = player.props.x >> 3;
+	int playerTileY = player.props.y >> 3;
+	int spawnAttempts = 0;
+
+	for(int idx = 0; idx < MAX_ENTITIES; idx++)
+	{
+		if(world.entities[idx].id == -1) continue;
+
+		ent = &world.entities[idx];
+
+		if(abs(ent->props.x - player.props.x) > 256 || abs(ent->props.y - player.props.y) > 128)
+		{
+			world.removeEntity(idx);
+			continue;
+		}
+
+		if(abs(ent->props.x - player.props.x) > 64 || abs(ent->props.y - player.props.y) > 32)
+		{
+			ent->despawnCounter++;
+			if(ent->despawnCounter == 750)
+			{
+				world.removeEntity(idx);
+				continue;
+			}
+		}
+		else if(ent->despawnCounter > 0) ent->despawnCounter = 0;
+	}
+
+	if(rand() % SPAWN_CHANCE == 0)
+	{
+		if(!world.checkFreeEntitySlot()) return;
+
+		while(true)
+		{
+			spawnAttempts++;
+//			Too low and it won't spawn enough
+//			Too high and it may lag the calc
+			if(spawnAttempts == 100) return;
+
+			spawnX = playerTileX + ((rand() % 33) - 16);
+			spawnX = min(max(spawnX, 0), WORLD_WIDTH - 1);
+
+			spawnY = playerTileY + ((rand() % 25) - 12);
+			spawnY = min(max(spawnY, 0), WORLD_HEIGHT - 1);
+
+			if(tiles[getTile(spawnX, spawnY).idx].physics == PHYS_SOLID) continue;
+
+			while(spawnY < WORLD_HEIGHT)
+			{
+				spawnY++;
+				if(tiles[getTile(spawnX, spawnY).idx].physics == PHYS_SOLID)
+				{
+					if(abs(spawnX - playerTileX) < 9 && abs(spawnY - playerTileY) < 9) break;
+					world.spawnEntity(ENT_SLIME, spawnX << 3, (spawnY << 3) - entityTemplates[ENT_SLIME].props.height);
+				}
+			}
+		}
+	}
 }

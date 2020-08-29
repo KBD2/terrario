@@ -16,10 +16,11 @@ img_item_wood,
 img_item_wbench,
 img_item_platform,
 img_item_chair,
-img_item_sword;
+img_item_sword,
+img_item_gel;
 
 const ItemData items[] = {
-//		Sprite				Max		Tile
+//		Sprite				Max		Tile							Swingable?
 	{	&img_item_null,		0,		TILE_NULL,		"Null",			false	},	// ITEM_NULL
 	{	&img_item_stone,	999,	TILE_STONE,		"Stone",		false	},	// ITEM_STONE
 	{	&img_item_dirt,		999,	TILE_DIRT,		"Dirt",			false	},	// ITEM_DIRT
@@ -27,7 +28,8 @@ const ItemData items[] = {
 	{	&img_item_wbench,	99,		TILE_WBENCH_L,	"Workbench",	false	},	// ITEM_WORKBENCH
 	{	&img_item_platform,	999,	TILE_PLATFORM,	"Platform",		false	},	// ITEM_PLATFORM
 	{	&img_item_chair,	99,		TILE_CHAIR,		"Chair",		false	},	// ITEM_CHAIR
-	{	&img_item_sword,	1,		TILE_NULL,		"Sword",		true	}	// ITEM_SWORD
+	{	&img_item_sword,	1,		TILE_NULL,		"Sword",		true	},	// ITEM_SWORD
+	{	&img_item_gel,		999,	TILE_NULL,		"Gel",			false	}	// ITEM_GEL
 };
 
 int getFirstFreeSlot(enum Items item)

@@ -5,6 +5,7 @@
 #include <gint/std/string.h>
 #include <gint/timer.h>
 #include <gint/std/stdlib.h>
+#include <gint/std/stdio.h>
 #include <math.h>
 
 #include "render.h"
@@ -12,6 +13,7 @@
 #include "world.h"
 #include "entity.h"
 #include "inventory.h"
+#include "menu.h"
 
 const unsigned int camMinX = SCREEN_WIDTH >> 1;
 const unsigned int camMaxX = (WORLD_WIDTH << 3) - (SCREEN_WIDTH >> 1);
@@ -58,6 +60,9 @@ void render()
 	int entX, entY;
 	int entSubrectX, entSubrectY;
 	Entity *ent;
+
+	char buf[10];
+	int width;
 
 	Item item;
 
@@ -142,7 +147,7 @@ void render()
 		}
 	}
 
-	if(!(player.combat.currImmuneFrames & 2) && player.combat.health >= 0)
+	if(!(player.combat.currImmuneFrames & 2) && player.combat.health > 0)
 	{
 		entX = player.props.x - (camX - (SCREEN_WIDTH >> 1)) - 2;
 		entY = player.props.y - (camY - (SCREEN_HEIGHT >> 1));
@@ -162,10 +167,13 @@ void render()
 			dsubimage(entX, entY, &img_player, entSubrectX, entSubrectY, player.props.width + 4, 15, DIMAGE_NONE);
 
 //			Might have to generalise for different sized sprites
+			entX += (player.props.width >> 1) + (player.swingDir ? -12 : 0);
+			entX += swingHandleDeltaPositions[3 - (player.swingFrame >> 3)][0] * (player.swingDir ? -1 : 1);
+			entY += swingHandleDeltaPositions[3 - (player.swingFrame >> 3)][1];
+
 			entSubrectX = (3 - (player.swingFrame >> 3)) * 17 + 1;
 			entSubrectY = player.swingDir ? 17 : 0;
-			entX += (player.props.width >> 1) + (player.swingDir ? -12 : 0) + swingHandleDeltaPositions[3 - (player.swingFrame >> 3)][0] * (player.swingDir ? -1 : 1);
-			entY += swingHandleDeltaPositions[3 - (player.swingFrame >> 3)][1];
+
 			dsubimage(entX, entY, &img_swing_sword, entSubrectX, entSubrectY, 16, 16, DIMAGE_NONE);
 		}
 
@@ -180,13 +188,15 @@ void render()
 
 	dimage(0, 0, &img_hotbar);
 	dimage(16 * player.inventory.hotbarSlot, 0, &img_hotbarselect);
-	for(int slot = 0; slot < 3; slot++)
+	for(int slot = 0; slot < 5; slot++)
 	{
 		item = player.inventory.items[slot];
 		if(item.id != ITEM_NULL) renderItem(16 * slot + 1, 1, &item);
 	}
 
-	dprint(49, 1, C_BLACK, "%i", player.combat.health);
+	sprintf(buf, "%i", player.combat.health);
+	dsize(buf, NULL, &width, NULL);
+	dtext(127 - width, 1, C_BLACK, buf);
 
 	if(player.combat.health <= 0)
 	{
@@ -221,9 +231,8 @@ void takeVRAMCapture()
 void createExplosion(struct ParticleExplosion *explosion, int x, int y)
 {
 	*explosion = (struct ParticleExplosion) {
-		50,
-		malloc(50 * sizeof(Particle)), 
-		0
+		.numParticles = 50,
+		.deltaTicks = 0
 	};
 
 	for(int i = 0; i < 50; i++)
@@ -235,6 +244,16 @@ void createExplosion(struct ParticleExplosion *explosion, int x, int y)
 			(float)((rand() % 201) + 100) / -100.0
 		};
 	}
+}
+
+void destroyExplosion(struct ParticleExplosion *explosion)
+{
+	if(explosion->particles != NULL)
+	{
+		free(explosion->particles);
+		explosion->particles = NULL;
+	}
+	explosion->numParticles = 0;
 }
 
 void renderAndUpdateExplosion(struct ParticleExplosion *explosion, int offsetX, int offsetY)

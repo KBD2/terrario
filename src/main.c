@@ -108,7 +108,7 @@ enum UpdateReturnCodes keyboardUpdate()
 				}
 				break;
 			
-			case KEY_F1: case KEY_F2: case KEY_F3:
+			case KEY_F1: case KEY_F2: case KEY_F3: case KEY_F4: case KEY_F5:
 				if(player.swingFrame == 0 && !playerDead) player.inventory.hotbarSlot = keycode_function(key.key) - 1;
 				break;
 
@@ -322,13 +322,18 @@ int main(void)
 	{
 		.tiles = (Tile*)save.tileData,
 		.entities = (Entity*)malloc(MAX_ENTITIES * sizeof(Entity)),
-		.explosion = { 0 },
+		.explosion = {
+			.numParticles = 0,
+			.particles = malloc(50 * sizeof(Particle)),
+			.deltaTicks = 0
+		 },
 
 		.placeTile = &placeTile,
 		.removeTile = &removeTile,
 		
 		.spawnEntity = &spawnEntity,
-		.removeEntity = &removeEntity
+		.removeEntity = &removeEntity,
+		.checkFreeEntitySlot = &checkFreeEntitySlot
 	};
 
 //	An entity ID of -1 is considered a free slot
@@ -367,17 +372,18 @@ int main(void)
 	timer = timer_setup(TIMER_ANY, (1000 / 60) * 1000, &frameCallback, &flag);
 	timer_start(timer);
 
-	world.spawnEntity(ENT_SLIME, player.props.x, player.props.y - 100);
+	//world.spawnEntity(ENT_SLIME, player.props.x, player.props.y - 100);
 
 	while(true)
 	{
-		if(respawnCounter == 0) playerUpdate(frames);
+		if(!respawnCounter) playerUpdate(frames);
 
 		updateRet = keyboardUpdate();
 		if(updateRet == UPDATE_EXIT) break;
 		else if(updateRet == UPDATE_AGAIN) continue;
 
 		doEntityCycle(frames);
+		doSpawningCycle();
 		if(player.combat.health <= 0)
 		{
 			if(respawnCounter == 1)
@@ -388,9 +394,14 @@ int main(void)
 				player.props.yVel = 0;
 				player.props.dropping = false;
 				respawnCounter = 0;
+				player.combat.currImmuneFrames = player.combat.immuneFrames;
 			}
 			else if(respawnCounter > 0) respawnCounter--;
-			else respawnCounter = 300;
+			else
+			{
+				createExplosion(&world.explosion, player.props.x + (player.props.width >> 1), player.props.y + (player.props.height >> 1));
+				respawnCounter = 300;
+			}
 		}
 		if(renderThisFrame)
 		{
@@ -414,6 +425,7 @@ int main(void)
 	dupdate();
 
 	free(world.entities);
+	destroyExplosion(&world.explosion);
 
 	gint_switch(&saveGame);
 	if(save.error != -99) saveFailMenu();

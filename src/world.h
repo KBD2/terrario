@@ -70,6 +70,7 @@ struct World {
 	void (*removeTile)(int x, int y);
 	int (*spawnEntity)(enum Entities entity, int x, int y);
 	bool (*removeEntity)(int idx);
+	bool (*checkFreeEntitySlot)();
 };
 	
 extern struct World world;
@@ -86,3 +87,4 @@ void removeTile(int x, int y);
 
 int spawnEntity(enum Entities entity, int x, int y);
 bool removeEntity(int idx);
+bool checkFreeEntitySlot();

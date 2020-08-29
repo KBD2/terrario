@@ -30,4 +30,5 @@ void takeVRAMCapture();
 void renderItem();
 
 void createExplosion(struct ParticleExplosion *explosion, int x, int y);
+void destroyExplosion(struct ParticleExplosion *explosion);
 void renderAndUpdateExplosion(struct ParticleExplosion *explosion, int offsetX, int offsetY);

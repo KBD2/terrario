@@ -14,6 +14,7 @@
 
 #define INVENTORY_SIZE 24
 
-#define MAX_ENTITIES 16
+#define MAX_ENTITIES 5
+#define SPAWN_CHANCE 600
 
 int frameCallback(volatile int *flag);
