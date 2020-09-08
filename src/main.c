@@ -60,6 +60,7 @@ bool testRAM()
 		*RAMAddress = save;
 		return true;
 	}
+	*RAMAddress = save;
 #endif
 	return false;
 }
@@ -301,8 +302,6 @@ int main(void)
 		.regionData = { 0 },
 		.error = -99,
 	};
-
-	hw_detect();
 
 #ifndef USE_HEAP
 	if(!testRAM()) 
