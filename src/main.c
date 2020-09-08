@@ -8,6 +8,7 @@
 #include <gint/std/string.h>
 #include <gint/clock.h>
 #include <gint/bfile.h>
+#include <gint/hardware.h>
 
 #include "defs.h"
 #include "syscalls.h"
@@ -46,10 +47,20 @@ int frameCallback(volatile int *flag)
 // Checks if the RAM we'll be using to store world tiles works
 bool testRAM()
 {
+// Make sure we don't mess with the RAM on GIII models
+#ifndef USE_HEAP
 	unsigned int *RAMAddress = (void*)RAM_START;
 	unsigned int *RAMTestAddress = (void*)0x88000000;
+	unsigned int save = *RAMAddress;
+//	Ensures this isn't a 256kB-RAM calc
+	if(gint[HWRAM] < 500000) return false;
 	*RAMAddress = 0xC0FFEE;
-	if(*RAMAddress == 0xC0FFEE && *RAMAddress != *RAMTestAddress) return true;
+	if(*RAMAddress == 0xC0FFEE && *RAMAddress != *RAMTestAddress)
+	{
+		*RAMAddress = save;
+		return true;
+	}
+#endif
 	return false;
 }
 
@@ -291,14 +302,20 @@ int main(void)
 		.error = -99,
 	};
 
-//	Makes it easier to see if a world load error occurs
-	memset(save.tileData, 0, WORLD_WIDTH * WORLD_HEIGHT * sizeof(Tile));
+	hw_detect();
 
+#ifndef USE_HEAP
 	if(!testRAM()) 
 	{
-		RAMErrorMenu();
+		incompatibleMenu();
 		return 1;
 	}
+#else
+	allocCheck(save.tileData);
+#endif
+
+//	Makes it easier to see if a world load error occurs
+	memset(save.tileData, 0, WORLD_WIDTH * WORLD_HEIGHT * sizeof(Tile));
 
 	srand(RTC_GetTicks());
 

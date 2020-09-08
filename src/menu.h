@@ -66,3 +66,8 @@ the version of the game, and may not load.
 saveVersion: Version string of the save.
 */
 void saveVersionDifferenceMenu(char *saveVersion);
+
+/* incompatibleMenu
+A menu to inform the player that they cannot use this version of the addin.
+*/
+void incompatibleMenu();
