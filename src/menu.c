@@ -203,7 +203,7 @@ void loadFailMenu()
 
 	dclear(C_WHITE);
 	dtext(0, 0, C_BLACK, "Failed to load");
-	if(save.error > -1) dprint(0, 8, C_BLACK, "\\TERRARIO\\reg%d.dat", save.error);
+	if(save.error > -1) dprint(0, 8, C_BLACK, "\\TERRARIO\\reg%i-%i.dat", save.error >> 4, save.error & 0xf);
 	if(save.error == -1) dtext(0, 8, C_BLACK, "\\TERRARIO\\player.dat");
 	dtext(0, 16, C_BLACK, "Please report bug or");
 	dtext(0, 24, C_BLACK, "delete \\TERRARIO.");
@@ -230,7 +230,7 @@ void saveFailMenu()
 
 	dclear(C_WHITE);
 	dtext(0, 0, C_BLACK, "Failed to write");
-	dprint(0, 8, C_BLACK, "\\TERRARIO\\reg%d.dat", save.error);
+	dprint(0, 8, C_BLACK, "\\TERRARIO\\reg%i-%i.dat", save.error >> 4, save.error & 0xf);
 	dtext(0, 16, C_BLACK, "Please optimise SMEM");
 	dtext(0, 24, C_BLACK, "and ensure 250kB free");
 	dtext(0, 32, C_BLACK, "if this is a new save");
@@ -255,8 +255,10 @@ void memoryErrorMenu()
 {
 	key_event_t key;
 
+	dfont(NULL);
+
 	dclear(C_WHITE);
-	dtext(0, 0, C_BLACK, "malloc() returned");
+	dtext(0, 0, C_BLACK, "Mem alloc returned");
 	dtext(0, 8, C_BLACK, "NULL! Please report");
 	dtext(0, 16, C_BLACK, "this bug.");
 	dtext(0, 32, C_BLACK, "[EXIT] to reboot");
@@ -268,7 +270,7 @@ void memoryErrorMenu()
 		switch(key.key)
 		{
 			case KEY_EXIT:
-				RebootOS();;
+				RebootOS();
 			
 			default:
 				break;
@@ -369,6 +371,33 @@ void lowSpaceMenu(int mediaFree)
 	dtext(0, 16, C_BLACK, "Please optimise SMEM");
 	dtext(0, 24, C_BLACK, "and ensure 300kB free");
 	dtext(0, 40, C_BLACK, "[EXIT] to exit");
+	dupdate();
+
+	while(1)
+	{
+		key = getkey_opt(GETKEY_NONE, NULL);
+		switch(key.key)
+		{
+			case KEY_EXIT:
+				return;
+			
+			default:
+				break;
+		}
+	}
+}
+
+void saveVersionDifferenceMenu(char *saveVersion)
+{
+	key_event_t key;
+
+	dclear(C_WHITE);
+	dtext(0, 0, C_BLACK, "Save version:");
+	dtext(0, 8, C_BLACK, saveVersion);
+	dtext(0, 16, C_BLACK, "Game version:");
+	dtext(0, 24, C_BLACK, VERSION);
+	dtext(0, 32, C_BLACK, "Save may not load.");
+	dtext(0, 48, C_BLACK, "[EXIT] to continue");
 	dupdate();
 
 	while(1)

@@ -16,20 +16,36 @@ img_item_wood,
 img_item_wbench,
 img_item_platform,
 img_item_chair,
-img_item_sword,
+img_item_copper_sword,
+img_item_copper_pick,
 img_item_gel;
 
 const ItemData items[] = {
 //		Sprite				Max		Tile							Swingable?
-	{	&img_item_null,		0,		TILE_NULL,		"Null",			false	},	// ITEM_NULL
-	{	&img_item_stone,	999,	TILE_STONE,		"Stone",		false	},	// ITEM_STONE
-	{	&img_item_dirt,		999,	TILE_DIRT,		"Dirt",			false	},	// ITEM_DIRT
-	{	&img_item_wood,		999,	TILE_WOOD,		"Wood",			false	},	// ITEM_WOOD
-	{	&img_item_wbench,	99,		TILE_WBENCH_L,	"Workbench",	false	},	// ITEM_WORKBENCH
-	{	&img_item_platform,	999,	TILE_PLATFORM,	"Platform",		false	},	// ITEM_PLATFORM
-	{	&img_item_chair,	99,		TILE_CHAIR,		"Chair",		false	},	// ITEM_CHAIR
-	{	&img_item_sword,	1,		TILE_NULL,		"Sword",		true	},	// ITEM_SWORD
-	{	&img_item_gel,		999,	TILE_NULL,		"Gel",			false	}	// ITEM_GEL
+	{	&img_item_null,			0,		TILE_NULL,		"Null",			false	},	// ITEM_NULL
+	{	&img_item_stone,		999,	TILE_STONE,		"Stone",		false	},	// ITEM_STONE
+	{	&img_item_dirt,			999,	TILE_DIRT,		"Dirt",			false	},	// ITEM_DIRT
+	{	&img_item_wood,			999,	TILE_WOOD,		"Wood",			false	},	// ITEM_WOOD
+	{	&img_item_wbench,		99,		TILE_WBENCH_L,	"Workbench",	false	},	// ITEM_WORKBENCH
+	{	&img_item_platform,		999,	TILE_PLATFORM,	"Platform",		false	},	// ITEM_PLATFORM
+	{	&img_item_chair,		99,		TILE_CHAIR,		"Chair",		false	},	// ITEM_CHAIR
+	{	&img_item_copper_sword,	1,		TILE_NULL,		"Copper Sword",	true	},	// ITEM_COPPER_SWORD
+	{	&img_item_copper_pick,	1,		TILE_NULL,		"Copper Pick",	true	},	// ITEM_COPPER_PICK
+	{	&img_item_gel,			999,	TILE_NULL,		"Gel",			false	}	// ITEM_GEL
+};
+
+const struct PickData pickData[NUM_PICKS] = {
+	{.power = 35, .speed = 15, .knockback = 2, .damage = 4}
+};
+const int pickMap[NUM_PICKS][2] = {
+	{ITEM_COPPER_PICK, 0}
+};
+
+const struct SwordData swordData[NUM_SWORDS] = {
+	{.knockback = 5, .damage = 8}
+};
+const int swordMap[NUM_SWORDS][2] = {
+	{ITEM_COPPER_SWORD, 0}
 };
 
 int getFirstFreeSlot(enum Items item)
@@ -44,7 +60,7 @@ int getFirstFreeSlot(enum Items item)
 		{
 			firstEmptySlot = slot;
 		} 
-		if(check.id == item && check.number < items[check.id].maxStack) return slot;
+		if(check.id == item && check.amount < items[check.id].maxStack) return slot;
 	}
 
 	if(firstEmptySlot > -1) return firstEmptySlot;
@@ -65,9 +81,10 @@ int findSlot(enum Items item)
 void removeItem(int slot)
 {
 	Item *item = &player.inventory.items[slot];
+	if(item->id == ITEM_NULL || item->amount == 0) return;
 
-	item->number--;
-	if(item->number == 0) *item = (Item){ITEM_NULL, 0};
+	item->amount--;
+	if(item->amount <= 0) *item = (Item){ITEM_NULL, 0};
 }
 
 void stackItem(Item *dest, Item *source)
@@ -76,19 +93,20 @@ void stackItem(Item *dest, Item *source)
 	{
 		*dest = *source;
 		*source = (Item){ITEM_NULL, 0};
+		return;
 	}
 
 	if(dest->id != source->id) return;
 
-	if(dest->number + source->number <= items[dest->id].maxStack)
+	if(dest->amount + source->amount <= items[dest->id].maxStack)
 	{
-		dest->number += source->number;
+		dest->amount += source->amount;
 		*source = (Item){ITEM_NULL, 0};
 	}
 	else
 	{
-		source->number -= (items[dest->id].maxStack - dest->number);
-		dest->number = items[dest->id].maxStack;
+		source->amount -= (items[dest->id].maxStack - dest->amount);
+		dest->amount = items[dest->id].maxStack;
 	}
 }
 
@@ -98,7 +116,7 @@ int tallyItem(enum Items item)
 
 	for(int slot = 0; slot < INVENTORY_SIZE; slot++)
 	{
-		if(player.inventory.items[slot].id == item) count += player.inventory.items[slot].number;
+		if(player.inventory.items[slot].id == item) count += player.inventory.items[slot].amount;
 	}
 
 	return count;
@@ -196,7 +214,7 @@ void inventoryMenu()
 				}
 				break;
 			case KEY_F2:
-				if((item->id == held.id && held.number < items[held.id].maxStack) || held.id == ITEM_NULL)
+				if((item->id == held.id && held.amount < items[held.id].maxStack) || held.id == ITEM_NULL)
 				{
 					player.inventory.stackItem(&held, &(Item){item->id, 1});
 					player.inventory.removeItem(hoverSlot);

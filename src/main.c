@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <gint/std/string.h>
 #include <gint/clock.h>
+#include <gint/bfile.h>
 
 #include "defs.h"
 #include "syscalls.h"
@@ -33,6 +34,7 @@ const unsigned int sc042E[] = { SCA, SCB, SCE, 0x042E };
 struct SaveData save;
 struct World world;
 struct Player player;
+char versionBuffer[16];
 
 // Governs the 60UPS loop
 int frameCallback(volatile int *flag)
@@ -57,7 +59,7 @@ void positionPlayerAtWorldMiddle()
 	int playerY = 0;
 	while(1)
 	{
-		if(getTile(playerX, playerY).idx != 0)
+		if(getTile(playerX, playerY).idx != TILE_NOTHING)
 		{
 			playerY = (playerY - 3);
 			break;
@@ -77,6 +79,7 @@ enum UpdateReturnCodes keyboardUpdate()
 	key_event_t key;
 	enum Tiles tile;
 	bool playerDead =  player.combat.health <= 0;
+	int currID;
 
 	key = pollevent();
 	while(key.type != KEYEV_NONE)
@@ -110,6 +113,29 @@ enum UpdateReturnCodes keyboardUpdate()
 			
 			case KEY_F1: case KEY_F2: case KEY_F3: case KEY_F4: case KEY_F5:
 				if(player.swingFrame == 0 && !playerDead) player.inventory.hotbarSlot = keycode_function(key.key) - 1;
+				currID = player.inventory.getSelected()->id;
+				switch(currID)
+				{
+					case ITEM_COPPER_PICK:
+						player.tool.type = TOOL_TYPE_PICK;
+						for(int i = 0; i < NUM_PICKS; i++)
+						{
+							if(pickMap[i][0] == currID) player.tool.data.pickData = &pickData[pickMap[i][1]];
+						}
+						break;
+					
+					case ITEM_COPPER_SWORD:
+						player.tool.type = TOOL_TYPE_SWORD;
+						for(int i = 0; i < NUM_SWORDS; i++)
+						{
+							if(swordMap[i][0] == currID) player.tool.data.swordData = &swordData[swordMap[i][1]];
+						}
+						break;
+					
+					default:
+						player.tool.type = TOOL_TYPE_NONE;
+						break;
+				}
 				break;
 
 			case KEY_MENU:
@@ -133,12 +159,16 @@ enum UpdateReturnCodes keyboardUpdate()
 			{
 				player.swingFrame = 32;
 				player.swingDir = player.cursorTile.x < player.props.x >> 3;
-			}
-			else
-			{
-				x = player.cursorTile.x;
-				y = player.cursorTile.y;
-				world.removeTile(x, y);
+				switch(player.inventory.getSelected()->id)
+				{
+					case ITEM_COPPER_PICK:
+						x = player.cursorTile.x;
+						y = player.cursorTile.y;
+						world.removeTile(x, y);
+
+					default:
+						break;
+				}
 			}
 		}
 
@@ -170,7 +200,7 @@ enum UpdateReturnCodes keyboardUpdate()
 			player.props.dropping = true;
 		}
 		if(keydown(KEY_2)) player.props.dropping = true;
-		if((!keydown(KEY_8) && !keydown(KEY_2)) || (keydown(KEY_8) && !keydown(KEY_2) && player.props.yVel <= 0)) player.props.dropping = false;
+		if(!keydown_any(KEY_8, KEY_2, 0) || (keydown(KEY_8) && !keydown(KEY_2) && player.props.yVel <= 0)) player.props.dropping = false;
 
 //		Cursor
 		if(keydown(KEY_LEFT)) player.cursor.x--;
@@ -252,7 +282,11 @@ int main(void)
 		.tileDataSize = WORLD_HEIGHT * WORLD_WIDTH * sizeof(Tile),
 		.regionsX = REGIONS_X,
 		.regionsY = REGIONS_Y,
+#ifndef USE_HEAP
 		.tileData = (void*)RAM_START,
+#else
+		.tileData = malloc(WORLD_WIDTH * WORLD_HEIGHT),
+#endif
 		.regionData = { 0 },
 		.error = -99,
 	};
@@ -268,7 +302,6 @@ int main(void)
 
 	srand(RTC_GetTicks());
 
-	dgray_setdelays(923, 1742);
 	dgray(DGRAY_ON);
 
 	menuSelect = mainMenu();
@@ -313,6 +346,8 @@ int main(void)
 			.getSelected = &getSelected
 		},
 
+		.tool = { TOOL_TYPE_NONE },
+
 		.physics = &handlePhysics
 	};
 
@@ -335,6 +370,8 @@ int main(void)
 		.removeEntity = &removeEntity,
 		.checkFreeEntitySlot = &checkFreeEntitySlot
 	};
+	allocCheck(world.entities);
+	allocCheck(world.explosion.particles);
 
 //	An entity ID of -1 is considered a free slot
 	for(int idx = 0; idx < MAX_ENTITIES; idx++) world.entities[idx] = (Entity){ -1 };
@@ -346,11 +383,18 @@ int main(void)
 		dupdate();
 		generateWorld();
 		memset(save.regionData, 1, save.regionsX * save.regionsY);
-		player.inventory.items[0] = (Item){ITEM_SWORD, 1};
+		player.inventory.items[0] = (Item){ITEM_COPPER_SWORD, 1};
+		player.inventory.items[1] = (Item){ITEM_COPPER_PICK, 1};
 	} 
 	else if(menuSelect == 1) // Load game
 	{
 		dgray(DGRAY_OFF);
+		dclear(C_WHITE);
+		dupdate();
+
+		gint_switch(&getVersionInfo);
+		if(strcmp(versionBuffer, VERSION) != 0) saveVersionDifferenceMenu(versionBuffer);
+
 		dclear(C_WHITE);
 		dsize("Loading World...", NULL, &w, &h);
 		dtext(64 - w / 2, 32 - h / 2, C_BLACK, "Loading World...");
@@ -432,9 +476,10 @@ int main(void)
 	
 	Bfile_GetMediaFree_OS(u"\\\\fls0", mediaFree);
 	if(mediaFree[1] < 250000) lowSpaceMenu(mediaFree[1]);
-	
-	//SMEM_Optimization();
-	RebootOS();
+
+#ifdef USE_HEAP
+	free(save.tileData);
+#endif
 
 	return 1;
 }

@@ -1,5 +1,11 @@
 #pragma once
 
+/*
+----- ENTITY -----
+
+The entity handling system.
+*/
+
 #include <gint/display.h>
 
 #include "inventory.h"
@@ -106,6 +112,7 @@ struct Player {
 	struct Coords cursor;
 	struct Coords cursorTile;
 	struct Inventory inventory;
+	struct PlayerTool tool;
 
 	int swingFrame;
 	bool swingDir;
@@ -117,10 +124,41 @@ extern const struct EntityBase entityTemplates[];
 
 extern struct Player player;
 
+/* handlePhysics
+Performs a physics update on the given EntityPhysicsProps struct.
+
+self: Pointer to the EntityPhysicsProps struct.
+*/
 void handlePhysics(struct EntityPhysicsProps *self);
+
+/* checkCollision
+Checks two EntityPhysicsProps structs for a collision between the two.
+
+first: Pointer to the first EntityPhycisProps struct.
+second: Pointer to the second EntityPhysicsProps struct.
+
+Returns true if a collision has occured, otherwise false.
+*/
 bool checkCollision(struct EntityPhysicsProps *first, struct EntityPhysicsProps *second);
 
+/* attack
+Performs a player attack on an entity or an entity attack on the player.
+Handles damage, knockback, and immunity frames.
+
+entity: Pointer to the involved entity.
+isPlayerAttacking: Indicates whether the player is the one performing the
+attack, or the entity.
+*/
 void attack(Entity *entity, bool isPlayerAttacking);
+
+/* doEntityCycle
+Handles behaviour, attacks, and drops, for all entities.
+
+frames: The.amount of frames passed since the world was loaded.
+*/
 void doEntityCycle(int frames);
 
+/* doSpawningCycle
+Handles spawning and despawning of entities.
+*/
 void doSpawningCycle();

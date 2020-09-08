@@ -220,24 +220,54 @@ void attack(Entity *entity, bool isPlayerAttacking)
 	defenderProps->xVel = (4.0 * sgn(defenderProps->x - attackerProps->x)) * (1.0 - defenderCombat->knockbackResist);
 }
 
+void doEntityDrop(const struct EntityDrops *drops)
+{
+	Item hold;
+	int amount;
+	const Drop *currDrop;
+	int freeSlot;
+
+	for(int drop = 0; drop < drops->num; drop++)
+		{
+			currDrop = &drops->dropList[drop];
+			if(rand() % currDrop->ratioHigh >= currDrop->ratioLow - 1)
+			{
+				amount = (rand() % (currDrop->amountMax - currDrop->amountMin + 1)) + currDrop->amountMin;
+				hold = (Item){currDrop->item, amount};
+
+				while(hold.id != ITEM_NULL)
+				{
+					freeSlot = player.inventory.getFirstFreeSlot(currDrop->item);
+					if(freeSlot > -1)
+					{
+						player.inventory.stackItem(&player.inventory.items[freeSlot], &hold);
+					}
+					else break;
+				}
+			}
+		}
+}
+
 void doEntityCycle(int frames)
 {
 	Entity *ent;
 	struct EntityPhysicsProps weaponProps = { 0 };
-	const Drop *currDrop;
-	Item hold;
-	int freeSlot;
 
 	if(player.swingFrame > 0)
 	{
 		switch(player.inventory.getSelected()->id)
 		{
-			case ITEM_SWORD:
-				player.combat.attack = 6;
+			case ITEM_COPPER_SWORD:
+				player.combat.attack = 8;
+				break;
+
+			case ITEM_COPPER_PICK:
+				player.combat.attack = 4;
 				break;
 			
 			default:
 				player.combat.attack = 0;
+				break;
 		}
 
 		weaponProps = (struct EntityPhysicsProps) {
@@ -269,6 +299,7 @@ void doEntityCycle(int frames)
 					{
 						case ENT_SLIME:
 							ent->mem[3] = 1;
+							break;
 
 						default:
 							break;
@@ -276,24 +307,7 @@ void doEntityCycle(int frames)
 				}
 				if(ent->combat.health <= 0)
 				{
-					for(int drop = 0; drop < ent->drops->num; drop++)
-					{
-						currDrop = &ent->drops->dropList[drop];
-						if(rand() % currDrop->ratioHigh >= currDrop->ratioLow - 1)
-						{
-							hold = (Item){currDrop->item, (rand() % (currDrop->amountMax - currDrop->amountMin + 1)) + currDrop->amountMin};
-
-							while(hold.id != ITEM_NULL)
-							{
-								freeSlot = player.inventory.getFirstFreeSlot(currDrop->item);
-								if(freeSlot > -1)
-								{
-									player.inventory.stackItem(&player.inventory.items[freeSlot], &hold);
-								}
-								else break;
-							}
-						}
-					}
+					doEntityDrop(ent->drops);
 					createExplosion(&world.explosion, ent->props.x + (ent->props.width >> 1), ent->props.y + (ent->props.height >> 1));
 					world.removeEntity(idx);
 				}

@@ -265,11 +265,13 @@ void placeTile(int x, int y, Item *item)
 					{
 						*tile = (Tile){TILE_CHAIR, 0};
 						getTile(x, y - 1) = (Tile){TILE_CHAIR, 1};
+						regionChange(x, y - 1);
 					}
 					else
 					{
 						*tile = (Tile){TILE_CHAIR, 2};
 						getTile(x, y - 1) = (Tile){TILE_CHAIR, 3};
+						regionChange(x, y - 1);
 					}
 					break;
 
@@ -280,8 +282,8 @@ void placeTile(int x, int y, Item *item)
 			if(success)
 			{
 				regionChange(x, y);
-				item->number--;
-				if(item->number == 0) *item = (Item){ITEM_NULL, 0};
+				item->amount--;
+				if(item->amount == 0) *item = (Item){ITEM_NULL, 0};
 			}
 		}
 	}
@@ -309,15 +311,18 @@ void removeTile(int x, int y)
 		switch(tile->idx)
 		{
 			case TILE_WBENCH_L:
+				*tile = nothing;
 				getTile(x + 1, y) = nothing;
 				regionChange(x + 1, y);
 				break;
 			case TILE_WBENCH_R:
+				*tile = nothing;
 				getTile(x - 1, y) = nothing;
 				regionChange(x - 1, y);
 				break;
 
 			case TILE_CHAIR:
+				*tile = nothing;
 				if(getTile(x, y - 1).idx == TILE_NOTHING)
 				{
 					getTile(x, y + 1) = nothing;
@@ -329,13 +334,17 @@ void removeTile(int x, int y)
 					regionChange(x, y - 1);
 				}
 				break;
+			
+			case TILE_GRASS:
+				tile->idx = TILE_DIRT;
+				break;
 
 			default:
+				*tile = nothing;
 				break;
 		}
-		*tile = nothing;
 		regionChange(x, y);
-		if(tiles[getTile(x, y - 1).idx].support == SUPPORT_NEED) removeTile(x, y - 1);
+		if(tile->idx == TILE_NOTHING && tiles[getTile(x, y - 1).idx].support == SUPPORT_NEED) removeTile(x, y - 1);
 	}
 }
 

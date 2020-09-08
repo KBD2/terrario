@@ -32,12 +32,14 @@ const int swingHandleDeltaPositions[4][2] = {
 void renderItem(int x, int y, Item *item)
 {
 	dimage(x + 3, y, items[item->id].sprite);
-	dprint(x + 1, y + 9, C_BLACK, "%d", item->number);
+	dprint(x + 1, y + 9, C_BLACK, "%i", item->amount);
 }
 
 void render()
 {
-	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect, img_leaves, img_swing_sword, img_deathtext;
+	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect,
+	img_leaves, img_swing_copper_sword, img_swing_copper_pick, img_deathtext;
+	bopti_image_t *swingSprite;
 	int camX = min(max(player.props.x + (player.props.width >> 1), camMinX), camMaxX);
 	int camY = min(max(player.props.y + (player.props.height >> 1), camMinY), camMaxY);
 
@@ -166,6 +168,20 @@ void render()
 			entSubrectY = (4 - (player.swingFrame >> 3)) * (player.props.height + 2) + 1;
 			dsubimage(entX, entY, &img_player, entSubrectX, entSubrectY, player.props.width + 4, 15, DIMAGE_NONE);
 
+			switch(player.inventory.getSelected()->id)
+			{
+				case ITEM_COPPER_SWORD:
+					swingSprite = &img_swing_copper_sword;
+					break;
+				
+				case ITEM_COPPER_PICK:
+					swingSprite = &img_swing_copper_pick;
+					break;
+				
+				default:
+					swingSprite = NULL;
+					break;
+			}
 //			Might have to generalise for different sized sprites
 			entX += (player.props.width >> 1) + (player.swingDir ? -12 : 0);
 			entX += swingHandleDeltaPositions[3 - (player.swingFrame >> 3)][0] * (player.swingDir ? -1 : 1);
@@ -174,7 +190,7 @@ void render()
 			entSubrectX = (3 - (player.swingFrame >> 3)) * 17 + 1;
 			entSubrectY = player.swingDir ? 17 : 0;
 
-			dsubimage(entX, entY, &img_swing_sword, entSubrectX, entSubrectY, 16, 16, DIMAGE_NONE);
+			dsubimage(entX, entY, swingSprite, entSubrectX, entSubrectY, 16, 16, DIMAGE_NONE);
 		}
 
 		dimage(player.cursor.x - 2, player.cursor.y - 2, &img_cursor);
@@ -208,24 +224,17 @@ void takeVRAMCapture()
 {
 	uint32_t *light;
 	uint32_t *dark;
-
 	uint16_t *path = u"\\\\fls0\\capt.vram";
 	int descriptor;
 	int size = 2048;
-	void *buffer = malloc(size);
-
-	dgray_getvram(&light, &dark);
-	memcpy(buffer, light, 1024);
-	memcpy(buffer + 1024, dark, 1024);
 
 	BFile_Remove(path);
 	BFile_Create(path, BFile_File, &size);
-
 	descriptor = BFile_Open(path, BFile_WriteOnly);
-	BFile_Write(descriptor, buffer, size);
+	dgray_getvram(&light, &dark);
+	BFile_Write(descriptor, light, 1024);
+	BFile_Write(descriptor, dark, 1024);
 	BFile_Close(descriptor);
-
-	free(buffer);
 }
 
 void createExplosion(struct ParticleExplosion *explosion, int x, int y)
@@ -315,7 +324,7 @@ void takeScreenshot()
 		(unsigned char)(height >> 8),
 		(unsigned char)(height >> 16),
 		(unsigned char)(height >> 24),
-		0x01, 0x00,						// Number of colour planes
+		0x01, 0x00,						//.amount of colour planes
 		0x04, 0x00,						// BPP
 		0x00, 0x00, 0x00, 0x00,			// Compression method
 		(unsigned char)dataSize,		// Raw bitmap data size
@@ -324,8 +333,8 @@ void takeScreenshot()
 		(unsigned char)(dataSize >> 24),
 		0xff, 0x00, 0x00, 0x00,			// Horizontal resolution
 		0xff, 0x00, 0x00, 0x00,			// Vertical resolution
-		0x04, 0x00, 0x00, 0x00,			// Number of palette colours
-		0x00, 0x00, 0x00, 0x00,			// Number of important colours
+		0x04, 0x00, 0x00, 0x00,			//.amount of palette colours
+		0x00, 0x00, 0x00, 0x00,			//.amount of important colours
 		// Colour Table
 		0xff, 0xff, 0xff, 0x00,			// White
 		0x88, 0x88, 0x88, 0x00, 		// Light gray

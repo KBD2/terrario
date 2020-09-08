@@ -10,6 +10,8 @@
 #include "crafting.h"
 #include "entity.h"
 #include "world.h"
+#include "menu.h"
+#include "defs.h"
 #include "render.h"
 
 const struct Recipe recipes[] = {
@@ -24,6 +26,7 @@ const struct Recipe recipes[] = {
 bool *findNearTiles()
 {
 	bool *buffer = (bool*)malloc(TILES_COUNT * sizeof(bool));
+	if(buffer == NULL) memoryErrorMenu();
 	int playerTileX = player.props.x >> 3;
 	int playerTileY = player.props.y >> 3;
 	int checkX, checkY;
@@ -57,7 +60,7 @@ bool checkRecipeIsCraftable(int recipe)
 
 	for(int ingredient = 0; ingredient < checkRecipe->numIngredients; ingredient++)
 	{
-		if(player.inventory.tallyItem(checkRecipe->ingredients[ingredient].id) < checkRecipe->ingredients[ingredient].number)
+		if(player.inventory.tallyItem(checkRecipe->ingredients[ingredient].id) < checkRecipe->ingredients[ingredient].amount)
 		{
 			craftable = false;
 			break;
@@ -96,7 +99,8 @@ void craftingMenu()
 {
 	int selected = 0;
 	int currCraftable;
-	short *craftableRecipes = (short*)malloc(RECIPE_BUFFER_SIZE * sizeof(short));
+	short *craftableRecipes = malloc(RECIPE_BUFFER_SIZE * sizeof(short));
+	allocCheck(craftableRecipes);
 	extern bopti_image_t img_slot, img_hotbarselect;
 	key_event_t key;
 	int recipesMax = 0;
@@ -120,7 +124,7 @@ void craftingMenu()
 			}
 			if(recipe - selected < -4 || recipe - selected > 4) continue;
 			dimage((recipe - selected + 3) * 17 + 5, 1, &img_slot);
-			renderItem((recipe - selected + 3) * 17 + 6, 2, &recipes[currCraftable].result);
+			renderItem((recipe - selected + 3) * 17 + 6, 2, (Item *)&recipes[currCraftable].result);
 		}
 		currCraftable = craftableRecipes[selected];
 		if(currCraftable != -1)
@@ -129,7 +133,7 @@ void craftingMenu()
 			{
 				currIngredient = &recipes[currCraftable].ingredients[i];
 				dimage(i * 16 + 1, 18, &img_slot);
-				renderItem(i * 16 + 2, 19, currIngredient);
+				renderItem(i * 16 + 2, 19, (Item *)currIngredient);
 				dimage(i * 16 + 1, 42, &img_slot);
 				renderItem(i * 16 + 2, 43, &(Item){currIngredient->id, player.inventory.tallyItem(currIngredient->id)});
 			}
@@ -160,18 +164,18 @@ void craftingMenu()
 				for(int i = 0; i < recipes[currCraftable].numIngredients; i++)
 				{
 					currIngredient = &recipes[currCraftable].ingredients[i];
-					numLeft = currIngredient->number;
+					numLeft = currIngredient->amount;
 					while(numLeft > 0)
 					{
 						slot = player.inventory.findSlot(currIngredient->id);
-						if(player.inventory.items[slot].number > numLeft)
+						if(player.inventory.items[slot].amount > numLeft)
 						{
-							player.inventory.items[slot].number -= numLeft;
+							player.inventory.items[slot].amount -= numLeft;
 							numLeft = 0;
 						}
 						else
 						{
-							numLeft -= player.inventory.items[slot].number;
+							numLeft -= player.inventory.items[slot].amount;
 							player.inventory.items[slot] = (Item){ITEM_NULL, 0};
 						}
 						

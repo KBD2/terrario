@@ -1,5 +1,11 @@
 #pragma once
 
+/*
+----- CRAFTING -----
+
+The crafting menu and system.
+*/
+
 #include "inventory.h"
 #include "world.h"
 
@@ -14,4 +20,7 @@ struct Recipe {
 
 extern const struct Recipe recipes[];
 
+/* craftingMenu
+The crafting menu.
+*/
 void craftingMenu();
