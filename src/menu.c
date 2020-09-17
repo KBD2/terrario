@@ -372,7 +372,11 @@ void aboutMenu()
 
 		key = pollevent();
 		while(key.type != KEYEV_NONE) key = pollevent();
-		if(keydown(KEY_EXIT)) return;
+		if(keydown(KEY_EXIT)) 
+		{
+			timer_stop(timer);
+			return;
+		}
 		if(keydown(KEY_UP)) scroll = 0;
 		if(keydown(KEY_DOWN)) scroll = 3;
 		y += scroll;
