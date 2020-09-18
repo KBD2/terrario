@@ -25,7 +25,7 @@ Various macros, constant definitions, and utility functions used throughout the 
 #define WORLD_WIDTH 1000
 #define WORLD_HEIGHT 250
 #else
-#define WORLD_WIDTH 300
+#define WORLD_WIDTH 400
 #define WORLD_HEIGHT 100
 #endif
 

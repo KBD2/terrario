@@ -261,7 +261,7 @@ void memoryErrorMenu()
 	dtext(0, 0, C_BLACK, "Mem alloc returned");
 	dtext(0, 8, C_BLACK, "NULL! Please report");
 	dtext(0, 16, C_BLACK, "this bug.");
-	dtext(0, 32, C_BLACK, "[EXIT] to reboot");
+	dtext(0, 32, C_BLACK, "[EXIT] to quit");
 	dupdate();
 
 	while(1)
@@ -270,7 +270,7 @@ void memoryErrorMenu()
 		switch(key.key)
 		{
 			case KEY_EXIT:
-				RebootOS();
+				while(true) gint_osmenu();
 			
 			default:
 				break;
