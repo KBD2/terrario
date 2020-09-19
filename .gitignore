@@ -1,9 +1,6 @@
 /copytotesting
-.vscode
 build-fx
-build-cg
+.vscode
 *.g1a
 *.code-workspace
-*.txt
-*.zip
-screenshots
+Releases

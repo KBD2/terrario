@@ -83,8 +83,8 @@ enum ToolTypes {
 struct PlayerTool {
 	enum ToolTypes type;
 	union {
-		const struct PickData *pickData;
-		const struct SwordData *swordData;
+		struct PickData pickData;
+		struct SwordData swordData;
 	} data;
 };
 

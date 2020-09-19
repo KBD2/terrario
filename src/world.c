@@ -26,7 +26,7 @@ const TileData tiles[] = {
 	{	&img_tile_nothing,	PHYS_NON_SOLID,	false,	TYPE_TILE,		SUPPORT_NONE,	{-1, -1, -1},								ITEM_NULL,		"Nothing"		},	// TILE_NOTHING
 	{   &img_tile_stone,	PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, -1, -1},						ITEM_STONE,		"Stone"			},	// TILE_STONE
 	{   &img_tile_dirt ,	PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_STONE, TILE_GRASS, -1},				ITEM_DIRT,		"Dirt"			},	// TILE_DIRT
-	{	&img_tile_grass,	PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, -1, -1},						ITEM_DIRT,		"Grass"			},	// TILE_GRASS
+	{	&img_tile_grass,	PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, -1, -1},						ITEM_NULL,		"Grass"			},	// TILE_GRASS
 	{	&img_tile_wood,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1, -1, -1},								ITEM_WOOD,		"Wood"			},	// TILE_WOOD
 	{	&img_tile_trunk,	PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_ROOT_L, TILE_ROOT_R, TILE_LEAVES},	ITEM_WOOD,		"Tree Trunk"	},	// TILE_TRUNK
 	{	&img_tile_root_l,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1, -1, -1},								ITEM_WOOD,		"Tree Root"		},	// TILE_ROOT_L
