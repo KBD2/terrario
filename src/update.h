@@ -7,9 +7,8 @@ Player and keyboard updates.
 */
 
 enum UpdateReturnCodes {
-	UPDATE_EXIT, 		// Exit the game
-	UPDATE_CONTINUE,	// Continue as normal
-	UPDATE_AGAIN		// Run update again ASAP
+	UPDATE_EXIT, 	// Exit the game
+	UPDATE_CONTINUE	// Continue as normal
 };
 
 /* keyboardUpdate

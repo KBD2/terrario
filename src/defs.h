@@ -11,7 +11,9 @@ Various macros, constant definitions, and utility functions used throughout the 
 
 #define allocCheck(x) if((x) == NULL) memoryErrorMenu()
 
-#define VERSION "v0.5.1-indev"
+#define VERSION "v0.5.2-indev"
+
+#define PI 3.14159265358979323846
 
 // Start of the 250kB static RAM region used to store the world
 #define RAM_START 0x88040000
@@ -33,7 +35,10 @@ Various macros, constant definitions, and utility functions used throughout the 
 
 #define INVENTORY_SIZE 24
 
-//.amount of entity slots
+// 12 minutes
+#define DAY_TICKS 43200
+
+// Amount of entity slots
 #define MAX_ENTITIES 5
 // 1/<x> chance to spawn an entity each frame
 #define SPAWN_CHANCE 600

@@ -20,7 +20,10 @@ const unsigned int camMaxX = (WORLD_WIDTH << 3) - (SCREEN_WIDTH >> 1);
 const unsigned int camMinY = SCREEN_HEIGHT >> 1;
 const unsigned int camMaxY = (WORLD_HEIGHT << 3) - (SCREEN_HEIGHT >> 1);
 
-//	For right-facing player
+/*
+For right-facing player
+This compensates for the changing arm/handle position
+*/
 const int swingHandleDeltaPositions[4][2] = {
 //		 dX 	dY
 	{	-11,	-14	},
@@ -31,14 +34,19 @@ const int swingHandleDeltaPositions[4][2] = {
 
 void renderItem(int x, int y, Item *item)
 {
-	dimage(x + 3, y, items[item->id].sprite);
-	dprint(x + 1, y + 9, C_BLACK, "%i", item->amount);
+	
+	if(items[item->id].maxStack > 1) {
+		dprint(x + 1, y + 9, C_BLACK, "%i", item->amount);
+		dimage(x + 3, y, items[item->id].sprite);
+	}
+	else dimage(x + 3, y + 3, items[item->id].sprite);
 }
 
 void render()
 {
 	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect,
-	img_leaves, img_swing_copper_sword, img_swing_copper_pick, img_deathtext;
+	img_leaves, img_swing_copper_sword, img_swing_copper_pick, img_deathtext,
+	img_bg_underground, img_sunmoon, img_bg_night;
 	bopti_image_t *swingSprite;
 	int camX = min(max(player.props.x + (player.props.width >> 1), camMinX), camMaxX);
 	int camY = min(max(player.props.y + (player.props.height >> 1), camMinY), camMaxY);
@@ -68,16 +76,39 @@ void render()
 
 	Item item;
 
+	int orbX, orbY;
+	float dayPolarAngle;
+
+	int hour, minute;
+
 	player.cursorTile.x = (camX + player.cursor.x - (SCREEN_WIDTH >> 1)) >> 3;
 	player.cursorTile.y = (camY + player.cursor.y - (SCREEN_HEIGHT >> 1)) >> 3;
 
 	dclear(C_WHITE);
 
+	if(player.props.y > WORLD_HEIGHT << 2) dimage(0, 0, &img_bg_underground);
+	else
+	{
+		if(world.timeTicks < timeToTicks(4, 30) || world.timeTicks > timeToTicks(19, 30)) dimage(0, 0, &img_bg_night);
+
+		dayPolarAngle = (((float)PI * 2.0) / (float)DAY_TICKS) * (float)world.timeTicks;
+
+//		Sun
+		orbX = 56 * cos(dayPolarAngle + PI / 2.0) + 56;
+		orbY = 64 * sin(dayPolarAngle + PI / 2.0) + 64;
+		dsubimage(orbX, orbY, &img_sunmoon, 0, 0, 16, 16, DIMAGE_NONE);
+		
+//		Moon
+		orbX = 56 * cos(dayPolarAngle - PI / 2.0) + 56;
+		orbY = 64 * sin(dayPolarAngle - PI / 2.0) + 64;
+		dsubimage(orbX, orbY, &img_sunmoon, 16, 0, 16, 16, DIMAGE_NONE);
+	}
+
 	for(unsigned int y = tileTopY; y <= min(tileBottomY + 4, WORLD_HEIGHT - 1); y++)
 	{
 		for(unsigned int x = max(0, tileLeftX - 2); x <= min(tileRightX + 2, WORLD_WIDTH - 1); x++)
 		{
-			if(getTile(x, y).idx == TILE_LEAVES)
+			if(getTile(x, y).id == TILE_LEAVES)
 			{
 				currTileX = (x << 3) - camOffsetX;
 				currTileY = (y << 3) - camOffsetY;
@@ -92,7 +123,7 @@ void render()
 		for(unsigned int x = tileLeftX; x <= tileRightX; x++)
 		{
 			tile = &getTile(x, y);
-			currTile = &tiles[tile->idx];
+			currTile = &tiles[tile->id];
 			currTileX = (x << 3) - camOffsetX;
 			currTileY = (y << 3) - camOffsetY;
 			if(currTile->render)
@@ -143,7 +174,7 @@ void render()
 
 			entX = ent->props.x - (camX - (SCREEN_WIDTH >> 1));
 			entY = ent->props.y - (camY - (SCREEN_HEIGHT >> 1));
-			entSubrectX = !ent->anim.direction ? 0 : ent->props.width;
+			entSubrectX = ent->anim.direction ? ent->props.width : 0;
 			entSubrectY = ent->anim.animationFrame * (ent->props.height + 1) + 1;
 			dsubimage(entX, entY, ent->sprite, entSubrectX, entSubrectY, ent->props.width, ent->props.height, DIMAGE_NONE);
 		}
@@ -199,6 +230,7 @@ void render()
 	if(world.explosion.numParticles > 0)
 	{
 		renderAndUpdateExplosion(&world.explosion, (camX - (SCREEN_WIDTH >> 1)), (camY - (SCREEN_HEIGHT >> 1)));
+		// Only bother rendering 30 frames (60 updates)
 		if(world.explosion.deltaTicks == 30) world.explosion.numParticles = 0;
 	}
 
@@ -212,7 +244,10 @@ void render()
 
 	sprintf(buf, "%i", player.combat.health);
 	dsize(buf, NULL, &width, NULL);
-	dtext(127 - width, 1, C_BLACK, buf);
+	dtext_opt(127 - width, 1, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, buf);
+
+	getTime(&hour, &minute);
+	dprint_opt(81, 1, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, "%02d:%02d", hour, minute);
 
 	if(player.combat.health <= 0)
 	{

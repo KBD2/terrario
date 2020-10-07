@@ -16,11 +16,12 @@
 
 const struct Recipe recipes[] = {
 //		Workbench		Result				N	Ingredient list
-//	{	TILE_WBENCH_L,	{ITEM_WOOD, 2},		1,	(const Item[]){	{ITEM_WOOD,	1}		}	},
-	{	TILE_NULL,		{ITEM_PLATFORM, 2},	1,	(const Item[]){	{ITEM_WOOD, 1}		}	},
-	{	TILE_NULL,		{ITEM_WOOD, 1},		1,	(const Item[]){	{ITEM_PLATFORM, 2}	}	},
-	{	TILE_NULL,		{ITEM_WBENCH, 1},	1,	(const Item[]){	{ITEM_WOOD,	10}		}	},
-	{	TILE_WBENCH_L,	{ITEM_CHAIR, 1},	1,	(const Item[]){	{ITEM_WOOD, 4}		}	}
+	{	TILE_NULL,		{ITEM_PLATFORM, 2},	1,	(const Item[]){ {ITEM_WOOD, 1}										}	},
+	{	TILE_NULL,		{ITEM_WOOD, 1},		1,	(const Item[]){ {ITEM_PLATFORM, 2}									}	},
+	{	TILE_NULL,		{ITEM_WBENCH, 1},	1,	(const Item[]){ {ITEM_WOOD,	10}										}	},
+	{	TILE_WBENCH_L,	{ITEM_CHAIR, 1},	1,	(const Item[]){ {ITEM_WOOD, 4}										}	},
+	{	TILE_NULL,		{ITEM_TORCH, 3},	2,	(const Item[]){ {ITEM_WOOD, 1},		{ITEM_GEL, 1}					}	},
+	{	TILE_WBENCH_L,	{ITEM_FURNACE, 1},	3,	(const Item[]){ {ITEM_STONE, 20}, 	{ITEM_WOOD, 4}, {ITEM_TORCH, 3}	}	},
 };
 
 bool *findNearTiles()
@@ -42,7 +43,7 @@ bool *findNearTiles()
 				checkX = playerTileX + dX;
 				checkY = playerTileY + dY;
 				if(checkX < 0 || checkX >= WORLD_WIDTH || checkY < 0 || checkY >= WORLD_HEIGHT) continue;
-				if(getTile(checkX, checkY).idx == tile)
+				if(getTile(checkX, checkY).id == tile)
 				{
 					buffer[tile] = true;
 				}

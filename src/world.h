@@ -43,7 +43,7 @@ extern const TileData tiles[];
 
 typedef struct {
 //	Index in tiles array
-	unsigned char idx:6;
+	unsigned char id:6;
 	unsigned char variant:2;
 } Tile;
 
@@ -55,14 +55,14 @@ enum Tiles {
 	TILE_GRASS,
 	TILE_WOOD,
 	TILE_TRUNK,
-	TILE_ROOT_L,
-	TILE_ROOT_R,
+	TILE_ROOT_L, TILE_ROOT_R,
 	TILE_LEAVES,
 	TILE_PLANT,
-	TILE_WBENCH_L,
-	TILE_WBENCH_R,
+	TILE_WBENCH_L, TILE_WBENCH_R,
 	TILE_PLATFORM,
 	TILE_CHAIR,
+	TILE_TORCH,
+	TILE_FURNACE_EDGE, TILE_FURNACE_MID,
 
 	TILES_COUNT
 };
@@ -71,6 +71,7 @@ struct World {
 	Tile *tiles;
 	Entity *entities;
 	struct ParticleExplosion explosion;
+	int timeTicks;
 
 	void (*placeTile)(int x, int y, Item *item);
 	void (*removeTile)(int x, int y);
@@ -160,3 +161,20 @@ Checks the world entity slots to see if one is available.
 Returns true if one is available, false if none are available.
 */
 bool checkFreeEntitySlot();
+
+/* timeToTicks
+Returns the ticks for a given 24-hour time.
+
+hour: The hour, from 0 to 23.
+minute: The minute, from 0 to 59.
+
+Returns the corresponding number of day ticks.*/
+int timeToTicks(int hour, int minute);
+
+/* ticksToTime
+Fills the given pointers with the hour and minute.
+
+hour: Pointer to an hour variable.
+minute: Pointer to a minute variable.
+*/
+void getTime(int *hour, int *minute);

@@ -113,9 +113,9 @@ void handlePhysics(struct EntityPhysicsProps *self)
 	{
 		for(int x = tileCheckBox.TL.x; x <= tileCheckBox.BR.x; x++)
 		{
-			if(tiles[getTile(x, y).idx].physics != PHYS_NON_SOLID)
+			if(tiles[getTile(x, y).id].physics != PHYS_NON_SOLID)
 			{
-				if(tiles[getTile(x, y).idx].physics == PHYS_PLATFORM && (y < ((self->y + self->height) >> 3) || self->dropping)) continue;
+				if(tiles[getTile(x, y).id].physics == PHYS_PLATFORM && (y < ((self->y + self->height) >> 3) || self->dropping)) continue;
 
 				struct Rect entBox = {
 					{
@@ -367,12 +367,12 @@ void doSpawningCycle()
 			spawnY = playerTileY + ((rand() % 25) - 12);
 			spawnY = min(max(spawnY, 0), WORLD_HEIGHT - 1);
 
-			if(tiles[getTile(spawnX, spawnY).idx].physics == PHYS_SOLID) continue;
+			if(tiles[getTile(spawnX, spawnY).id].physics == PHYS_SOLID) continue;
 
 			while(spawnY < WORLD_HEIGHT)
 			{
 				spawnY++;
-				if(tiles[getTile(spawnX, spawnY).idx].physics == PHYS_SOLID)
+				if(tiles[getTile(spawnX, spawnY).id].physics == PHYS_SOLID)
 				{
 					if(abs(spawnX - playerTileX) < 9 && abs(spawnY - playerTileY) < 9) break;
 					world.spawnEntity(ENT_SLIME, spawnX << 3, (spawnY << 3) - entityTemplates[ENT_SLIME].props.height);

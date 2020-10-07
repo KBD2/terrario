@@ -61,19 +61,22 @@ void saveGame()
 	Tile regionBuffer[REGION_SIZE * REGION_SIZE];
 	int descriptor;
 	int regionFileSize = sizeof(regionBuffer);
-	int infoFileSize = 16;
-	char *infoBuffer = calloc(16, 1);
+	int infoFileSize = 20;
+	char *infoBuffer = calloc(20, 1);
 	allocCheck(infoBuffer);
+
+	save.timeTicks = world.timeTicks;
 
 	error = BFile_FindFirst(folderPath, &handle, foundPath, &fileInfo);
 	BFile_FindClose(handle);
 	if(error == -1) BFile_Create(folderPath, BFile_Folder, NULL);
 
 	sprintf(infoBuffer, VERSION);
+	*((int *)(infoBuffer + 16)) = save.timeTicks;
 	BFile_Remove(infoPath);
 	BFile_Create(infoPath, BFile_File, &infoFileSize);
 	descriptor = BFile_Open(infoPath, BFile_WriteOnly);
-	BFile_Write(descriptor, (void *)infoBuffer, 16 * sizeof(char));
+	BFile_Write(descriptor, (void *)infoBuffer, 20);
 	BFile_Close(descriptor);
 
 	struct PlayerSave playerSave;
@@ -134,8 +137,10 @@ void loadSave()
 {
 	char *regionFilePath = "\\\\fls0\\TERRARIO\\reg%i-%i.dat";
 	const uint16_t *playerPath = u"\\\\fls0\\TERRARIO\\player.dat";
+	const uint16_t *infoPath = u"\\\\fls0\\TERRARIO\\save.info";
 	char buffer[30];
 	uint16_t filePath[30];
+	char infoBuffer[20];
 
 	int handle;
 	uint16_t foundPath[30];
@@ -159,6 +164,11 @@ void loadSave()
 	descriptor = BFile_Open(playerPath, BFile_ReadOnly);
 	BFile_Read(descriptor, (void *)&playerSave, sizeof(struct PlayerSave), 0);
 	BFile_Close(descriptor);
+
+	descriptor = BFile_Open(infoPath, BFile_ReadOnly);
+	BFile_Read(descriptor, &infoBuffer, 20, 0);
+	BFile_Close(descriptor);
+	memcpy((void *)&save.timeTicks, (void *)(infoBuffer + 16), 4);
 
 	player.combat.health = playerSave.health;
 	memcpy(player.inventory.items, playerSave.items, INVENTORY_SIZE * sizeof(Item));

@@ -64,7 +64,7 @@ void positionPlayerAtWorldMiddle()
 	int playerY = 0;
 	while(1)
 	{
-		if(getTile(playerX, playerY).idx != TILE_NOTHING)
+		if(getTile(playerX, playerY).id != TILE_NOTHING)
 		{
 			playerY = (playerY - 3);
 			break;
@@ -76,20 +76,67 @@ void positionPlayerAtWorldMiddle()
 	player.props.y = playerY << 3;
 }
 
+void gameLoop(volatile int *flag)
+{
+	int respawnCounter = 0;
+	int frames = 0;
+	enum UpdateReturnCodes updateRet;
+	bool renderThisFrame = true;
+
+	while(true)
+	{
+		if(!respawnCounter) playerUpdate(frames);
+
+		updateRet = keyboardUpdate();
+		if(updateRet == UPDATE_EXIT) break;
+
+		doEntityCycle(frames);
+		doSpawningCycle();
+		if(player.combat.health <= 0)
+		{
+			if(respawnCounter == 1)
+			{
+				positionPlayerAtWorldMiddle();
+				player.combat.health = 100;
+				player.props.xVel = 0;
+				player.props.yVel = 0;
+				player.props.dropping = false;
+				respawnCounter = 0;
+				player.combat.currImmuneFrames = player.combat.immuneFrames;
+			}
+			else if(respawnCounter > 0) respawnCounter--;
+			else
+			{
+				createExplosion(&world.explosion, player.props.x + (player.props.width >> 1), player.props.y + (player.props.height >> 1));
+				respawnCounter = 300;
+			}
+		}
+		if(renderThisFrame)
+		{
+			render();
+			dupdate();
+			renderThisFrame = false;
+		}
+		else renderThisFrame = true;
+
+		frames++;
+		world.timeTicks++;
+		if(world.timeTicks >= DAY_TICKS) world.timeTicks = 0;
+		while(!*flag) sleep();
+		*flag = 0;
+	}
+}
+
 // frames increases 60 times per second, take into account
 int main(void)
 {
 	int menuSelect;
 	extern bopti_image_t img_generating;
 	extern font_t font_smalltext;
-	bool renderThisFrame = true;
 	int w, h;
 	int timer;
-	enum UpdateReturnCodes updateRet;
 	volatile int flag = 0;
-	int frames = 0;
 	int mediaFree[2];
-	int respawnCounter = 0;
 
 	save = (struct SaveData){
 		.tileDataSize = WORLD_HEIGHT * WORLD_WIDTH * sizeof(Tile),
@@ -179,6 +226,7 @@ int main(void)
 			.particles = malloc(50 * sizeof(Particle)),
 			.deltaTicks = 0
 		 },
+		 .timeTicks = 0,
 
 		.placeTile = &placeTile,
 		.removeTile = &removeTile,
@@ -202,6 +250,7 @@ int main(void)
 		memset(save.regionData, 1, save.regionsX * save.regionsY);
 		player.inventory.items[0] = (Item){ITEM_COPPER_SWORD, 1};
 		player.inventory.items[1] = (Item){ITEM_COPPER_PICK, 1};
+		world.timeTicks = timeToTicks(8, 0);
 	} 
 	else if(menuSelect == 1) // Load game
 	{
@@ -226,6 +275,8 @@ int main(void)
 		dgray(DGRAY_ON);
 	}
 
+	world.timeTicks = save.timeTicks;
+
 	dfont(&font_smalltext);
 
 	positionPlayerAtWorldMiddle();
@@ -233,49 +284,8 @@ int main(void)
 	timer = timer_setup(TIMER_ANY, (1000 / 60) * 1000, &frameCallback, &flag);
 	timer_start(timer);
 
-	//world.spawnEntity(ENT_SLIME, player.props.x, player.props.y - 100);
-
-	while(true)
-	{
-		if(!respawnCounter) playerUpdate(frames);
-
-		updateRet = keyboardUpdate();
-		if(updateRet == UPDATE_EXIT) break;
-		else if(updateRet == UPDATE_AGAIN) continue;
-
-		doEntityCycle(frames);
-		doSpawningCycle();
-		if(player.combat.health <= 0)
-		{
-			if(respawnCounter == 1)
-			{
-				positionPlayerAtWorldMiddle();
-				player.combat.health = 100;
-				player.props.xVel = 0;
-				player.props.yVel = 0;
-				player.props.dropping = false;
-				respawnCounter = 0;
-				player.combat.currImmuneFrames = player.combat.immuneFrames;
-			}
-			else if(respawnCounter > 0) respawnCounter--;
-			else
-			{
-				createExplosion(&world.explosion, player.props.x + (player.props.width >> 1), player.props.y + (player.props.height >> 1));
-				respawnCounter = 300;
-			}
-		}
-		if(renderThisFrame)
-		{
-			render();
-			dupdate();
-			renderThisFrame = false;
-		}
-		else renderThisFrame = true;
-
-		frames++;
-		while(!flag) sleep();
-		flag = 0;
-	}
+	// Do the game
+	gameLoop(&flag);
 
 	timer_stop(timer);
 	dgray(DGRAY_OFF);

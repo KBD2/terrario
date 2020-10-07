@@ -18,6 +18,7 @@ struct SaveData {
 	int regionsY;
 	unsigned char *tileData;
 	char regionData[NUM_REGIONS];
+	int timeTicks;
 	int error;
 };
 
