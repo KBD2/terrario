@@ -31,6 +31,8 @@ Various macros, constant definitions, and utility functions used throughout the 
 #define WORLD_HEIGHT 100
 #endif
 
+#define WORLD_CLUMP_BUFFER_SIZE 750
+
 #define GRAVITY_ACCEL 0.15
 
 #define INVENTORY_SIZE 24

@@ -34,8 +34,8 @@ struct EntityDrops {
 };
 
 struct Coords {
-	int x;
-	int y;
+	short x;
+	short y;
 };
 
 struct Rect {

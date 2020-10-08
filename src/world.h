@@ -171,7 +171,7 @@ minute: The minute, from 0 to 59.
 Returns the corresponding number of day ticks.*/
 int timeToTicks(int hour, int minute);
 
-/* ticksToTime
+/* getTime
 Fills the given pointers with the hour and minute.
 
 hour: Pointer to an hour variable.

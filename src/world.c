@@ -1,9 +1,13 @@
 #include <gint/std/stdlib.h>
+#include <gint/defs/util.h>
 #include <math.h>
+#include <string.h>
 
 #include "world.h"
 #include "defs.h"
 #include "save.h"
+
+#include <gint/display.h>
 
 #define PI 3.14159265358979323846
 
@@ -43,6 +47,8 @@ const TileData tiles[] = {
 	{	&img_tile_furnace_mid,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_FURNACE,	"Furnace",		},	// TILE_FURNACE_MID
 };
 
+struct Coords *clumpCoords;
+
 int timeToTicks(int hour, int minute)
 {
 	hour %= 24;
@@ -64,15 +70,6 @@ unsigned char makeVar()
 	return (unsigned int)rand() % 3;
 }
 
-float interpolate(float a, float b, float x){
-	float f = (1.0 - cosf(x * PI)) * 0.5;
-    return a * (1.0 - f) + b * f;
-}
-
-float randFloat()
-{
-	return (float)rand() / __RAND_MAX;
-}
 
 void generateTree(int x, int y)
 {
@@ -137,70 +134,153 @@ void breakTree(int x, int y)
 	}
 }
 
-/*
-Top third of world: Air
-1/6th of world: Dirt
-Bottom half of world: Stone
-*/
-void generateWorld()
+float interpolate(float a, float b, float x){
+	float f = (1.0 - cosf(x * PI)) * 0.5;
+    return a * (1.0 - f) + b * f;
+}
+
+float randFloat()
 {
-	float amplitude = 10;
-	int wavelength = 20;
-	float a, b;
+	return (float)rand() / __RAND_MAX;
+}
+
+void perlin(int amplitude, int wavelength, int baseY, enum Tiles tile)
+{
 	int perlinY;
+	float a = randFloat();
+	float b = randFloat();
 
-//	Make some basic layers
-	for(unsigned int y = 0; y < WORLD_HEIGHT; y++)
-	{
-		for(unsigned int x = 0; x < WORLD_WIDTH; x++)
-		{
-			if(y >= WORLD_HEIGHT / 2)
-			{
-				getTile(x, y) = (Tile){TILE_STONE, makeVar()};
-			} else if(y >= WORLD_HEIGHT / 2 - WORLD_HEIGHT / 12)
-			{
-				getTile(x, y) = (Tile){TILE_DIRT, makeVar()};
-			} else
-			{
-				getTile(x, y) = (Tile){TILE_NOTHING, 0};
-			}
-		}
-	}
-
-//	Make some hills using Perlin noise
-	a = randFloat();
-	b = randFloat();
 	for(int x = 0; x < WORLD_WIDTH; x++)
 	{
-		if(x % wavelength == 0){
+		if(x % wavelength == 0)
+		{
 			a = b;
 			b = randFloat();
-			perlinY = WORLD_HEIGHT / 3 + a * amplitude;
+			perlinY = baseY + a * amplitude;
 		}
 		else
 		{
-			perlinY = WORLD_HEIGHT / 3 + interpolate(a, b, (float)(x % wavelength) / wavelength) * amplitude;
+			perlinY = baseY + interpolate(a, b, (float)(x % wavelength) / wavelength) * amplitude;
 		}
-		getTile(x, perlinY) = (Tile){TILE_GRASS, makeVar()};
-		for(int hillY = perlinY + 1; hillY < WORLD_HEIGHT / 2; hillY++) getTile(x, hillY) = (Tile){TILE_DIRT, makeVar()};
+		getTile(x, perlinY) = (Tile){tile, makeVar()};
+		for(int tempY = perlinY; tempY < WORLD_HEIGHT; tempY++)
+		{
+			getTile(x, tempY) = (Tile){tile, makeVar()};
+		}
+	}
+}
+
+void clump(int x, int y, int num, enum Tiles tile, bool maskEmpty)
+{
+	int end = 1;
+	int selected;
+	struct Coords selectedTile;
+	int deltas[4][2] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+	Tile* tileCheck;
+	int checkX, checkY;
+
+	clumpCoords[0] = (struct Coords){x, y};
+
+	while(num > 0)
+	{
+		if(end == 0) return;
+		selected = rand() % end;
+		selectedTile = clumpCoords[selected];
+		clumpCoords[selected] = clumpCoords[end - 1];
+		end--;
+		getTile(selectedTile.x, selectedTile.y) = (Tile){tile, makeVar()};
+		num--;
+		for(int delta = 0; delta < 4; delta++)
+		{
+			checkX = selectedTile.x + deltas[delta][0];
+			checkY = selectedTile.y + deltas[delta][1];
+			if(checkX < 0 || checkX >= WORLD_WIDTH || checkY < 0 || checkY >= WORLD_HEIGHT) continue;
+			tileCheck = &getTile(checkX, checkY);
+			if(tileCheck->id == tile || (maskEmpty && tileCheck->id == TILE_NOTHING)) continue;
+			clumpCoords[end] = (struct Coords){checkX, checkY};
+			end++;
+			if(end >= WORLD_CLUMP_BUFFER_SIZE) end = 0;
+		}
+	}
+}
+
+void generateWorld()
+{
+	int x, y;
+	Tile* tile;
+
+	clumpCoords = malloc(WORLD_CLUMP_BUFFER_SIZE * sizeof(struct Coords));
+	allocCheck(clumpCoords);
+
+	perlin(10, 20, WORLD_HEIGHT / 5, TILE_DIRT);
+
+	perlin(6, 20, WORLD_HEIGHT / 2.8, TILE_STONE);
+
+	for(int i = 0; i < 1000; i++)
+	{
+		x = rand() % WORLD_WIDTH;
+		y = rand() % (int)(WORLD_HEIGHT / 2.8);
+		if(getTile(x, y).id == TILE_DIRT)
+		{
+			clump(x, y, (rand() % 10) + 5, TILE_STONE, true);
+		}
+	}
+
+	for(int i = 0; i < 3000; i++)
+	{
+		x = rand() % WORLD_WIDTH;
+		y = min((rand() % (int)(WORLD_HEIGHT - WORLD_HEIGHT / 2.8)) + WORLD_HEIGHT / 2.8, WORLD_HEIGHT - 1);
+		if(getTile(x, y).id == TILE_STONE)
+		{
+			clump(x, y, (rand() % 10) + 5, TILE_DIRT, true);
+		}
+	}
+
+	for(int i = 0; i < 750; i++)
+	{
+		x = rand() % WORLD_WIDTH;
+		y = min((rand() % (int)(WORLD_HEIGHT - WORLD_HEIGHT / 4)) + WORLD_HEIGHT / 4, WORLD_HEIGHT - 1);
+		clump(x, y, (rand() % 45) + 5, TILE_NOTHING, true);
+	}
+
+	for(int i = 0; i < 150; i++)
+	{
+		x = rand() % WORLD_WIDTH;
+		y = min((rand() % (int)(WORLD_HEIGHT - WORLD_HEIGHT / 3.5)) + WORLD_HEIGHT / 3.5, WORLD_HEIGHT - 1);
+		clump(x, y, (rand() % 100) + 150, TILE_NOTHING, true);
 	}
 
 	for(int x = 0; x < WORLD_WIDTH; x++)
 	{
 		for(int y = 0; y < WORLD_HEIGHT; y++)
 		{
-			if(getTile(x, y).id == TILE_GRASS)
+			tile = &getTile(x, y);
+			if(tile->id == TILE_DIRT)
 			{
-				if(rand() % 8 == 0) generateTree(x, y - 1);
-				else if(rand() % 2 == 0) getTile(x, y - 1) = (Tile){TILE_PLANT, makeVar()};
-				if(getTile(x + 1, y).id == TILE_NOTHING || getTile(x - 1, y).id == TILE_NOTHING)
+				tile->id = TILE_GRASS;
+				if(x == 0 || x == WORLD_WIDTH - 1 || y == WORLD_HEIGHT) break;
+				if(getTile(x - 1, y).id == TILE_NOTHING || getTile(x + 1, y).id == TILE_NOTHING)
 				{
-					getTile(x, y + 1) = (Tile){TILE_GRASS, makeVar()};
+					getTile(x, y + 1).id = TILE_GRASS;
 				}
 				break;
 			}
+			else if(tile->id != TILE_NOTHING) break;
 		}
 	}
+
+	for(int x = 0; x < WORLD_WIDTH; x++)
+	{
+		for(int y = 0; y < WORLD_HEIGHT / 2.8; y++)
+		{
+			if(getTile(x, y).id == TILE_DIRT && findState(x, y) != 15)
+			{
+				getTile(x, y).id = TILE_GRASS;
+			}
+		}
+	}
+
+	//free(clumpCoords);
 }
 
 bool isSameOrFriend(int x, int y, unsigned char idx)
