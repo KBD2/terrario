@@ -306,7 +306,7 @@ void incompatibleMenu()
 
 void aboutMenu()
 {
-	extern bopti_image_t img_confetti;
+	extern bopti_image_t img_confetti, img_arrows;
 	const char *text[] = {
 		"Terrario by KBD2",
 		" ",
@@ -366,6 +366,7 @@ void aboutMenu()
 			dtext_opt(64, 64 - y + line * (height + 6), C_BLACK, C_WHITE, DTEXT_CENTER, DTEXT_TOP, text[line]);
 		}
 		dimage(1, 74 - y + (lines - 1) * (height + 6), &img_confetti);
+		dimage(121, 0, &img_arrows);
 		dupdate();
 
 		scroll = 0.5;
