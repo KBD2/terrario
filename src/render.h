@@ -74,3 +74,10 @@ explosion: Pointer to the explosion.
 offsetX, offsetY: Delta coordinates to be used with a camera.
 */
 void renderAndUpdateExplosion(struct ParticleExplosion *explosion, int offsetX, int offsetY);
+
+/* middleText
+Clears the screen and displays some text in the middle.
+
+text: Pointer to the string to display.
+*/
+void middleText(char *text);

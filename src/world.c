@@ -7,7 +7,7 @@
 #include "defs.h"
 #include "save.h"
 
-#include <gint/display.h>
+#include <gint/gray.h>
 
 #define PI 3.14159265358979323846
 
@@ -24,13 +24,14 @@ img_tile_wbench,
 img_tile_platform,
 img_tile_chair,
 img_tile_torch,
-img_tile_furnace_edge, img_tile_furnace_mid;
+img_tile_furnace_edge, img_tile_furnace_mid,
+img_tile_iron_ore;
 
 const TileData tiles[] = {
 //      Ptr to sprite       	Phys?			Render?	Type?			Support?		Friends (-1 to pad)							Item			Name
 	{	&img_tile_nothing,		PHYS_NON_SOLID,	false,	TYPE_TILE,		SUPPORT_NONE,	{-1, -1, -1},								ITEM_NULL,		"Nothing"		},	// TILE_NOTHING
-	{   &img_tile_stone,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, -1, -1},						ITEM_STONE,		"Stone"			},	// TILE_STONE
-	{   &img_tile_dirt ,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_STONE, TILE_GRASS, -1},				ITEM_DIRT,		"Dirt"			},	// TILE_DIRT
+	{   &img_tile_stone,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_IRON_ORE, -1},				ITEM_STONE,		"Stone"			},	// TILE_STONE
+	{   &img_tile_dirt ,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_STONE, TILE_GRASS, TILE_IRON_ORE},	ITEM_DIRT,		"Dirt"			},	// TILE_DIRT
 	{	&img_tile_grass,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, -1, -1},						ITEM_NULL,		"Grass"			},	// TILE_GRASS
 	{	&img_tile_wood,			PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1, -1, -1},								ITEM_WOOD,		"Wood"			},	// TILE_WOOD
 	{	&img_tile_trunk,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_ROOT_L, TILE_ROOT_R, TILE_LEAVES},	ITEM_WOOD,		"Tree Trunk"	},	// TILE_TRUNK
@@ -45,6 +46,7 @@ const TileData tiles[] = {
 	{	&img_tile_torch,		PHYS_NON_SOLID,	true,	TYPE_SHEET,		SUPPORT_NONE,	{TILE_NOTHING, -1, -1},						ITEM_TORCH,		"Torch",		},	// TILE_TORCH
 	{	&img_tile_furnace_edge,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_FURNACE,	"Furnace",		},	// TILE_FURNACE_EDGE
 	{	&img_tile_furnace_mid,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_FURNACE,	"Furnace",		},	// TILE_FURNACE_MID
+	{	&img_tile_iron_ore,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},				ITEM_IRON_ORE,	"Iron Ore",		},	// TILE_IRON_ORE
 };
 
 struct Coords *clumpCoords;
@@ -67,9 +69,13 @@ void getTime(int *hour, int *minute)
 
 unsigned char makeVar()
 {
-	return (unsigned int)rand() % 3;
+	return rand() % 3;
 }
 
+int randRange(int low, int high)
+{
+	return (rand() % (high - low)) + low;
+}
 
 void generateTree(int x, int y)
 {
@@ -179,12 +185,14 @@ void clump(int x, int y, int num, enum Tiles tile, bool maskEmpty)
 	Tile* tileCheck;
 	int checkX, checkY;
 
+	if(maskEmpty && getTile(x, y).id == TILE_NOTHING) return;
+
 	clumpCoords[0] = (struct Coords){x, y};
 
 	while(num > 0)
 	{
 		if(end == 0) return;
-		selected = rand() % end;
+		selected = (unsigned int)rand() % end;
 		selectedTile = clumpCoords[selected];
 		clumpCoords[selected] = clumpCoords[end - 1];
 		end--;
@@ -212,44 +220,57 @@ void generateWorld()
 	clumpCoords = malloc(WORLD_CLUMP_BUFFER_SIZE * sizeof(struct Coords));
 	allocCheck(clumpCoords);
 
+//	Dirt
+	middleText("Terrain");
 	perlin(10, 20, WORLD_HEIGHT / 5, TILE_DIRT);
 
+//	Stone
 	perlin(6, 20, WORLD_HEIGHT / 2.8, TILE_STONE);
 
+//	Rocks in dirt
+	middleText("Rocks In Dirt");
 	for(int i = 0; i < 1000; i++)
 	{
 		x = rand() % WORLD_WIDTH;
 		y = rand() % (int)(WORLD_HEIGHT / 2.8);
 		if(getTile(x, y).id == TILE_DIRT)
 		{
-			clump(x, y, (rand() % 10) + 5, TILE_STONE, true);
+			clump(x, y, randRange(5, 15), TILE_STONE, true);
 		}
 	}
 
+//	Dirt in rocks
+	middleText("Dirt In Rocks");
 	for(int i = 0; i < 3000; i++)
 	{
 		x = rand() % WORLD_WIDTH;
 		y = min((rand() % (int)(WORLD_HEIGHT - WORLD_HEIGHT / 2.8)) + WORLD_HEIGHT / 2.8, WORLD_HEIGHT - 1);
 		if(getTile(x, y).id == TILE_STONE)
 		{
-			clump(x, y, (rand() % 10) + 5, TILE_DIRT, true);
+			clump(x, y, randRange(5, 15), TILE_DIRT, true);
 		}
 	}
 
+//	Small holes
+	middleText("Small Holes");
 	for(int i = 0; i < 750; i++)
 	{
 		x = rand() % WORLD_WIDTH;
 		y = min((rand() % (int)(WORLD_HEIGHT - WORLD_HEIGHT / 4)) + WORLD_HEIGHT / 4, WORLD_HEIGHT - 1);
-		clump(x, y, (rand() % 45) + 5, TILE_NOTHING, true);
+		clump(x, y, randRange(5, 50), TILE_NOTHING, true);
 	}
 
+//	Caves
+	middleText("Caves");
 	for(int i = 0; i < 150; i++)
 	{
 		x = rand() % WORLD_WIDTH;
 		y = min((rand() % (int)(WORLD_HEIGHT - WORLD_HEIGHT / 3.5)) + WORLD_HEIGHT / 3.5, WORLD_HEIGHT - 1);
-		clump(x, y, (rand() % 100) + 150, TILE_NOTHING, true);
+		clump(x, y, randRange(150, 250), TILE_NOTHING, true);
 	}
 
+//	Grass
+	middleText("Grass");
 	for(int x = 0; x < WORLD_WIDTH; x++)
 	{
 		for(int y = 0; y < WORLD_HEIGHT; y++)
@@ -280,7 +301,16 @@ void generateWorld()
 		}
 	}
 
-	//free(clumpCoords);
+//	Shinies
+	middleText("Shinies");
+	for(int i = 0; i < 750; i++)
+	{
+		x = rand() % WORLD_WIDTH;
+		y = rand() % WORLD_HEIGHT;
+		clump(x, y, randRange(5, 15), TILE_IRON_ORE, true);
+	}
+
+	free(clumpCoords);
 }
 
 bool isSameOrFriend(int x, int y, unsigned char idx)
@@ -401,6 +431,8 @@ void placeTile(int x, int y, Item *item)
 {
 	Tile *tile = &getTile(x, y);
 	bool success = true;
+	int checkDeltas[4][2] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+	int checkX, checkY;
 
 	if(tile->id == TILE_NOTHING || tile->id == TILE_PLANT)
 	{
@@ -444,7 +476,19 @@ void placeTile(int x, int y, Item *item)
 					break;
 
 				default:
-					*tile = (Tile){items[item->id].tile, makeVar()};
+					success = false;
+					for(int check = 0; check < 4; check++)
+					{
+						checkX = x + checkDeltas[check][0];
+						checkY = y + checkDeltas[check][1];
+						if(checkX < 0 || checkX >= WORLD_WIDTH || checkY < 0 || checkY >= WORLD_HEIGHT) continue;
+						if(getTile(checkX, checkY).id != TILE_NOTHING)
+						{
+							success = true;
+							break;
+						}
+					}
+					if(success) *tile = (Tile){items[item->id].tile, makeVar()};
 					break;
 			}
 			if(success)

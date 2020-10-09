@@ -149,7 +149,7 @@ bool exitMenu()
 	dtext(64 - width / 2, 12, C_BLACK, "Quit?");
 	dtext(22, 45, C_BLACK, "MENU: Yes");
 	dsize("EXIT: No", NULL, &width, NULL);
-	dtext(109 - width, 45, C_BLACK, "EXIT: No");
+	dtext(105 - width, 45, C_BLACK, "EXIT: No");
 	dimage(47, 19, &img_quit);
 	dupdate();
 
@@ -363,7 +363,7 @@ void aboutMenu()
 		for(int line = 0; line < lines; line++)
 		{
 			dsize(text[line], NULL, &width, &height);
-			dtext(64 - (width / 2), 64 - y + line * (height + 6), C_BLACK, text[line]);
+			dtext_opt(64, 64 - y + line * (height + 6), C_BLACK, C_WHITE, DTEXT_CENTER, DTEXT_TOP, text[line]);
 		}
 		dimage(1, 74 - y + (lines - 1) * (height + 6), &img_confetti);
 		dupdate();

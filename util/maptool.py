@@ -18,6 +18,7 @@ class Tiles(Enum):
     STONE = (128, 128, 128)
     DIRT = (152, 106, 76)
     GRASS = (38, 127, 0)
+    IRON = (140,101,80)
 
 # Gets replaced with the appropriate function in the actual code
 def setTile(x, y, tile):
@@ -60,6 +61,8 @@ def perlin(amplitude, wavelength, baseY, tile):
 
 # Very versatile function
 def clump(x, y, num, tile, maskEmpty=False):
+    if maskEmpty and getTile(x, y) == Tiles.NOTHING:
+        return
     coords = [(x, y)]
     while num > 0:
         if len(coords) == 0:
@@ -129,6 +132,12 @@ def generate():
                 or getTile(x, y - 1) == Tiles.NOTHING
                 or getTile(x, y + 1) == Tiles.NOTHING):
                 setTile(x, y, Tiles.GRASS)
+
+    print("Shinies...")
+    for i in range(750):
+        x = random.randrange(WORLD_WIDTH)
+        y = random.randrange(0, WORLD_HEIGHT)
+        clump(x, y, random.randrange(5, 15), Tiles.IRON, True)
 
 ##### END ALGORITHM #####
 

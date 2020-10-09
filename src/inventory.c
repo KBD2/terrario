@@ -20,7 +20,8 @@ img_item_copper_sword,
 img_item_copper_pick,
 img_item_gel,
 img_item_torch,
-img_item_furnace;
+img_item_furnace,
+img_item_iron_ore;
 
 const ItemData items[] = {
 //		Sprite				Max			Tile							Swingable?
@@ -36,6 +37,7 @@ const ItemData items[] = {
 	{	&img_item_gel,			999,	TILE_NULL,			"Gel",			false	},	// ITEM_GEL
 	{	&img_item_torch,		99,		TILE_TORCH,			"Torch",		false	},	// ITEM_TORCH
 	{	&img_item_furnace,		99,		TILE_FURNACE_EDGE,	"Furnace",		false	},	// ITEM_FURNACE
+	{	&img_item_iron_ore,		999,	TILE_IRON_ORE,		"Iron Ore",		false	},	// ITEM_IRON_ORE
 };
 
 const struct PickData pickData[NUM_PICKS] = {
@@ -146,6 +148,7 @@ void inventoryMenu()
 	Item held = {ITEM_NULL, 0};
 	int freeSlot;
 	key_event_t key;
+	int width, height;
 
 	getkey_repeat_filter(&inventoryKeyFilter);
 
@@ -166,11 +169,17 @@ void inventoryMenu()
 			renderItem(cursorX - 7, min(35, cursorY - 7), &held);
 		}
 		dimage(cursorX - 2, cursorY - 2, &img_cursor);
+		hoverSlot = (cursorY / 17) * 8 + (cursorX / 16);
+		item = &player.inventory.items[hoverSlot];
+		if(item->id != ITEM_NULL)
+		{
+			dsize(items[item->id].name, NULL, &width, &height);
+			drect(0, 51, width, 52 + height, C_WHITE);
+			dtext(0, 52, C_BLACK, items[item->id].name);
+		}
 		dupdate();
 
 		key = getkey_opt(GETKEY_REP_ALL | GETKEY_REP_FILTER, NULL);
-		hoverSlot = (cursorY / 17) * 8 + (cursorX / 16);
-		item = &player.inventory.items[hoverSlot];
 		switch(key.key)
 		{
 			case KEY_OPTN:

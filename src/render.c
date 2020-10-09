@@ -86,7 +86,7 @@ void render()
 
 	dclear(C_WHITE);
 
-	if(player.props.y > WORLD_HEIGHT << 2) dimage(0, 0, &img_bg_underground);
+	if(player.props.y > (WORLD_HEIGHT / 2.8) * 8) dimage(0, 0, &img_bg_underground);
 	else
 	{
 		if(world.timeTicks < timeToTicks(4, 30) || world.timeTicks > timeToTicks(19, 30)) dimage(0, 0, &img_bg_night);
@@ -317,6 +317,13 @@ void renderAndUpdateExplosion(struct ParticleExplosion *explosion, int offsetX, 
 		particle->xVel *= 0.95;
 	}
 	explosion->deltaTicks++;
+}
+
+void middleText(char *text)
+{
+	dclear(C_WHITE);
+	dtext_opt(64, 32, C_BLACK, C_WHITE, DTEXT_CENTER, DTEXT_CENTER, text);
+	dupdate();
 }
 
 // Prefer the vram capture as this is original size and not good for the web

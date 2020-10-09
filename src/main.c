@@ -131,7 +131,6 @@ void gameLoop(volatile int *flag)
 int main(void)
 {
 	int menuSelect;
-	extern bopti_image_t img_generating;
 	extern font_t font_smalltext;
 	int w, h;
 	int timer;
@@ -243,9 +242,6 @@ int main(void)
 
 	if(menuSelect == 0) // New game
 	{
-		dclear(C_WHITE);
-		dimage(31, 15, &img_generating);
-		dupdate();
 		generateWorld();
 		memset(save.regionData, 1, save.regionsX * save.regionsY);
 		player.inventory.items[0] = (Item){ITEM_COPPER_SWORD, 1};

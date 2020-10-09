@@ -28,6 +28,7 @@ enum Items {
 	ITEM_GEL,
 	ITEM_TORCH,
 	ITEM_FURNACE,
+	ITEM_IRON_ORE,
 
 	ITEMS_COUNT
 };
