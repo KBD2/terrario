@@ -45,6 +45,16 @@ def interpolate(a, b, x):
 def randFloat():
     return random.random()
 
+def poisson(mean):
+	k = 0
+	p = 1
+	L = math.pow(math.e, -mean)
+	while p > L:
+		k += 1
+		u = random.random()
+		p *= u
+	return k - 1
+
 def perlin(amplitude, wavelength, baseY, tile):
     a = randFloat()
     b = randFloat()
@@ -92,27 +102,27 @@ def generate():
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(0, WORLD_HEIGHT // 2.8)
         if getTile(x, y) == Tiles.DIRT:
-            clump(x, y, random.randrange(5, 15), Tiles.STONE, True)
+            clump(x, y, poisson(10), Tiles.STONE, True)
 
     print("Dirt in rocks...")
     for i in range(3000):
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT // 2.8, WORLD_HEIGHT)
         if getTile(x, y) == Tiles.STONE:
-            clump(x, y, random.randrange(5, 15), Tiles.DIRT, True)
+            clump(x, y, poisson(10), Tiles.DIRT, True)
 
     print("Small holes...")
     for i in range(750):
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT // 4, WORLD_HEIGHT)
-        clump(x, y, random.randrange(5, 50), Tiles.NOTHING, True)
+        clump(x, y, poisson(25), Tiles.NOTHING, True)
 
     # A 500-length coord array should be enough for this
     print("Caves...")
     for i in range(150):
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT // 3.5, WORLD_HEIGHT)
-        clump(x, y, random.randrange(150, 250), Tiles.NOTHING, True)
+        clump(x, y, poisson(200), Tiles.NOTHING, True)
     
     print("Generating grass...")
     for x in range(WORLD_WIDTH):
@@ -137,7 +147,7 @@ def generate():
     for i in range(750):
         x = random.randrange(WORLD_WIDTH)
         y = random.randrange(0, WORLD_HEIGHT)
-        clump(x, y, random.randrange(5, 15), Tiles.IRON, True)
+        clump(x, y, poisson(10), Tiles.IRON, True)
 
 ##### END ALGORITHM #####
 

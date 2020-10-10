@@ -77,6 +77,7 @@ void renderAndUpdateExplosion(struct ParticleExplosion *explosion, int offsetX, 
 
 /* middleText
 Clears the screen and displays some text in the middle.
+Meant to be used with world generation.
 
 text: Pointer to the string to display.
 */

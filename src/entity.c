@@ -218,6 +218,8 @@ void attack(Entity *entity, bool isPlayerAttacking)
 	defenderCombat->currImmuneFrames = defenderCombat->immuneFrames;
 	defenderProps->yVel = -3.0 * (1.0 - defenderCombat->knockbackResist);
 	defenderProps->xVel = (4.0 * sgn(defenderProps->x - attackerProps->x)) * (1.0 - defenderCombat->knockbackResist);
+
+	if(!isPlayerAttacking) player.ticksSinceHit = 0;
 }
 
 void doEntityDrop(const struct EntityDrops *drops)
@@ -307,6 +309,7 @@ void doEntityCycle(int frames)
 				}
 				if(ent->combat.health <= 0)
 				{
+					player.inventory.ticksSinceInteracted = 0;
 					doEntityDrop(ent->drops);
 					createExplosion(&world.explosion, ent->props.x + (ent->props.width >> 1), ent->props.y + (ent->props.height >> 1));
 					world.removeEntity(idx);
@@ -375,7 +378,7 @@ void doSpawningCycle()
 				if(tiles[getTile(spawnX, spawnY).id].physics == PHYS_SOLID)
 				{
 					if(abs(spawnX - playerTileX) < 9 && abs(spawnY - playerTileY) < 9) break;
-					world.spawnEntity(ENT_SLIME, spawnX << 3, (spawnY << 3) - entityTemplates[ENT_SLIME].props.height);
+					world.spawnEntity(ENT_SLIME, spawnX << 3, (spawnY << 3) - entityTemplates[ENT_SLIME].props.height - 3);
 				}
 			}
 		}

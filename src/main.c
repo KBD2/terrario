@@ -18,6 +18,9 @@
 #include "crafting.h"
 #include "update.h"
 
+// Fixes linker problem for newlib
+int __errno = 0;
+
 // Syscalls
 const unsigned int sc003B[] = { SCA, SCB, SCE, 0x003B };
 const unsigned int sc019F[] = { SCA, SCB, SCE, 0x019F };
@@ -97,7 +100,7 @@ void gameLoop(volatile int *flag)
 			if(respawnCounter == 1)
 			{
 				positionPlayerAtWorldMiddle();
-				player.combat.health = 100;
+				player.combat.health = player.maxHealth;
 				player.props.xVel = 0;
 				player.props.yVel = 0;
 				player.props.dropping = false;
@@ -174,33 +177,18 @@ int main(void)
 
 		.props = {
 			.width = 12, 
-			.height = 21, 
-			.x = 0, 
-			.y = 0, 
-			.xVel = 0.0, 
-			.yVel = 0.0, 
-			.touchingTileTop = false, 
-			.dropping = false
+			.height = 21
 		},
 
 		.combat = {
 			.health = 100,
 			.alignment = ALIGN_NEUTRAL,
-			.immuneFrames = 40,
-			.currImmuneFrames = 0,
-			.attack = 0,
-			.defense = 0,
-			.knockbackResist = 0.0
+			.immuneFrames = 40
 		},
 
 		.cursor = {75, 32},
-		.cursorTile = { 0 },
-
-		.anim = { 0 },
 
 		.inventory = {
-			{{ 0 }},
-			0,
 			.getFirstFreeSlot = &getFirstFreeSlot,
 			.removeItem = &removeItem,
 			.stackItem = &stackItem,
@@ -210,6 +198,7 @@ int main(void)
 		},
 
 		.tool = { TOOL_TYPE_NONE },
+		.maxHealth = 100,
 
 		.physics = &handlePhysics
 	};
@@ -221,11 +210,8 @@ int main(void)
 		.tiles = (Tile*)save.tileData,
 		.entities = (Entity*)malloc(MAX_ENTITIES * sizeof(Entity)),
 		.explosion = {
-			.numParticles = 0,
-			.particles = malloc(50 * sizeof(Particle)),
-			.deltaTicks = 0
-		 },
-		 .timeTicks = 0,
+			.particles = malloc(50 * sizeof(Particle))
+		},
 
 		.placeTile = &placeTile,
 		.removeTile = &removeTile,
@@ -246,7 +232,7 @@ int main(void)
 		memset(save.regionData, 1, save.regionsX * save.regionsY);
 		player.inventory.items[0] = (Item){ITEM_COPPER_SWORD, 1};
 		player.inventory.items[1] = (Item){ITEM_COPPER_PICK, 1};
-		world.timeTicks = timeToTicks(8, 0);
+		world.timeTicks = timeToTicks(8, 15);
 	} 
 	else if(menuSelect == 1) // Load game
 	{
@@ -270,8 +256,6 @@ int main(void)
 
 		dgray(DGRAY_ON);
 	}
-
-	world.timeTicks = save.timeTicks;
 
 	dfont(&font_smalltext);
 

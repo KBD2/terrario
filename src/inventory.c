@@ -21,7 +21,9 @@ img_item_copper_pick,
 img_item_gel,
 img_item_torch,
 img_item_furnace,
-img_item_iron_ore;
+img_item_iron_ore,
+img_item_iron_bar,
+img_item_anvil;
 
 const ItemData items[] = {
 //		Sprite				Max			Tile							Swingable?
@@ -38,6 +40,8 @@ const ItemData items[] = {
 	{	&img_item_torch,		99,		TILE_TORCH,			"Torch",		false	},	// ITEM_TORCH
 	{	&img_item_furnace,		99,		TILE_FURNACE_EDGE,	"Furnace",		false	},	// ITEM_FURNACE
 	{	&img_item_iron_ore,		999,	TILE_IRON_ORE,		"Iron Ore",		false	},	// ITEM_IRON_ORE
+	{	&img_item_iron_bar,		999,	TILE_NULL,			"Iron Bar",		false	},	// ITEM_IRON_BAR
+	{	&img_item_anvil,		99,		TILE_ANVIL_L,		"Anvil",		false	},	// ITEM_ANVIL
 };
 
 const struct PickData pickData[NUM_PICKS] = {

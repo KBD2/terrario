@@ -234,20 +234,23 @@ void render()
 		if(world.explosion.deltaTicks == 30) world.explosion.numParticles = 0;
 	}
 
-	dimage(0, 0, &img_hotbar);
-	dimage(16 * player.inventory.hotbarSlot, 0, &img_hotbarselect);
-	for(int slot = 0; slot < 5; slot++)
+	if(player.inventory.ticksSinceInteracted < 120)
 	{
-		item = player.inventory.items[slot];
-		if(item.id != ITEM_NULL) renderItem(16 * slot + 1, 1, &item);
+		dimage(0, 0, &img_hotbar);
+		dimage(16 * player.inventory.hotbarSlot, 0, &img_hotbarselect);
+		for(int slot = 0; slot < 5; slot++)
+		{
+			item = player.inventory.items[slot];
+			if(item.id != ITEM_NULL) renderItem(16 * slot + 1, 1, &item);
+		}
 	}
 
-	sprintf(buf, "%i", player.combat.health);
+	sprintf(buf, "%i HP", player.combat.health);
 	dsize(buf, NULL, &width, NULL);
-	dtext_opt(127 - width, 1, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, buf);
+	dtext_opt(128 - width, 0, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, buf);
 
 	getTime(&hour, &minute);
-	dprint_opt(81, 1, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, "%02d:%02d", hour, minute);
+	dprint_opt(128, 6, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "%02d:%02d", hour, minute);
 
 	if(player.combat.health <= 0)
 	{
@@ -321,7 +324,11 @@ void renderAndUpdateExplosion(struct ParticleExplosion *explosion, int offsetX, 
 
 void middleText(char *text)
 {
+	extern bopti_image_t img_generate;
 	dclear(C_WHITE);
+	dsubimage(0, 47, &img_generate, 0, 0, 21, 17, DIMAGE_NONE);
+	dsubimage(107, 47, &img_generate, 22, 0, 21, 17, DIMAGE_NONE);
+	dsubimage(50, 0, &img_generate, 44, 0, 26, 17, DIMAGE_NONE);
 	dtext_opt(64, 32, C_BLACK, C_WHITE, DTEXT_CENTER, DTEXT_CENTER, text);
 	dupdate();
 }

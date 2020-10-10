@@ -116,6 +116,8 @@ struct Player {
 
 	int swingFrame;
 	bool swingDir;
+	int maxHealth;
+	int ticksSinceHit;
 
 	void (*physics)(struct EntityPhysicsProps *self);
 };

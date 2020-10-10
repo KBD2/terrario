@@ -29,6 +29,8 @@ enum Items {
 	ITEM_TORCH,
 	ITEM_FURNACE,
 	ITEM_IRON_ORE,
+	ITEM_IRON_BAR,
+	ITEM_ANVIL,
 
 	ITEMS_COUNT
 };
@@ -51,6 +53,7 @@ extern const ItemData items[];
 struct Inventory {
 	Item items[INVENTORY_SIZE];
 	int hotbarSlot;
+	int ticksSinceInteracted;
 
 	int (*getFirstFreeSlot)(enum Items item);
 	void (*removeItem)(int slot);

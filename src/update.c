@@ -1,6 +1,7 @@
 #include <gint/keyboard.h>
 #include <gint/gint.h>
 #include <gint/defs/util.h>
+#include <math.h>
 
 #include "update.h"
 #include "defs.h"
@@ -20,6 +21,8 @@ enum UpdateReturnCodes keyboardUpdate()
 	bool playerDead =  player.combat.health <= 0;
 	int currID;
 
+	player.inventory.ticksSinceInteracted++;
+
 	key = pollevent();
 	while(key.type != KEYEV_NONE)
 	{
@@ -30,6 +33,7 @@ enum UpdateReturnCodes keyboardUpdate()
 				break;
 			
 			case KEY_SHIFT:
+				player.inventory.ticksSinceInteracted = 0;
 				if(key.type != KEYEV_DOWN || playerDead) break;
 				inventoryMenu();
 //				Immediately go to crafting
@@ -40,6 +44,7 @@ enum UpdateReturnCodes keyboardUpdate()
 				}
 				break;
 			case KEY_ALPHA:
+				player.inventory.ticksSinceInteracted = 0;
 				if(key.type != KEYEV_DOWN || playerDead) break;
 				craftingMenu();
 //				Immediately go to inventory
@@ -51,6 +56,7 @@ enum UpdateReturnCodes keyboardUpdate()
 				break;
 			
 			case KEY_F1: case KEY_F2: case KEY_F3: case KEY_F4: case KEY_F5:
+				player.inventory.ticksSinceInteracted = 0;
 				if(player.swingFrame == 0 && !playerDead) player.inventory.hotbarSlot = keycode_function(key.key) - 1;
 				currID = player.inventory.getSelected()->id;
 				switch(currID)
@@ -103,6 +109,7 @@ enum UpdateReturnCodes keyboardUpdate()
 					{
 						x = player.cursorTile.x;
 						y = player.cursorTile.y;
+						player.inventory.ticksSinceInteracted = 0;
 						world.removeTile(x, y);
 						player.tool.data.pickData.currFramesLeft = player.tool.data.pickData.speed;
 					}
@@ -117,6 +124,7 @@ enum UpdateReturnCodes keyboardUpdate()
 //		Place tile
 		if(keydown(KEY_9))
 		{
+			player.inventory.ticksSinceInteracted = 0;
 			x = player.cursorTile.x;
 			y = player.cursorTile.y;
 			validLeft = x < player.props.x >> 3;
@@ -165,9 +173,25 @@ void playerUpdate(int frames)
 		{5, 5},
 		{6, 19}
 	};
+	int time;
+	float regen;
 
 //	Handle the physics for the player
 	player.physics(&player.props);
+
+	if(player.combat.health < player.maxHealth)
+	{
+		if(player.ticksSinceHit < 1800) time = player.ticksSinceHit / 360;
+		else time = min(6 + (player.ticksSinceHit - 1800) / 600, 9);
+		regen = 0.5 * roundf(
+			(((float)player.maxHealth / 400) * 0.85 + 0.15)
+			* time
+			* (player.props.xVel == 0 && player.props.yVel == 0 ? 1.25 : 0.5)
+		);
+		if(regen > 0 && frames % (int)(60.0/regen) == 0) player.combat.health += 1;
+	}
+
+	player.ticksSinceHit++;
 
 //	Figure out which animation frame the player should be in right now
 	if(player.props.xVel > 0)

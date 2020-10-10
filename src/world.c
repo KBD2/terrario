@@ -25,7 +25,8 @@ img_tile_platform,
 img_tile_chair,
 img_tile_torch,
 img_tile_furnace_edge, img_tile_furnace_mid,
-img_tile_iron_ore;
+img_tile_iron_ore,
+img_tile_anvil;
 
 const TileData tiles[] = {
 //      Ptr to sprite       	Phys?			Render?	Type?			Support?		Friends (-1 to pad)							Item			Name
@@ -47,6 +48,8 @@ const TileData tiles[] = {
 	{	&img_tile_furnace_edge,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_FURNACE,	"Furnace",		},	// TILE_FURNACE_EDGE
 	{	&img_tile_furnace_mid,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_FURNACE,	"Furnace",		},	// TILE_FURNACE_MID
 	{	&img_tile_iron_ore,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},				ITEM_IRON_ORE,	"Iron Ore",		},	// TILE_IRON_ORE
+	{	&img_tile_anvil,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_ANVIL,		"Anvil L",		},	// TILE_ANVIL_L
+	{	&img_tile_anvil,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_ANVIL,		"Anvil R",		},	// TILE_ANVIL_R
 };
 
 struct Coords *clumpCoords;
@@ -72,15 +75,10 @@ unsigned char makeVar()
 	return rand() % 3;
 }
 
-int randRange(int low, int high)
-{
-	return (rand() % (high - low)) + low;
-}
-
-void generateTree(int x, int y)
+void generateTree(int x, int y, int baseHeight)
 {
 	unsigned int top = 0;
-	unsigned int height = 2 + (unsigned int)rand() % 5;
+	unsigned int height = max(1, baseHeight + (rand() % 3) - 1);
 
 	for(unsigned int i = 0; i < height; i++) if(
 		getTile(x - 1, y - i).id == TILE_TRUNK
@@ -147,7 +145,25 @@ float interpolate(float a, float b, float x){
 
 float randFloat()
 {
-	return (float)rand() / __RAND_MAX;
+	return (float)rand() / 0x7fffffff;
+}
+
+int randRange(int low, int high)
+{
+	return (rand() % (high - low)) + low;
+}
+
+int poisson(int lambda)
+{
+	int k = 0;
+	float p = 1;
+	double L = pow(E, -(double)lambda);
+	while(p > L)
+	{
+		k++;
+		p *= randFloat();
+	}
+	return k - 1;
 }
 
 void perlin(int amplitude, int wavelength, int baseY, enum Tiles tile)
@@ -216,6 +232,7 @@ void generateWorld()
 {
 	int x, y;
 	Tile* tile;
+	int copseHeight;
 
 	clumpCoords = malloc(WORLD_CLUMP_BUFFER_SIZE * sizeof(struct Coords));
 	allocCheck(clumpCoords);
@@ -235,7 +252,7 @@ void generateWorld()
 		y = rand() % (int)(WORLD_HEIGHT / 2.8);
 		if(getTile(x, y).id == TILE_DIRT)
 		{
-			clump(x, y, randRange(5, 15), TILE_STONE, true);
+			clump(x, y, poisson(10), TILE_STONE, true);
 		}
 	}
 
@@ -247,7 +264,7 @@ void generateWorld()
 		y = min((rand() % (int)(WORLD_HEIGHT - WORLD_HEIGHT / 2.8)) + WORLD_HEIGHT / 2.8, WORLD_HEIGHT - 1);
 		if(getTile(x, y).id == TILE_STONE)
 		{
-			clump(x, y, randRange(5, 15), TILE_DIRT, true);
+			clump(x, y, poisson(10), TILE_DIRT, true);
 		}
 	}
 
@@ -257,7 +274,7 @@ void generateWorld()
 	{
 		x = rand() % WORLD_WIDTH;
 		y = min((rand() % (int)(WORLD_HEIGHT - WORLD_HEIGHT / 4)) + WORLD_HEIGHT / 4, WORLD_HEIGHT - 1);
-		clump(x, y, randRange(5, 50), TILE_NOTHING, true);
+		clump(x, y, poisson(25), TILE_NOTHING, true);
 	}
 
 //	Caves
@@ -266,7 +283,7 @@ void generateWorld()
 	{
 		x = rand() % WORLD_WIDTH;
 		y = min((rand() % (int)(WORLD_HEIGHT - WORLD_HEIGHT / 3.5)) + WORLD_HEIGHT / 3.5, WORLD_HEIGHT - 1);
-		clump(x, y, randRange(150, 250), TILE_NOTHING, true);
+		clump(x, y, poisson(200), TILE_NOTHING, true);
 	}
 
 //	Grass
@@ -307,7 +324,40 @@ void generateWorld()
 	{
 		x = rand() % WORLD_WIDTH;
 		y = rand() % WORLD_HEIGHT;
-		clump(x, y, randRange(5, 15), TILE_IRON_ORE, true);
+		clump(x, y, poisson(10), TILE_IRON_ORE, true);
+	}
+
+//	Trees
+	middleText("Planting Trees");
+	for(int x = 0; x < WORLD_WIDTH; x++)
+	{
+		if(rand() % 40 == 0)
+		{
+			copseHeight = rand() % 7 + 1;
+			for(; rand() % 10 != 0 && x < WORLD_WIDTH; x += 4)
+			{
+				for(int y = 1; y < WORLD_WIDTH; y++)
+				{
+					tile = &getTile(x, y);
+					if(tile->id == TILE_GRASS)
+					{
+						generateTree(x, y - 1, copseHeight);
+						break;
+					}
+					else if(tile->id != TILE_NOTHING) break;
+				}
+			}
+		}
+	}
+
+//	Weeds
+	middleText("Weeds");
+	for(int x = 0; x < WORLD_WIDTH; x++)
+	{
+		for(int y = 1; y < WORLD_HEIGHT; y++)
+		{
+			if(getTile(x, y).id == TILE_GRASS && getTile(x, y - 1).id == TILE_NOTHING && rand() % 4 > 0) getTile(x, y - 1) = (Tile){TILE_PLANT, makeVar()};
+		}
 	}
 
 	free(clumpCoords);
@@ -427,6 +477,24 @@ void remove3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle)
 	}
 }
 
+bool placeBench(int x, int y, enum Tiles left, enum Tiles right)
+{
+	if(!checkArea(x, y, 2, 1)) return false;
+	getTile(x, y) = (Tile){left, 0};
+	getTile(x + 1, y) = (Tile){right, 1};
+	regionChange(x + 1, y);
+	return true;
+}
+
+void breakBench(int x, int y, enum Tiles left)
+{
+	if(getTile(x, y).id != left) x--;
+	getTile(x, y) = (Tile){TILE_NOTHING, 0};
+	regionChange(x, y);
+	getTile(x + 1, y) = (Tile){TILE_NOTHING, 0};
+	regionChange(x + 1, y);
+}
+
 void placeTile(int x, int y, Item *item)
 {
 	Tile *tile = &getTile(x, y);
@@ -441,14 +509,11 @@ void placeTile(int x, int y, Item *item)
 			switch(item->id)
 			{
 				case ITEM_WBENCH:
-					if(!checkArea(x, y, 2, 1))
-					{
-						success = false;
-						break;
-					}
-					*tile = (Tile){TILE_WBENCH_L, 0};
-					getTile(x + 1, y) = (Tile){TILE_WBENCH_R, 1};
-					regionChange(x + 1, y);
+					if(!placeBench(x, y, TILE_WBENCH_L, TILE_WBENCH_R)) success = false;
+					break;
+				
+				case ITEM_ANVIL:
+					if(!placeBench(x, y, TILE_ANVIL_L, TILE_ANVIL_R)) success = false;
 					break;
 				
 				case ITEM_CHAIR:
@@ -522,15 +587,12 @@ void removeTile(int x, int y)
 		}
 		switch(tile->id)
 		{
-			case TILE_WBENCH_L:
-				*tile = nothing;
-				getTile(x + 1, y) = nothing;
-				regionChange(x + 1, y);
+			case TILE_WBENCH_L: case TILE_WBENCH_R:
+				breakBench(x, y, TILE_WBENCH_L);
 				break;
-			case TILE_WBENCH_R:
-				*tile = nothing;
-				getTile(x - 1, y) = nothing;
-				regionChange(x - 1, y);
+
+			case TILE_ANVIL_L: case TILE_ANVIL_R:
+				breakBench(x, y, TILE_ANVIL_L);
 				break;
 
 			case TILE_CHAIR:

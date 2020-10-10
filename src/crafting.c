@@ -15,13 +15,15 @@
 #include "render.h"
 
 const struct Recipe recipes[] = {
-//		Workbench		Result				N	Ingredient list
-	{	TILE_NULL,		{ITEM_PLATFORM, 2},	1,	(const Item[]){ {ITEM_WOOD, 1}										}	},
-	{	TILE_NULL,		{ITEM_WOOD, 1},		1,	(const Item[]){ {ITEM_PLATFORM, 2}									}	},
-	{	TILE_NULL,		{ITEM_WBENCH, 1},	1,	(const Item[]){ {ITEM_WOOD,	10}										}	},
-	{	TILE_WBENCH_L,	{ITEM_CHAIR, 1},	1,	(const Item[]){ {ITEM_WOOD, 4}										}	},
-	{	TILE_NULL,		{ITEM_TORCH, 3},	2,	(const Item[]){ {ITEM_WOOD, 1},		{ITEM_GEL, 1}					}	},
-	{	TILE_WBENCH_L,	{ITEM_FURNACE, 1},	3,	(const Item[]){ {ITEM_STONE, 20}, 	{ITEM_WOOD, 4}, {ITEM_TORCH, 3}	}	},
+//		Workbench			Result				N	Ingredient list
+	{	TILE_NULL,			{ITEM_PLATFORM, 2},	1,	(const Item[]){ {ITEM_WOOD, 1}										}	},
+	{	TILE_NULL,			{ITEM_WOOD, 1},		1,	(const Item[]){ {ITEM_PLATFORM, 2}									}	},
+	{	TILE_NULL,			{ITEM_WBENCH, 1},	1,	(const Item[]){ {ITEM_WOOD,	10}										}	},
+	{	TILE_WBENCH_L,		{ITEM_CHAIR, 1},	1,	(const Item[]){ {ITEM_WOOD, 4}										}	},
+	{	TILE_NULL,			{ITEM_TORCH, 3},	2,	(const Item[]){ {ITEM_WOOD, 1},		{ITEM_GEL, 1}					}	},
+	{	TILE_WBENCH_L,		{ITEM_FURNACE, 1},	3,	(const Item[]){ {ITEM_STONE, 20}, 	{ITEM_WOOD, 4}, {ITEM_TORCH, 3}	}	},
+	{	TILE_FURNACE_MID,	{ITEM_IRON_BAR, 1}, 1,	(const Item[]){ {ITEM_IRON_ORE, 3}									}	},
+	{	TILE_WBENCH_L,		{ITEM_ANVIL, 1},	1,	(const Item[]){ {ITEM_IRON_BAR, 5}									}	},
 };
 
 bool *findNearTiles()
@@ -124,24 +126,25 @@ void craftingMenu()
 				break;
 			}
 			if(recipe - selected < -4 || recipe - selected > 4) continue;
-			dimage((recipe - selected + 3) * 17 + 5, 1, &img_slot);
-			renderItem((recipe - selected + 3) * 17 + 6, 2, (Item *)&recipes[currCraftable].result);
+			dimage((recipe - selected + 3) * 17 + 5, 0, &img_slot);
+			renderItem((recipe - selected + 3) * 17 + 6, 1, (Item *)&recipes[currCraftable].result);
 		}
 		currCraftable = craftableRecipes[selected];
+		dtext(1, 18, C_BLACK, items[recipes[currCraftable].result.id].name);
 		if(currCraftable != -1)
 		{
 			for(int i = 0; i < recipes[currCraftable].numIngredients; i++)
 			{
 				currIngredient = &recipes[currCraftable].ingredients[i];
-				dimage(i * 16 + 1, 18, &img_slot);
-				renderItem(i * 16 + 2, 19, (Item *)currIngredient);
-				dimage(i * 16 + 1, 42, &img_slot);
-				renderItem(i * 16 + 2, 43, &(Item){currIngredient->id, player.inventory.tallyItem(currIngredient->id)});
+				dimage(i * 16 + 1, 23, &img_slot);
+				renderItem(i * 16 + 2, 24, (Item *)currIngredient);
+				dimage(i * 16 + 1, 46, &img_slot);
+				renderItem(i * 16 + 2, 47, &(Item){currIngredient->id, player.inventory.tallyItem(currIngredient->id)});
 			}
 		}
 
-		dimage(56, 1, &img_hotbarselect);
-		dtext(1, 36, C_BLACK, "You have:");
+		dimage(56, 0, &img_hotbarselect);
+		dtext(1, 41, C_BLACK, "You have:");
 		dupdate();
 
 		key = getkey_opt(GETKEY_REP_ALL, NULL);

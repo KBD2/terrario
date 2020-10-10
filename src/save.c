@@ -169,6 +169,7 @@ void loadSave()
 	BFile_Read(descriptor, &infoBuffer, 20, 0);
 	BFile_Close(descriptor);
 	memcpy((void *)&save.timeTicks, (void *)(infoBuffer + 16), 4);
+	world.timeTicks = save.timeTicks;
 
 	player.combat.health = playerSave.health;
 	memcpy(player.inventory.items, playerSave.items, INVENTORY_SIZE * sizeof(Item));
@@ -202,6 +203,5 @@ void loadSave()
 				}
 			}
 		}
-		
 	}
 }

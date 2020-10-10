@@ -14,6 +14,7 @@ Various macros, constant definitions, and utility functions used throughout the 
 #define VERSION "v0.6.0-indev"
 
 #define PI 3.14159265358979323846
+#define E 2.718281828459045
 
 // Start of the 250kB static RAM region used to store the world
 #define RAM_START 0x88040000
