@@ -77,10 +77,11 @@ unsigned char makeVar()
 
 void generateTree(int x, int y, int baseHeight)
 {
-	unsigned int top = 0;
-	unsigned int height = max(1, baseHeight + (rand() % 3) - 1);
+	int top = 0;
+	int height = max(1, baseHeight + (rand() % 3) - 1);
 
-	for(unsigned int i = 0; i < height; i++) if(
+	if(x == 0 || x == WORLD_WIDTH - 1 ||y < 0 || y >= WORLD_HEIGHT - height) return;
+	for(int i = 0; i < height; i++) if(
 		getTile(x - 1, y - i).id == TILE_TRUNK
 	 || getTile(x + 1, y - i).id == TILE_TRUNK
 	 || getTile(x - 2, y - i).id == TILE_TRUNK
@@ -92,11 +93,11 @@ void generateTree(int x, int y, int baseHeight)
 		getTile(x, y - top) = (Tile){TILE_TRUNK, makeVar()};
 	}
 	getTile(x, y - top) = (Tile){TILE_LEAVES, makeVar()};
-	if(getTile(x - 1, y + 1).id == TILE_GRASS && tiles[getTile(x - 1, y).id].physics == PHYS_NON_SOLID && (unsigned int)rand() % 3 <= 1)
+	if(getTile(x - 1, y + 1).id == TILE_GRASS && tiles[getTile(x - 1, y).id].physics == PHYS_NON_SOLID && rand() % 3 <= 1)
 	{
 		getTile(x - 1, y) = (Tile){TILE_ROOT_L, makeVar()};
 	} 
-	if(getTile(x + 1, y + 1).id == TILE_GRASS && tiles[getTile(x + 1, y).id].physics == PHYS_NON_SOLID && (unsigned int)rand() % 3 <= 1) 
+	if(getTile(x + 1, y + 1).id == TILE_GRASS && tiles[getTile(x + 1, y).id].physics == PHYS_NON_SOLID && rand() % 3 <= 1) 
 	{
 		getTile(x + 1, y) = (Tile){TILE_ROOT_R, makeVar()};
 	}
@@ -108,19 +109,19 @@ void breakTree(int x, int y)
 	int freeSlot;
 	int wood = 0;
 	
-	if(getTile(x - 1, y).id == TILE_ROOT_L)
+	if(x > 0 && getTile(x - 1, y).id == TILE_ROOT_L)
 	{
 		getTile(x - 1, y) = (Tile){TILE_NOTHING, 0};
 		regionChange(x - 1, y);
 		wood++;
 	}
-	if(getTile(x + 1, y).id == TILE_ROOT_R)
+	if(x < WORLD_WIDTH - 1 && getTile(x + 1, y).id == TILE_ROOT_R)
 	{
 		getTile(x + 1, y) = (Tile){TILE_NOTHING, 0};
 		regionChange(x + 1, y);
 		wood++;
 	}
-	for(; getTile(x, y).id == TILE_TRUNK || getTile(x, y).id == TILE_LEAVES; y--)
+	for(; y >= 0 && (getTile(x, y).id == TILE_TRUNK || getTile(x, y).id == TILE_LEAVES); y--)
 	{
 		getTile(x, y) = (Tile){TILE_NOTHING, 0};
 		regionChange(x, y);
@@ -369,7 +370,7 @@ bool isSameOrFriend(int x, int y, unsigned char idx)
 	const unsigned char *friends;
 
 //	Outside world?
-	if(x < 0 || x >= WORLD_WIDTH || y < 0 || y > WORLD_HEIGHT) return 0;
+	if(x < 0 || x >= WORLD_WIDTH || y < 0 || y >= WORLD_HEIGHT) return 0;
 	tile = &getTile(x, y);
 //	Same tile type?
 	if(tile->id == idx) return 1;
@@ -457,6 +458,7 @@ bool place3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle)
 }
 
 // Does not have to be given the top-left tile
+// Doesn't do bounds checking, make sure you are giving a valid object
 void remove3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle)
 {
 //	Find the top left tile
@@ -486,6 +488,7 @@ bool placeBench(int x, int y, enum Tiles left, enum Tiles right)
 	return true;
 }
 
+// Doesn't do bounds checking, make sure you give a valid object
 void breakBench(int x, int y, enum Tiles left)
 {
 	if(getTile(x, y).id != left) x--;
@@ -497,6 +500,7 @@ void breakBench(int x, int y, enum Tiles left)
 
 void placeTile(int x, int y, Item *item)
 {
+	if(x < 0 || x >= WORLD_WIDTH || y < 0 || y >= WORLD_HEIGHT) return;
 	Tile *tile = &getTile(x, y);
 	bool success = true;
 	int checkDeltas[4][2] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
@@ -568,6 +572,7 @@ void placeTile(int x, int y, Item *item)
 
 void removeTile(int x, int y)
 {
+	if(x < 0 || x >= WORLD_WIDTH || y < 0 || y >= WORLD_HEIGHT) return;
 	Tile *tile = &getTile(x, y);
 	int freeSlot;
 	const Tile nothing = {TILE_NOTHING, 0};
