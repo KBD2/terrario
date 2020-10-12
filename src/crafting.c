@@ -130,9 +130,9 @@ void craftingMenu()
 			renderItem((recipe - selected + 3) * 17 + 6, 1, (Item *)&recipes[currCraftable].result);
 		}
 		currCraftable = craftableRecipes[selected];
-		dtext(1, 18, C_BLACK, items[recipes[currCraftable].result.id].name);
 		if(currCraftable != -1)
 		{
+			dtext(1, 18, C_BLACK, items[recipes[currCraftable].result.id].name);
 			for(int i = 0; i < recipes[currCraftable].numIngredients; i++)
 			{
 				currIngredient = &recipes[currCraftable].ingredients[i];
