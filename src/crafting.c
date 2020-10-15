@@ -24,12 +24,13 @@ const struct Recipe recipes[] = {
 	{	TILE_WBENCH_L,		{ITEM_FURNACE, 1},	3,	(const Item[]){ {ITEM_STONE, 20}, 	{ITEM_WOOD, 4}, {ITEM_TORCH, 3}	}	},
 	{	TILE_FURNACE_MID,	{ITEM_IRON_BAR, 1}, 1,	(const Item[]){ {ITEM_IRON_ORE, 3}									}	},
 	{	TILE_WBENCH_L,		{ITEM_ANVIL, 1},	1,	(const Item[]){ {ITEM_IRON_BAR, 5}									}	},
+	{	TILE_WBENCH_L,		{ITEM_CHEST, 1},	2,	(const Item[]){ {ITEM_WOOD, 8},	{ITEM_IRON_BAR, 2}					}	},
 };
 
 bool *findNearTiles()
 {
 	bool *buffer = (bool*)malloc(TILES_COUNT * sizeof(bool));
-	if(buffer == NULL) memoryErrorMenu();
+	allocCheck(buffer);
 	int playerTileX = player.props.x >> 3;
 	int playerTileY = player.props.y >> 3;
 	int checkX, checkY;
@@ -182,7 +183,6 @@ void craftingMenu()
 							numLeft -= player.inventory.items[slot].amount;
 							player.inventory.items[slot] = (Item){ITEM_NULL, 0};
 						}
-						
 					}
 				}
 				result = recipes[currCraftable].result;

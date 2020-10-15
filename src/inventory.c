@@ -23,7 +23,8 @@ img_item_torch,
 img_item_furnace,
 img_item_iron_ore,
 img_item_iron_bar,
-img_item_anvil;
+img_item_anvil,
+img_item_chest;
 
 const ItemData items[] = {
 //		Sprite				Max			Tile							Swingable?
@@ -42,6 +43,7 @@ const ItemData items[] = {
 	{	&img_item_iron_ore,		999,	TILE_IRON_ORE,		"Iron Ore",		false	},	// ITEM_IRON_ORE
 	{	&img_item_iron_bar,		999,	TILE_NULL,			"Iron Bar",		false	},	// ITEM_IRON_BAR
 	{	&img_item_anvil,		99,		TILE_ANVIL_L,		"Anvil",		false	},	// ITEM_ANVIL
+	{	&img_item_chest,		99,		TILE_CHEST_L,		"Chest",		false	},	// ITEM_CHEST
 };
 
 const struct PickData pickData[NUM_PICKS] = {
@@ -88,9 +90,8 @@ int findSlot(enum Items item)
 	return -1;
 }
 
-void removeItem(int slot)
+void removeItem(Item *item)
 {
-	Item *item = &player.inventory.items[slot];
 	if(item->id == ITEM_NULL || item->amount == 0) return;
 
 	item->amount--;
@@ -143,9 +144,9 @@ int inventoryKeyFilter(int key, GUNUSED int duration, GUNUSED int count)
 	return 0;
 }
 
-void inventoryMenu()
+void inventoryMenu(struct Chest* chest)
 {
-	extern bopti_image_t img_inventory, img_cursor;
+	extern bopti_image_t img_inventory, img_cursor, img_inventory_hotbar, img_inventory_tabs;
 	Item *item;
 	int hoverSlot;
 	int cursorX = 64, cursorY = 32;
@@ -153,28 +154,40 @@ void inventoryMenu()
 	int freeSlot;
 	key_event_t key;
 	int width, height;
+	int tab = (chest == NULL) ? 0 : 1;
 
 	getkey_repeat_filter(&inventoryKeyFilter);
 
 	while(true)
 	{
 		render();
+//		Render tab indicator if there's a chest
+		if(chest != NULL)
+		{
+			if(!tab) dsubimage(89, 55, &img_inventory_tabs, 0, 0, 89, 9, DIMAGE_NONE);
+			else dsubimage(89, 55, &img_inventory_tabs, 0, 9, 89, 9, DIMAGE_NONE);
+		}
+
+//		Render all items in the tabbed storage
 		dimage(0, 0, &img_inventory);
+		if(!tab) dimage(0, 0, &img_inventory_hotbar);
 		for(int slot = 0; slot < INVENTORY_SIZE; slot++)
 		{
-			item = &player.inventory.items[slot];
+			item = tab ? &chest->items[slot] : &player.inventory.items[slot];
 			if(item->id != ITEM_NULL)
 			{
 				renderItem((slot % 8) * 16 + 1, (slot / 8) * 17 + 1, item);
 			}
 		}
+
 		if(held.id != ITEM_NULL)
 		{
 			renderItem(cursorX - 7, min(35, cursorY - 7), &held);
 		}
+
 		dimage(cursorX - 2, cursorY - 2, &img_cursor);
 		hoverSlot = (cursorY / 17) * 8 + (cursorX / 16);
-		item = &player.inventory.items[hoverSlot];
+		item = tab ? &chest->items[hoverSlot] : &player.inventory.items[hoverSlot];
 		if(item->id != ITEM_NULL)
 		{
 			dsize(items[item->id].name, NULL, &width, &height);
@@ -223,6 +236,7 @@ void inventoryMenu()
 			case KEY_F1:
 				if(item->id == held.id)
 				{
+//					Storage-agnostic, works with the chest inventory
 					player.inventory.stackItem(item, &held);
 				}
 				else
@@ -234,8 +248,16 @@ void inventoryMenu()
 				if((item->id == held.id && held.amount < items[held.id].maxStack) || held.id == ITEM_NULL)
 				{
 					player.inventory.stackItem(&held, &(Item){item->id, 1});
-					player.inventory.removeItem(hoverSlot);
+//					Also storage-agnostic
+					player.inventory.removeItem(item);
 				}
+				break;
+			
+			case KEY_F5:
+				tab = 0;
+				break;
+			case KEY_F6:
+				if(chest != NULL) tab = 1;
 				break;
 
 			case KEY_DEL:

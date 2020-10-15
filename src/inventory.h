@@ -11,6 +11,7 @@ The inventory menu and API functions.
 
 #include "defs.h"
 #include "menu.h"
+#include "chest.h"
 
 #define NUM_PICKS 1
 #define NUM_SWORDS 1
@@ -31,6 +32,7 @@ enum Items {
 	ITEM_IRON_ORE,
 	ITEM_IRON_BAR,
 	ITEM_ANVIL,
+	ITEM_CHEST,
 
 	ITEMS_COUNT
 };
@@ -48,6 +50,12 @@ typedef struct {
 	int amount;
 } Item;
 
+struct Chest {
+	int topX;
+	int topY;
+	Item items[INVENTORY_SIZE];
+};
+
 extern const ItemData items[];
 
 struct Inventory {
@@ -56,7 +64,7 @@ struct Inventory {
 	int ticksSinceInteracted;
 
 	int (*getFirstFreeSlot)(enum Items item);
-	void (*removeItem)(int slot);
+	void (*removeItem)(Item *item);
 	void (*stackItem)(Item *dest, Item *source);
 	int (*tallyItem)(enum Items item);
 	int (*findSlot)(enum Items item);
@@ -117,9 +125,9 @@ int findSlot(enum Items item);
 Removes a single item from the stack at the given slot. Works even if no item
 is present in the slot.
 
-slot: The slot to remove an item from.
+item: Pointer to the item to decrement.
 */
-void removeItem(int slot);
+void removeItem(Item *item);
 
 /* stackItem
 Stacks the source item onto the destination item. Does nothing if the types
@@ -149,5 +157,7 @@ Item *getSelected();
 
 /* inventoryMenu
 The inventory menu.
+
+chest: Pointer to a chest, can be NULL.
 */
-void inventoryMenu();
+void inventoryMenu(struct Chest* chest);

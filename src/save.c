@@ -48,6 +48,7 @@ void saveGame()
 	const uint16_t *folderPath = u"\\\\fls0\\TERRARIO";
 	const uint16_t *playerPath = u"\\\\fls0\\TERRARIO\\player.dat";
 	const uint16_t *infoPath = u"\\\\fls0\\TERRARIO\\save.info";
+	const uint16_t *chestPath = u"\\\\fls0\\TERRARIO\\chests.dat";
 	int handle;
 	uint16_t foundPath[30];
 	struct BFile_FileInfo fileInfo;
@@ -62,34 +63,46 @@ void saveGame()
 	int descriptor;
 	int regionFileSize = sizeof(regionBuffer);
 	int infoFileSize = 20;
+	int chestDataSize = world.chests.number * sizeof(struct Chest);
 	char *infoBuffer = calloc(20, 1);
 	allocCheck(infoBuffer);
 
 	save.timeTicks = world.timeTicks;
 
+//	Create the folder if it doesn't exist
 	error = BFile_FindFirst(folderPath, &handle, foundPath, &fileInfo);
 	BFile_FindClose(handle);
 	if(error == -1) BFile_Create(folderPath, BFile_Folder, NULL);
 
+//	Create save.info and put the nersion and day ticks inside
 	sprintf(infoBuffer, VERSION);
 	*((int *)(infoBuffer + 16)) = save.timeTicks;
 	BFile_Remove(infoPath);
 	BFile_Create(infoPath, BFile_File, &infoFileSize);
 	descriptor = BFile_Open(infoPath, BFile_WriteOnly);
-	BFile_Write(descriptor, (void *)infoBuffer, 20);
+	BFile_Write(descriptor, infoBuffer, 20);
 	BFile_Close(descriptor);
 
+//	Create player.dat and put in player information and inventory
 	struct PlayerSave playerSave;
 	playerSave.health = player.combat.health;
 	memcpy(playerSave.items, player.inventory.items, INVENTORY_SIZE * sizeof(Item));
-
 	int playerSaveSize = sizeof(struct PlayerSave);
-
 	BFile_Remove(playerPath);
 	BFile_Create(playerPath, BFile_File, &playerSaveSize);
 	descriptor = BFile_Open(playerPath, BFile_WriteOnly);
-	BFile_Write(descriptor, (void *)&playerSave, playerSaveSize);
+	BFile_Write(descriptor, &playerSave, playerSaveSize);
 	BFile_Close(descriptor);
+
+//	Create chests.dat and put in all the world chests
+	BFile_Remove(chestPath);
+	if(chestDataSize > 0)
+	{
+		BFile_Create(chestPath, BFile_File, &chestDataSize);
+		descriptor = BFile_Open(chestPath, BFile_WriteOnly);
+		BFile_Write(descriptor, world.chests.chests, chestDataSize);
+		BFile_Close(descriptor);
+	}
 
 	for(int y = 0; y < save.regionsY; y++)
 	{
@@ -138,6 +151,7 @@ void loadSave()
 	char *regionFilePath = "\\\\fls0\\TERRARIO\\reg%i-%i.dat";
 	const uint16_t *playerPath = u"\\\\fls0\\TERRARIO\\player.dat";
 	const uint16_t *infoPath = u"\\\\fls0\\TERRARIO\\save.info";
+	const uint16_t *chestPath = u"\\\\fls0\\TERRARIO\\chests.dat";
 	char buffer[30];
 	uint16_t filePath[30];
 	char infoBuffer[20];
@@ -170,6 +184,16 @@ void loadSave()
 	BFile_Close(descriptor);
 	memcpy((void *)&save.timeTicks, (void *)(infoBuffer + 16), 4);
 	world.timeTicks = save.timeTicks;
+
+	error = BFile_FindFirst(chestPath, &handle, foundPath, &fileInfo);
+	BFile_FindClose(handle);
+	if(error == 0)
+	{
+		descriptor = BFile_Open(chestPath, BFile_ReadOnly);
+		world.chests.number = fileInfo.data_size / sizeof(struct Chest);
+		BFile_Read(descriptor, (void *)world.chests.chests, fileInfo.data_size, 0);
+		BFile_Close(descriptor);
+	}
 
 	player.combat.health = playerSave.health;
 	memcpy(player.inventory.items, playerSave.items, INVENTORY_SIZE * sizeof(Item));

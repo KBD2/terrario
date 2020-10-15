@@ -11,7 +11,7 @@ Various macros, constant definitions, and utility functions used throughout the 
 
 #define allocCheck(x) if((x) == NULL) memoryErrorMenu()
 
-#define VERSION "v0.6.1-indev"
+#define VERSION "v0.6.2-indev"
 
 #define PI 3.14159265358979323846
 #define E 2.718281828459045
@@ -31,6 +31,8 @@ Various macros, constant definitions, and utility functions used throughout the 
 #define WORLD_WIDTH 400
 #define WORLD_HEIGHT 100
 #endif
+
+#define MAX_CHESTS 50
 
 #define WORLD_CLUMP_BUFFER_SIZE 750
 

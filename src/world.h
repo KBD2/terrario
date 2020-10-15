@@ -12,6 +12,7 @@ The world generation system and API functions.
 #include "inventory.h"
 #include "render.h"
 #include "entity.h"
+#include "chest.h"
 
 #define MAX_FRIENDS 3
 
@@ -65,6 +66,7 @@ enum Tiles {
 	TILE_FURNACE_EDGE, TILE_FURNACE_MID,
 	TILE_IRON_ORE,
 	TILE_ANVIL_L, TILE_ANVIL_R,
+	TILE_CHEST_L, TILE_CHEST_R,
 
 	TILES_COUNT
 };
@@ -74,6 +76,7 @@ struct World {
 	Entity *entities;
 	struct ParticleExplosion explosion;
 	int timeTicks;
+	struct Chests chests;
 
 	void (*placeTile)(int x, int y, Item *item);
 	void (*removeTile)(int x, int y);

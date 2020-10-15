@@ -212,6 +212,12 @@ int main(void)
 		.explosion = {
 			.particles = malloc(50 * sizeof(Particle))
 		},
+		.chests = {
+			.chests = malloc(MAX_CHESTS * sizeof(struct Chest)),
+			.addChest = &addChest,
+			.removeChest = &removeChest,
+			.findChest = &findChest
+		},
 
 		.placeTile = &placeTile,
 		.removeTile = &removeTile,
@@ -222,6 +228,7 @@ int main(void)
 	};
 	allocCheck(world.entities);
 	allocCheck(world.explosion.particles);
+	allocCheck(world.chests.chests);
 
 //	An entity ID of -1 is considered a free slot
 	for(int idx = 0; idx < MAX_ENTITIES; idx++) world.entities[idx] = (Entity){ -1 };
@@ -279,6 +286,7 @@ int main(void)
 	destroyExplosion(&world.explosion);
 
 	gint_switch(&saveGame);
+	free(world.chests.chests);
 	if(save.error != -99) saveFailMenu();
 	
 	Bfile_GetMediaFree_OS(u"\\\\fls0", mediaFree);

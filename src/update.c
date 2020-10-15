@@ -20,6 +20,7 @@ enum UpdateReturnCodes keyboardUpdate()
 	enum Tiles tile;
 	bool playerDead =  player.combat.health <= 0;
 	int currID;
+	struct Chest* chest;
 
 	player.inventory.ticksSinceInteracted++;
 
@@ -35,7 +36,7 @@ enum UpdateReturnCodes keyboardUpdate()
 			case KEY_SHIFT:
 				player.inventory.ticksSinceInteracted = 0;
 				if(key.type != KEYEV_DOWN || playerDead) break;
-				inventoryMenu();
+				inventoryMenu(NULL);
 //				Immediately go to crafting
 				if(keydown(KEY_ALPHA))
 				{
@@ -52,6 +53,14 @@ enum UpdateReturnCodes keyboardUpdate()
 				{
 					key.key = KEY_SHIFT;
 					continue;
+				}
+				break;
+			
+			case KEY_8:
+				if(key.type == KEYEV_DOWN && player.props.touchingTileTop) 
+				{
+					player.props.yVel = -4.5;
+					player.props.dropping = true;
 				}
 				break;
 			
@@ -97,26 +106,46 @@ enum UpdateReturnCodes keyboardUpdate()
 
 	if(!playerDead)
 	{
-//		Remove tile
-		if(keydown(KEY_7) && items[player.inventory.getSelected()->id].canSwing)
+		if(keydown(KEY_7))
 		{
-			if(player.swingFrame == 0) player.swingFrame = 32;
-			player.swingDir = player.cursorTile.x < player.props.x >> 3;
-			switch(player.tool.type)
+			if(items[player.inventory.getSelected()->id].canSwing)
 			{
-				case TOOL_TYPE_PICK:
-					if(player.tool.data.pickData.currFramesLeft == 0)
-					{
-						x = player.cursorTile.x;
-						y = player.cursorTile.y;
-						player.inventory.ticksSinceInteracted = 0;
-						world.removeTile(x, y);
-						player.tool.data.pickData.currFramesLeft = player.tool.data.pickData.speed;
-					}
-					else player.tool.data.pickData.currFramesLeft--;
+				if(player.swingFrame == 0) player.swingFrame = 32;
+				player.swingDir = player.cursorTile.x < player.props.x >> 3;
+				switch(player.tool.type)
+				{
+					case TOOL_TYPE_PICK:
+						if(player.tool.data.pickData.currFramesLeft == 0)
+						{
+							x = player.cursorTile.x;
+							y = player.cursorTile.y;
+							player.inventory.ticksSinceInteracted = 0;
+							world.removeTile(x, y);
+							player.tool.data.pickData.currFramesLeft = player.tool.data.pickData.speed;
+						}
+						else player.tool.data.pickData.currFramesLeft--;
 
-				default:
-					break;
+					default:
+						break;
+				}
+			}
+			else
+			{
+				player.inventory.ticksSinceInteracted = 0;
+				x = player.cursorTile.x;
+				y = player.cursorTile.y;
+				validLeft = x < player.props.x >> 3;
+				validRight = x > (player.props.x + player.props.width) >> 3;
+				validTop = y < player.props.y >> 3;
+				validBottom = y > (player.props.y + player.props.height) >> 3;
+				tile = items[player.inventory.getSelected()->id].tile;
+				if(tile != TILE_NULL && tile != TILE_NOTHING)
+				{
+					if(validLeft || validRight || validTop || validBottom || tiles[tile].physics == PHYS_NON_SOLID)
+					{
+						world.placeTile(x, y, player.inventory.getSelected());
+					}
+				}
 			}
 		}
 		else if(player.tool.type == TOOL_TYPE_PICK) player.tool.data.pickData.currFramesLeft = 0;
@@ -127,30 +156,22 @@ enum UpdateReturnCodes keyboardUpdate()
 			player.inventory.ticksSinceInteracted = 0;
 			x = player.cursorTile.x;
 			y = player.cursorTile.y;
-			validLeft = x < player.props.x >> 3;
-			validRight = x > (player.props.x + player.props.width) >> 3;
-			validTop = y < player.props.y >> 3;
-			validBottom = y > (player.props.y + player.props.height) >> 3;
-			tile = items[player.inventory.getSelected()->id].tile;
-			if(tile != TILE_NULL && tile != TILE_NOTHING)
+			tile = getTile(x, y).id;
+			if(tile == TILE_CHEST_L || tile == TILE_CHEST_R)
 			{
-				if(validLeft || validRight || validTop || validBottom || tiles[tile].physics != PHYS_SOLID)
-				{
-					world.placeTile(x, y, player.inventory.getSelected());
-				}
+				if(tile == TILE_CHEST_R) x--;
+				while(getTile(x, y).variant != 0) y--;
+				chest = world.chests.findChest(x, y);
+				if(chest == NULL) world.chests.addChest(x, y);
+				inventoryMenu(world.chests.findChest(x, y));
 			}
 		}
 
 //		Movement
 		if(keydown(KEY_4) && player.props.xVel > -1) player.props.xVel -= 0.3;
 		if(keydown(KEY_6) && player.props.xVel < 1) player.props.xVel += 0.3;
-		if(keydown(KEY_8) && player.props.touchingTileTop) 
-		{
-			player.props.yVel = -4.5;
-			player.props.dropping = true;
-		}
 		if(keydown(KEY_2)) player.props.dropping = true;
-		if(!keydown_any(KEY_8, KEY_2, 0) || (keydown(KEY_8) && !keydown(KEY_2) && player.props.yVel <= 0)) player.props.dropping = false;
+		if(!keydown_any(KEY_8, KEY_2, 0) || (keydown(KEY_8) && !keydown(KEY_2) && player.props.yVel >= 0)) player.props.dropping = false;
 
 //		Cursor
 		if(keydown(KEY_LEFT)) player.cursor.x--;

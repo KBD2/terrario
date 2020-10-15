@@ -26,7 +26,8 @@ img_tile_chair,
 img_tile_torch,
 img_tile_furnace_edge, img_tile_furnace_mid,
 img_tile_iron_ore,
-img_tile_anvil;
+img_tile_anvil,
+img_tile_chest;
 
 const TileData tiles[] = {
 //      Ptr to sprite       	Phys?			Render?	Type?			Support?		Friends (-1 to pad)							Item			Name
@@ -44,12 +45,14 @@ const TileData tiles[] = {
 	{	&img_tile_wbench,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_WBENCH,	"Workbench R"	},	// TILE_WBENCH_R
 	{	&img_tile_platform,		PHYS_PLATFORM,	true,	TYPE_SHEET,		SUPPORT_NONE,	{-1, -1, -1},								ITEM_PLATFORM,	"Platform"		},	// TILE_PLATFORM
 	{	&img_tile_chair,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_CHAIR,		"Chair"			},	// TILE_CHAIR
-	{	&img_tile_torch,		PHYS_NON_SOLID,	true,	TYPE_SHEET,		SUPPORT_NONE,	{TILE_NOTHING, -1, -1},						ITEM_TORCH,		"Torch",		},	// TILE_TORCH
-	{	&img_tile_furnace_edge,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_FURNACE,	"Furnace",		},	// TILE_FURNACE_EDGE
-	{	&img_tile_furnace_mid,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_FURNACE,	"Furnace",		},	// TILE_FURNACE_MID
-	{	&img_tile_iron_ore,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},				ITEM_IRON_ORE,	"Iron Ore",		},	// TILE_IRON_ORE
-	{	&img_tile_anvil,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_ANVIL,		"Anvil L",		},	// TILE_ANVIL_L
-	{	&img_tile_anvil,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_ANVIL,		"Anvil R",		},	// TILE_ANVIL_R
+	{	&img_tile_torch,		PHYS_NON_SOLID,	true,	TYPE_SHEET,		SUPPORT_NONE,	{TILE_NOTHING, -1, -1},						ITEM_TORCH,		"Torch"			},	// TILE_TORCH
+	{	&img_tile_furnace_edge,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_FURNACE,	"Furnace"		},	// TILE_FURNACE_EDGE
+	{	&img_tile_furnace_mid,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_FURNACE,	"Furnace"		},	// TILE_FURNACE_MID
+	{	&img_tile_iron_ore,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},				ITEM_IRON_ORE,	"Iron Ore"		},	// TILE_IRON_ORE
+	{	&img_tile_anvil,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_ANVIL,		"Anvil L"		},	// TILE_ANVIL_L
+	{	&img_tile_anvil,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_ANVIL,		"Anvil R"		},	// TILE_ANVIL_R
+	{	&img_tile_chest,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_CHEST,		"Chest L"		},	// TILE_CHEST_L
+	{	&img_tile_chest,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_CHEST,		"Chest R"		},	// TILE_CHEST_R
 };
 
 struct Coords *clumpCoords;
@@ -479,23 +482,41 @@ void remove3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle)
 	}
 }
 
-bool placeBench(int x, int y, enum Tiles left, enum Tiles right)
+bool place2Wide(int x, int y, int height, enum Tiles left, enum Tiles right)
 {
-	if(!checkArea(x, y, 2, 1)) return false;
-	getTile(x, y) = (Tile){left, 0};
-	getTile(x + 1, y) = (Tile){right, 1};
-	regionChange(x + 1, y);
+	int var = 0;
+
+	if(!checkArea(x, y, 2, height)) return false;
+
+	for(int dY = 0; dY < height; dY++)
+	{
+		getTile(x, y + dY) = (Tile){left, var};
+		regionChange(x, y + dY);
+		var++;
+	}
+
+	for(int dY = 0; dY < height; dY++)
+	{
+		getTile(x + 1, y + dY) = (Tile){right, var};
+		regionChange(x + 1, y + dY);
+		var++;
+	}
+
 	return true;
 }
 
 // Doesn't do bounds checking, make sure you give a valid object
-void breakBench(int x, int y, enum Tiles left)
+void break2Wide(int x, int y, int height, enum Tiles left)
 {
 	if(getTile(x, y).id != left) x--;
-	getTile(x, y) = (Tile){TILE_NOTHING, 0};
-	regionChange(x, y);
-	getTile(x + 1, y) = (Tile){TILE_NOTHING, 0};
-	regionChange(x + 1, y);
+	while(getTile(x, y).variant > 0) y--;
+	for(int dY = 0; dY < height; dY++)
+	{
+		getTile(x, y + dY) = (Tile){TILE_NOTHING, 0};
+		regionChange(x, y + dY);
+		getTile(x + 1, y + dY) = (Tile){TILE_NOTHING, 0};
+		regionChange(x + 1, y + dY);
+	}
 }
 
 void placeTile(int x, int y, Item *item)
@@ -513,11 +534,20 @@ void placeTile(int x, int y, Item *item)
 			switch(item->id)
 			{
 				case ITEM_WBENCH:
-					if(!placeBench(x, y, TILE_WBENCH_L, TILE_WBENCH_R)) success = false;
+					if(!place2Wide(x, y, 1, TILE_WBENCH_L, TILE_WBENCH_R)) success = false;
 					break;
 				
 				case ITEM_ANVIL:
-					if(!placeBench(x, y, TILE_ANVIL_L, TILE_ANVIL_R)) success = false;
+					if(!place2Wide(x, y, 1, TILE_ANVIL_L, TILE_ANVIL_R)) success = false;
+					break;
+				
+				case ITEM_CHEST:
+					if(!checkArea(x, y, 2, 2) || !world.chests.addChest(x, y))
+					{
+						success = false;
+						break;
+					}
+					if(!place2Wide(x, y, 2, TILE_CHEST_L, TILE_CHEST_R)) success = false;
 					break;
 				
 				case ITEM_CHAIR:
@@ -593,11 +623,19 @@ void removeTile(int x, int y)
 		switch(tile->id)
 		{
 			case TILE_WBENCH_L: case TILE_WBENCH_R:
-				breakBench(x, y, TILE_WBENCH_L);
+				break2Wide(x, y, 1, TILE_WBENCH_L);
 				break;
 
 			case TILE_ANVIL_L: case TILE_ANVIL_R:
-				breakBench(x, y, TILE_ANVIL_L);
+				break2Wide(x, y, 1, TILE_ANVIL_L);
+				break;
+			
+			case TILE_CHEST_R:
+				x--;
+			case TILE_CHEST_L:
+				while(getTile(x, y).variant != 0) y--;
+				world.chests.removeChest(x, y);
+				break2Wide(x, y, 2, TILE_CHEST_L);
 				break;
 
 			case TILE_CHAIR:
