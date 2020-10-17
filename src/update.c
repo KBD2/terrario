@@ -198,7 +198,7 @@ void playerUpdate(int frames)
 	float regen;
 
 //	Handle the physics for the player
-	player.physics(&player.props);
+	player.physics(&player.props, frames);
 
 	if(player.combat.health < player.maxHealth)
 	{

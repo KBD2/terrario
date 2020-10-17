@@ -681,7 +681,7 @@ int spawnEntity(enum Entities entity, int x, int y)
 			*ent = entityTemplates[entity];
 			ent->props.x = x;
 			ent->props.y = y;
-			ent->init(ent);
+			if(ent->init != NULL) ent->init(ent);
 
 			return idx;
 		}

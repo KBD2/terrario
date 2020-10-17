@@ -15,7 +15,8 @@
 #include "menu.h"
 
 extern bopti_image_t
-img_ent_slime;
+img_ent_slime,
+img_ent_zombie;
 
 /* ----- ENTITY DATA AND BEHAVIOUR DEFINITIONS ----- */
 
@@ -34,14 +35,14 @@ void slimeInit(struct EntityBase *self)
 	self->mem[2] = rand() % 2;
 }
 
-bool slimeBehaviour(struct EntityBase *self, GUNUSED int frames)
+bool slimeBehaviour(struct EntityBase *self, int frames)
 {
 	int *jumpTimer = &self->mem[0];
 	int *animTimer = &self->mem[1];
 	int *direction = &self->mem[2];
 	int *angry = &self->mem[3];
 
-	handlePhysics(&self->props);
+	handlePhysics(&self->props, frames);
 
 	if(*angry)
 	{
@@ -74,16 +75,58 @@ bool slimeBehaviour(struct EntityBase *self, GUNUSED int frames)
 	return true;
 }
 
+// ZOMBIES
+
+const struct EntityDrops zombieDrops = { 0 };
+
+bool zombieBehaviour(struct EntityBase *self, int frames)
+{
+	int *animFrame = &self->mem[0];
+	int checkX, checkY;
+
+	handlePhysics(&self->props, frames);
+
+	self->anim.direction = player.props.x < self->props.x;
+	(*animFrame)++;
+	*animFrame %= 60;
+	if(self->props.touchingTileTop) self->anim.animationFrame = self->mem[0] / 30;
+	else self->anim.animationFrame = 2;
+	if(self->anim.direction && self->props.xVel > -0.35) self->props.xVel -= 0.1;
+	else if(!self->anim.direction && self->props.xVel < 0.35) self->props.xVel += 0.1;
+	self->props.dropping = self->props.yVel < 0;
+	if(abs(self->props.x - player.props.x) < 8 && player.props.y > self->props.y) self->props.dropping = true;
+	if(self->props.touchingTileTop)
+	{
+		checkY = (self->props.y >> 3);
+		checkX = (self->props.x >> 3);
+		checkX += self->anim.direction ? -1 : 3;
+		if(tiles[getTile(checkX, checkY + 3).id].physics == PHYS_NON_SOLID) self->props.yVel = -4.5;
+		else
+		{
+			for(int dY = 0; dY < 3; dY++)
+			{
+				if(tiles[getTile(checkX, checkY + dY).id].physics != PHYS_NON_SOLID && self->props.touchingTileTop)
+				{
+					self->props.yVel = -4.5;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
 /* ---------- */
 
 const struct EntityBase entityTemplates[] = {
-//		ID			Props		Combat									Sprite			Drops			Behaviour			Init
-	{	ENT_SLIME,	{16, 12},	{14, ALIGN_HOSTILE, 40, 0, 6, 0, 0.15},	&img_ent_slime,	&slimeDrops,	&slimeBehaviour,	&slimeInit	}	// ENT_SLIME
+//		ID			Props		Combat									Sprite				Drops			Behaviour			Init
+	{	ENT_SLIME,	{16, 12},	{14, ALIGN_HOSTILE, 40, 0, 6, 0, 0.15},	&img_ent_slime,		&slimeDrops,	&slimeBehaviour,	&slimeInit	},	// ENT_SLIME
+	{	ENT_ZOMBIE,	{17, 23},	{45, ALIGN_HOSTILE, 40, 0, 14, 6, 0.5}, &img_ent_zombie,	&zombieDrops,	&zombieBehaviour,	NULL		},	// ENT_ZOMBIE
 };
 
 /* Having a generic physics property struct lets me have one function to handle
 collisions, instead of one for each entity/player struct */
-void handlePhysics(struct EntityPhysicsProps *self)
+void handlePhysics(struct EntityPhysicsProps *self, int frames)
 {
 	struct Rect tileCheckBox = {
 		{
@@ -104,8 +147,10 @@ void handlePhysics(struct EntityPhysicsProps *self)
 
 	self->yVel = min(10, self->yVel + GRAVITY_ACCEL);
 	if(abs(self->xVel) < 0.1) self->xVel = 0;
-	self->x += roundf(self->xVel);
-	self->y += roundf(self->yVel);
+	if(abs(self->xVel) < 1 && frames % (int)roundf(1.0 / self->xVel) == 0) self->x += 1 * sgn(self->xVel);
+	else self->x += roundf(self->xVel);
+	if(abs(self->yVel) < 1 && frames % (int)roundf(1.0 / self->yVel) == 0) self->y += 1 * sgn(self->yVel);
+	else self->y += roundf(self->yVel);
 	self->y++;
 
 	self->touchingTileTop = false;
@@ -328,6 +373,7 @@ void doSpawningCycle()
 	int playerTileX = player.props.x >> 3;
 	int playerTileY = player.props.y >> 3;
 	int spawnAttempts = 0;
+	enum Entities chosen;
 
 	for(int idx = 0; idx < MAX_ENTITIES; idx++)
 	{
@@ -378,7 +424,9 @@ void doSpawningCycle()
 				if(tiles[getTile(spawnX, spawnY).id].physics == PHYS_SOLID)
 				{
 					if(abs(spawnX - playerTileX) < 9 && abs(spawnY - playerTileY) < 9) break;
-					world.spawnEntity(ENT_SLIME, spawnX << 3, (spawnY << 3) - entityTemplates[ENT_SLIME].props.height - 3);
+					chosen = (world.timeTicks > timeToTicks(19, 30) || world.timeTicks < timeToTicks(4, 30)) ? ENT_ZOMBIE : ENT_SLIME;
+					world.spawnEntity(chosen, spawnX << 3, (spawnY << 3) - entityTemplates[ENT_SLIME].props.height - 3);
+					return;
 				}
 			}
 		}

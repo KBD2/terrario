@@ -82,6 +82,7 @@ struct Combat {
 
 enum Entities {
 	ENT_SLIME,
+	ENT_ZOMBIE,
 
 	ENTITIES_COUNT
 };
@@ -119,7 +120,7 @@ struct Player {
 	int maxHealth;
 	int ticksSinceHit;
 
-	void (*physics)(struct EntityPhysicsProps *self);
+	void (*physics)(struct EntityPhysicsProps *self, int frames);
 };
 
 extern const struct EntityBase entityTemplates[];
@@ -130,8 +131,9 @@ extern struct Player player;
 Performs a physics update on the given EntityPhysicsProps struct.
 
 self: Pointer to the EntityPhysicsProps struct.
+frames: Frames passed
 */
-void handlePhysics(struct EntityPhysicsProps *self);
+void handlePhysics(struct EntityPhysicsProps *self, int frames);
 
 /* checkCollision
 Checks two EntityPhysicsProps structs for a collision between the two.
