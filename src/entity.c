@@ -89,7 +89,7 @@ bool zombieBehaviour(struct EntityBase *self, int frames)
 	self->anim.direction = player.props.x < self->props.x;
 	(*animFrame)++;
 	*animFrame %= 60;
-	if(self->props.touchingTileTop) self->anim.animationFrame = self->mem[0] / 30;
+	if(self->props.touchingTileTop) self->anim.animationFrame = *animFrame >= 30;
 	else self->anim.animationFrame = 2;
 	if(self->anim.direction && self->props.xVel > -0.35) self->props.xVel -= 0.1;
 	else if(!self->anim.direction && self->props.xVel < 0.35) self->props.xVel += 0.1;
