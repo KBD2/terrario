@@ -11,7 +11,7 @@ Various macros, constant definitions, and utility functions used throughout the 
 
 #define allocCheck(x) if((x) == NULL) memoryErrorMenu()
 
-#define VERSION "v0.6.2-indev"
+#define VERSION "v0.6.3-indev"
 
 #define PI 3.14159265358979323846
 #define E 2.718281828459045

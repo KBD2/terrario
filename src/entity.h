@@ -101,7 +101,7 @@ struct EntityBase {
 	struct AnimationData anim;
 	int despawnCounter;
 //	To store states in, generic so that entities can use it however
-	int mem[4];
+	int mem[5];
 };
 
 typedef struct EntityBase Entity;

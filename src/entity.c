@@ -41,6 +41,7 @@ bool slimeBehaviour(struct EntityBase *self, int frames)
 	int *animTimer = &self->mem[1];
 	int *direction = &self->mem[2];
 	int *angry = &self->mem[3];
+	int *xSave = &self->mem[4];
 
 	handlePhysics(&self->props, frames);
 
@@ -52,6 +53,7 @@ bool slimeBehaviour(struct EntityBase *self, int frames)
 	if(self->props.touchingTileTop && *jumpTimer == 0)
 	{
 		*jumpTimer = 240;
+		if(!*angry && self->props.x == *xSave) *direction ^= 1;
 	}
 	else if(!self->props.touchingTileTop) *jumpTimer = 0;
 	else if(*jumpTimer > 0)
@@ -60,8 +62,9 @@ bool slimeBehaviour(struct EntityBase *self, int frames)
 		if(*jumpTimer == 0)
 		{
 			self->props.yVel = -4.5;
-			self->props.xVel = *direction == 0 ? -3 : 3;
+			self->props.xVel = *direction ? 3 : -3;
 			self->anim.animationFrame = 1;
+			*xSave = self->props.x;
 		}
 	}
 
@@ -99,10 +102,11 @@ bool zombieBehaviour(struct EntityBase *self, int frames)
 	{
 		checkY = (self->props.y >> 3);
 		checkX = (self->props.x >> 3);
-		checkX += self->anim.direction ? -1 : 3;
-		if(tiles[getTile(checkX, checkY + 3).id].physics == PHYS_NON_SOLID) self->props.yVel = -4.5;
+		checkX += self->anim.direction ? 0 : 2;
+		if(tiles[getTile(checkX, checkY + 3).id].physics == PHYS_NON_SOLID && tiles[getTile(checkX, checkY + 4).id].physics == PHYS_NON_SOLID) self->props.yVel = -4.5;
 		else
 		{
+			checkX += self->anim.direction ? -1 : 1;
 			for(int dY = 0; dY < 3; dY++)
 			{
 				if(tiles[getTile(checkX, checkY + dY).id].physics != PHYS_NON_SOLID && self->props.touchingTileTop)
@@ -410,10 +414,12 @@ void doSpawningCycle()
 //			Too high and it may lag the calc
 			if(spawnAttempts == 100) return;
 
-			spawnX = playerTileX + ((rand() % 33) - 16);
-			spawnX = min(max(spawnX, 0), WORLD_WIDTH - 1);
+			spawnX = playerTileX + (((rand() % 49) - 24));
+//			This prohibits entities from spawning below or above the player, should be properly fixed
+			if(spawnX <= playerTileX) spawnX = min(max(spawnX, 0), playerTileX - 9);
+			else spawnX = min(max(spawnX, playerTileX + 9), WORLD_WIDTH - 1);
 
-			spawnY = playerTileY + ((rand() % 25) - 12);
+			spawnY = playerTileY + (((rand() % 25) - 12));
 			spawnY = min(max(spawnY, 0), WORLD_HEIGHT - 1);
 
 			if(tiles[getTile(spawnX, spawnY).id].physics == PHYS_SOLID) continue;
@@ -423,9 +429,8 @@ void doSpawningCycle()
 				spawnY++;
 				if(tiles[getTile(spawnX, spawnY).id].physics == PHYS_SOLID)
 				{
-					if(abs(spawnX - playerTileX) < 9 && abs(spawnY - playerTileY) < 9) break;
 					chosen = (world.timeTicks > timeToTicks(19, 30) || world.timeTicks < timeToTicks(4, 30)) ? ENT_ZOMBIE : ENT_SLIME;
-					world.spawnEntity(chosen, spawnX << 3, (spawnY << 3) - entityTemplates[ENT_SLIME].props.height - 3);
+					world.spawnEntity(chosen, spawnX << 3, (spawnY << 3) - entityTemplates[chosen].props.height - 3);
 					return;
 				}
 			}
