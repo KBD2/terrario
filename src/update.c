@@ -196,6 +196,7 @@ void playerUpdate(int frames)
 	};
 	int time;
 	float regen;
+	int playerXSave = player.props.x;
 
 //	Handle the physics for the player
 	player.physics(&player.props, frames);
@@ -229,15 +230,15 @@ void playerUpdate(int frames)
 		anim->animation = 2;
 		anim->animationFrame = 5;
 	}
+	else if(player.props.xVel == 0 || (playerXSave == player.props.x && player.props.touchingTileTop))
+	{
+		anim->animation = 0;
+		anim->animationFrame = 0;
+	}
 	else if(player.props.xVel != 0 && anim->animation != 3)
 	{
 		anim->animation = 3;
 		anim->animationFrame = 6;
-	}
-	else if(player.props.xVel == 0)
-	{
-		anim->animation = 0;
-		anim->animationFrame = 0;
 	}
 	else 
 	{

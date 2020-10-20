@@ -112,6 +112,7 @@ void craftingMenu()
 	int numLeft;
 	int slot;
 	Item result;
+	enum Items crafting = ITEM_NULL;
 
 	findCraftableRecipes(craftableRecipes);
 
@@ -166,6 +167,8 @@ void craftingMenu()
 			case KEY_EXE:
 				currCraftable = craftableRecipes[selected];
 				if(currCraftable == -1) break;
+				if(key.type == KEYEV_HOLD && crafting != recipes[currCraftable].result.id) break;
+				crafting = recipes[currCraftable].result.id;
 				for(int i = 0; i < recipes[currCraftable].numIngredients; i++)
 				{
 					currIngredient = &recipes[currCraftable].ingredients[i];
