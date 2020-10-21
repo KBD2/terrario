@@ -135,6 +135,7 @@ int main(void)
 {
 	int menuSelect;
 	extern font_t font_smalltext;
+	extern bopti_image_t img_splash;
 	int w, h;
 	int timer;
 	volatile int flag = 0;
@@ -169,6 +170,13 @@ int main(void)
 	srand(RTC_GetTicks());
 
 	dgray(DGRAY_ON);
+
+	dclear(C_WHITE);
+	dimage(12, 4, &img_splash);
+	dupdate();
+	timer = timer_setup(TIMER_ANY, 1500 * 1000, NULL);
+	timer_start(timer);
+	timer_wait(timer);
 
 	menuSelect = mainMenu();
 	if(menuSelect == -1) return 1;
