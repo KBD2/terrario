@@ -33,6 +33,7 @@ enum Items {
 	ITEM_IRON_BAR,
 	ITEM_ANVIL,
 	ITEM_CHEST,
+	ITEM_DOOR,
 
 	ITEMS_COUNT
 };

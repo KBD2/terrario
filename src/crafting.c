@@ -25,6 +25,7 @@ const struct Recipe recipes[] = {
 	{	TILE_FURNACE_MID,	{ITEM_IRON_BAR, 1}, 1,	(const Item[]){ {ITEM_IRON_ORE, 3}									}	},
 	{	TILE_WBENCH_L,		{ITEM_ANVIL, 1},	1,	(const Item[]){ {ITEM_IRON_BAR, 5}									}	},
 	{	TILE_WBENCH_L,		{ITEM_CHEST, 1},	2,	(const Item[]){ {ITEM_WOOD, 8},	{ITEM_IRON_BAR, 2}					}	},
+	{	TILE_WBENCH_L,		{ITEM_DOOR, 1},		1,	(const Item[]){ {ITEM_WOOD, 6},										}	},
 };
 
 bool *findNearTiles()

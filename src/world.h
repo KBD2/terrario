@@ -67,6 +67,9 @@ enum Tiles {
 	TILE_IRON_ORE,
 	TILE_ANVIL_L, TILE_ANVIL_R,
 	TILE_CHEST_L, TILE_CHEST_R,
+	TILE_DOOR_C,
+	TILE_DOOR_O_L_L, TILE_DOOR_O_L_R,
+	TILE_DOOR_O_R_L, TILE_DOOR_O_R_R,
 
 	TILES_COUNT
 };
@@ -138,6 +141,20 @@ Removes a tile from the world and gives the player the appropriate item/s.
 x, y: Coordinates of a tile within the world.
 */
 void removeTile(int x, int y);
+
+/* openDoor
+Opens the door at the given position.
+
+x, y: Coordinates of a closed door.
+*/
+void openDoor(int x, int y);
+
+/* closeDoor
+Closes the door at the given position.
+
+x, y: Coordinates of an open door.
+*/
+void closeDoor(int x, int y);
 
 /* spawnEntity
 Spawns the given entity at the given coordinates.

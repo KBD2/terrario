@@ -27,7 +27,10 @@ img_tile_torch,
 img_tile_furnace_edge, img_tile_furnace_mid,
 img_tile_iron_ore,
 img_tile_anvil,
-img_tile_chest;
+img_tile_chest,
+img_tile_door_c,
+img_tile_door_o_l_l, img_tile_door_o_l_r,
+img_tile_door_o_r_l, img_tile_door_o_r_r;
 
 const TileData tiles[] = {
 //      Ptr to sprite       	Phys?			Render?	Type?			Support?		Friends (-1 to pad)							Item			Name
@@ -53,6 +56,11 @@ const TileData tiles[] = {
 	{	&img_tile_anvil,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_ANVIL,		"Anvil R"		},	// TILE_ANVIL_R
 	{	&img_tile_chest,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_CHEST,		"Chest L"		},	// TILE_CHEST_L
 	{	&img_tile_chest,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_CHEST,		"Chest R"		},	// TILE_CHEST_R
+	{	&img_tile_door_c,		PHYS_SOLID,		true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_DOOR,		"Door C"		},	// TILE_DOOR_C
+	{	&img_tile_door_o_l_l,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NONE,	{-1, -1, -1},								ITEM_DOOR,		"Door O L L",	},	// TILE_DOOR_O_L_L
+	{	&img_tile_door_o_l_r,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_DOOR,		"Door O L R",	},	// TILE_DOOR_O_L_R
+	{	&img_tile_door_o_r_l,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_DOOR,		"Door O R L",	},	// TILE_DOOR_O_R_L
+	{	&img_tile_door_o_r_r,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NONE,	{-1, -1, -1},								ITEM_DOOR,		"Door O R R",	},	// TILE_DOOR_O_R_R
 };
 
 struct Coords *clumpCoords;
@@ -404,8 +412,8 @@ void regionChange(int x, int y)
 	save.regionData[(y / REGION_SIZE) * save.regionsX + (x / REGION_SIZE)] = 1;
 }
 
-// Generic check for objects that require support
-bool checkArea(int x, int y, int width, int height)
+// Generic check for objects
+bool checkArea(int x, int y, int width, int height, bool support)
 {
 	Tile *tile;
 
@@ -421,6 +429,7 @@ bool checkArea(int x, int y, int width, int height)
 			if(tile->id != TILE_NOTHING && tile->id != TILE_PLANT) return false;
 		}
 	}
+	if(!support) return true;
 // 	Check the tiles below can support the object
 	if(y + height == WORLD_HEIGHT) return false;
 	for(int dX = 0; dX < width; dX++)
@@ -432,13 +441,13 @@ bool checkArea(int x, int y, int width, int height)
 }
 
 // Specifically for 3-wide objects
-bool place3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle)
+bool place3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle, bool support)
 {
 	int xTemp;
 	int variation = 0;
 
 //	Place the edges
-	if(!checkArea(x, y, 3, height)) return false;
+	if(!checkArea(x, y, 3, height, support)) return false;
 	for(int side = 0; side != 2; side++)
 	{
 		for(int dY = 0; dY < height; dY++)
@@ -462,7 +471,7 @@ bool place3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle)
 
 // Does not have to be given the top-left tile
 // Doesn't do bounds checking, make sure you are giving a valid object
-void remove3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle)
+void break3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle)
 {
 //	Find the top left tile
 	if(getTile(x, y).id == edge)
@@ -482,11 +491,11 @@ void remove3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle)
 	}
 }
 
-bool place2Wide(int x, int y, int height, enum Tiles left, enum Tiles right)
+bool place2Wide(int x, int y, int height, enum Tiles left, enum Tiles right, bool support)
 {
 	int var = 0;
 
-	if(!checkArea(x, y, 2, height)) return false;
+	if(!checkArea(x, y, 2, height, support)) return false;
 
 	for(int dY = 0; dY < height; dY++)
 	{
@@ -519,6 +528,33 @@ void break2Wide(int x, int y, int height, enum Tiles left)
 	}
 }
 
+bool place1Wide(int x, int y, int height, enum Tiles tile, int startVar, bool support)
+{
+	int var = 0;
+
+	if(!checkArea(x, y, 1, height, support)) return false;
+
+	if(startVar > 0) var = startVar;
+	for(int dY = 0; dY < height; dY++)
+	{
+		getTile(x, y + dY) = (Tile){tile, var};
+		var++;
+	}
+	regionChange(x, y);
+
+	return true;
+}
+
+void break1Wide(int x, int y, int height, enum Tiles tile)
+{
+	while(getTile(x, y - 1).id == tile) y--;
+	for(int dY = 0; dY < height; dY++)
+	{
+		getTile(x, y + dY) = (Tile){TILE_NOTHING, 0};
+		regionChange(x, y + dY);
+	}
+}
+
 void placeTile(int x, int y, Item *item)
 {
 	if(x < 0 || x >= WORLD_WIDTH || y < 0 || y >= WORLD_HEIGHT) return;
@@ -534,44 +570,32 @@ void placeTile(int x, int y, Item *item)
 			switch(item->id)
 			{
 				case ITEM_WBENCH:
-					if(!place2Wide(x, y, 1, TILE_WBENCH_L, TILE_WBENCH_R)) success = false;
+					if(!place2Wide(x, y, 1, TILE_WBENCH_L, TILE_WBENCH_R, true)) success = false;
 					break;
 				
 				case ITEM_ANVIL:
-					if(!place2Wide(x, y, 1, TILE_ANVIL_L, TILE_ANVIL_R)) success = false;
+					if(!place2Wide(x, y, 1, TILE_ANVIL_L, TILE_ANVIL_R, true)) success = false;
 					break;
 				
 				case ITEM_CHEST:
-					if(!checkArea(x, y, 2, 2) || !world.chests.addChest(x, y))
+					if(!checkArea(x, y, 2, 2, true) || !world.chests.addChest(x, y))
 					{
 						success = false;
 						break;
 					}
-					if(!place2Wide(x, y, 2, TILE_CHEST_L, TILE_CHEST_R)) success = false;
+					if(!place2Wide(x, y, 2, TILE_CHEST_L, TILE_CHEST_R, true)) success = false;
 					break;
 				
 				case ITEM_CHAIR:
-					if(!checkArea(x, y, 1, 2))
-					{
-						success = false;
-						break;
-					}
-					if(player.anim.direction)
-					{
-						*tile = (Tile){TILE_CHAIR, 1};
-						getTile(x, y + 1) = (Tile){TILE_CHAIR, 0};
-						regionChange(x, y + 1);
-					}
-					else
-					{
-						*tile = (Tile){TILE_CHAIR, 3};
-						getTile(x, y + 1) = (Tile){TILE_CHAIR, 2};
-						regionChange(x, y + 1);
-					}
+					if(!place1Wide(x, y, 2, TILE_CHAIR, player.anim.direction ? 0 : 2, true)) success = false;
 					break;
 				
 				case ITEM_FURNACE:
-					if(!place3Wide(x, y, 2, TILE_FURNACE_EDGE, TILE_FURNACE_MID)) success = false;
+					if(!place3Wide(x, y, 2, TILE_FURNACE_EDGE, TILE_FURNACE_MID, true)) success = false;
+					break;
+				
+				case ITEM_DOOR:
+					if(!place1Wide(x, y, 3, TILE_DOOR_C, -1, true)) success = false;
 					break;
 
 				default:
@@ -639,21 +663,19 @@ void removeTile(int x, int y)
 				break;
 
 			case TILE_CHAIR:
-				*tile = nothing;
-				if(getTile(x, y - 1).id == TILE_NOTHING)
-				{
-					getTile(x, y + 1) = nothing;
-					regionChange(x, y + 1);
-				}
-				else
-				{
-					getTile(x, y - 1) = nothing;
-					regionChange(x, y - 1);
-				}
+				break1Wide(x, y, 2, TILE_CHAIR);
 				break;
 			
 			case TILE_FURNACE_EDGE: case TILE_FURNACE_MID:
-				remove3Wide(x, y, 2, TILE_FURNACE_EDGE, TILE_FURNACE_MID);
+				break3Wide(x, y, 2, TILE_FURNACE_EDGE, TILE_FURNACE_MID);
+				break;
+			
+			case TILE_DOOR_O_L_L: case TILE_DOOR_O_L_R:
+				break2Wide(x, y, 3, TILE_DOOR_O_L_L);
+				break;
+			
+			case TILE_DOOR_O_R_L: case TILE_DOOR_O_R_R:
+				break2Wide(x, y, 3, TILE_DOOR_O_R_L);
 				break;
 			
 			case TILE_GRASS:
@@ -667,6 +689,48 @@ void removeTile(int x, int y)
 		regionChange(x, y);
 		if(tile->id == TILE_NOTHING && tiles[getTile(x, y - 1).id].support == SUPPORT_NEED) removeTile(x, y - 1);
 	}
+}
+
+void openDoor(int x, int y)
+{
+	int direction;
+
+	while(getTile(x, y - 1).id == TILE_DOOR_C) y--;
+	if(!checkArea(x + 1, y, 1, 3, false) && !checkArea(x - 1, y, 1, 3, false)) return;
+	direction = player.anim.direction ? -1 : 1;
+	if(!checkArea(x + direction, y, 1, 3, false)) direction *= -1;
+	break1Wide(x, y, 3, TILE_DOOR_C);
+	if(direction == -1)
+	{
+		place1Wide(x - 1, y, 3, TILE_DOOR_O_L_L, -1, false);
+		place1Wide(x, y, 3, TILE_DOOR_O_L_R, -1, false);
+	}
+	else
+	{
+		place1Wide(x, y, 3, TILE_DOOR_O_R_L, -1, false);
+		place1Wide(x + 1, y, 3, TILE_DOOR_O_R_R, -1, false);
+	}
+}
+
+void closeDoor(int x, int y)
+{
+	switch(getTile(x, y).id)
+	{
+		case TILE_DOOR_O_L_L:
+			x++;
+		case TILE_DOOR_O_L_R:
+			while(getTile(x, y - 1).id == TILE_DOOR_O_L_R) y--;
+			break2Wide(x - 1, y, 3, TILE_DOOR_O_L_L);
+			break;
+		
+		case TILE_DOOR_O_R_R:
+			x--;
+		case TILE_DOOR_O_R_L:
+			while(getTile(x, y - 1).id == TILE_DOOR_O_R_L) y--;
+			break2Wide(x, y, 3, TILE_DOOR_O_R_L);
+			break;
+	}
+	place1Wide(x, y, 3, TILE_DOOR_C, -1, false);
 }
 
 int spawnEntity(enum Entities entity, int x, int y)

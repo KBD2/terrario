@@ -21,7 +21,7 @@ enum UpdateReturnCodes keyboardUpdate()
 	bool playerDead =  player.combat.health <= 0;
 	int currID;
 	struct Chest* chest;
-
+	
 	player.inventory.ticksSinceInteracted++;
 
 	key = pollevent();
@@ -96,6 +96,38 @@ enum UpdateReturnCodes keyboardUpdate()
 				if(exitMenu()) return UPDATE_EXIT;
 				break;
 			
+			case KEY_9:
+				if(key.type != KEYEV_DOWN) break;
+				player.inventory.ticksSinceInteracted = 0;
+				x = player.cursorTile.x;
+				y = player.cursorTile.y;
+				tile = getTile(x, y).id;
+				switch(tile)
+				{
+					case TILE_CHEST_L: case TILE_CHEST_R:
+						if(tile == TILE_CHEST_R) x--;
+						while(getTile(x, y).variant != 0) y--;
+						chest = world.chests.findChest(x, y);
+						if(chest == NULL) world.chests.addChest(x, y);
+						inventoryMenu(world.chests.findChest(x, y));
+						break;
+
+					case TILE_DOOR_C:
+						openDoor(x, y);
+						break;
+					
+					case TILE_DOOR_O_L_L: 
+					case TILE_DOOR_O_L_R: 
+					case TILE_DOOR_O_R_L: 
+					case TILE_DOOR_O_R_R:
+						closeDoor(x, y);
+						break;
+
+					default:
+						break;
+				}
+				break;
+			
 			default:
 				break;
 		}
@@ -149,23 +181,6 @@ enum UpdateReturnCodes keyboardUpdate()
 			}
 		}
 		else if(player.tool.type == TOOL_TYPE_PICK) player.tool.data.pickData.currFramesLeft = 0;
-
-//		Place tile
-		if(keydown(KEY_9))
-		{
-			player.inventory.ticksSinceInteracted = 0;
-			x = player.cursorTile.x;
-			y = player.cursorTile.y;
-			tile = getTile(x, y).id;
-			if(tile == TILE_CHEST_L || tile == TILE_CHEST_R)
-			{
-				if(tile == TILE_CHEST_R) x--;
-				while(getTile(x, y).variant != 0) y--;
-				chest = world.chests.findChest(x, y);
-				if(chest == NULL) world.chests.addChest(x, y);
-				inventoryMenu(world.chests.findChest(x, y));
-			}
-		}
 
 //		Movement
 		if(keydown(KEY_4) && player.props.xVel > -1) player.props.xVel -= 0.3;
