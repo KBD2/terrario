@@ -19,6 +19,7 @@ struct Recipe {
 };
 
 extern const struct Recipe recipes[];
+extern const int numRecipes;
 
 /* craftingMenu
 The crafting menu.

@@ -28,6 +28,8 @@ const struct Recipe recipes[] = {
 	{	TILE_WBENCH_L,		{ITEM_DOOR, 1},		1,	(const Item[]){ {ITEM_WOOD, 6},										}	},
 };
 
+const int numRecipes = sizeof(recipes) / sizeof(struct Recipe);
+
 bool *findNearTiles()
 {
 	bool *buffer = (bool*)malloc(TILES_COUNT * sizeof(bool));
@@ -84,7 +86,7 @@ void findCraftableRecipes(short *buffer)
 
 	for(int i = 0; i < RECIPE_BUFFER_SIZE; i++) buffer[i] = -1;
 
-	for(unsigned int recipe = 0; recipe < sizeof(recipes) / sizeof(struct Recipe); recipe++)
+	for(unsigned int recipe = 0; recipe < numRecipes; recipe++)
 	{
 		currRecipe = &recipes[recipe];
 		if(currRecipe->required != TILE_NULL && !nearTiles[currRecipe->required]) continue;

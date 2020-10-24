@@ -304,12 +304,26 @@ void incompatibleMenu()
 	}
 }
 
+enum MenuTabs {
+	MENU_ABOUT,
+	MENU_CONTROLS,
+	MENU_CRAFTING
+};
+
 void aboutMenu()
 {
-	extern bopti_image_t img_confetti, img_arrows;
-	const char *text[] = {
-		"Terrario by KBD2",
-		" ",
+	const char *aboutText[] = {
+		"Special thanks to:",
+		"Re-Logic - Terraria",
+		"Lephenixnoir - Gint",
+		"Memallox - Newlib",
+		"Dark Storm",
+		"",
+		VERSION,
+//		Hacky way to inline them
+		__DATE__ " " __TIME__
+	};
+	const char *controlsText[] = {
 		"World:",
 		"4,6,8:Move",
 		"Arrows:Cursor",
@@ -334,65 +348,135 @@ void aboutMenu()
 		"Left/Right:Scroll",
 		"[EXE]:Craft",
 		"[SHIFT]:Inventory",
-		"[ALPHA]:Exit",
-		" ",
-		"Special thanks to:",
-		"Re-Logic - Terraria",
-		"Lephenixnoir - Gint",
-		"Memallox - Newlib",
-		"Dark Storm",
-		" ",
-		VERSION,
-		__DATE__,
-		__TIME__,
-		" ",
-		" ",
-		"Enjoy!"
+		"[ALPHA]:Exit"
 	};
-	const int lines = sizeof(text) / sizeof(char*);
-	float y = 0;
-	int width, height;
-	int timer;
-	float scroll;
+	const int aboutLines = sizeof(aboutText) / sizeof(char*);
+	const int controlLines = sizeof(controlsText) / sizeof(char*);
+	int scroll = 0;
+	bool ingredients = false;
+	int ingredientsScroll = 0;
+	extern bopti_image_t img_confetti, img_arrowshoriz, img_arrowsall, img_abouttabs, img_hotbarselect, img_slot;
 	key_event_t key;
-	int flag = 0;
+	extern font_t font_smalltext;
+	enum MenuTabs menu = MENU_ABOUT;
 
-	timer = timer_setup(TIMER_ANY, 50 * 1000, &frameCallback, &flag);
-	timer_start(timer);
-	while(y < lines * 13 + 25)
+	dfont(&font_smalltext);
+
+	while(true)
 	{
-		
 		dclear(C_WHITE);
-		for(int line = 0; line < lines; line++)
+		switch(menu)
 		{
-			dsize(text[line], NULL, &width, &height);
-			dtext_opt(64, 64 - y + line * (height + 6), C_BLACK, C_WHITE, DTEXT_CENTER, DTEXT_TOP, text[line]);
+			case MENU_ABOUT:
+				dimage(89, 36, &img_confetti);
+				for(int line = 0; line < aboutLines; line++)
+				{
+					dtext_opt(64, 7 * line, C_BLACK, C_WHITE, DTEXT_MIDDLE, DTEXT_TOP, aboutText[line]);
+				}
+				break;
+			
+			case MENU_CONTROLS:
+				dimage(122, 55, &img_arrowshoriz);
+				for(int line = 0; line < 8; line++)
+				{
+					if(line + scroll == controlLines) break;
+					dtext_opt(64, line * 7, C_BLACK, C_WHITE, DTEXT_MIDDLE, DTEXT_TOP, controlsText[line + scroll]);
+				}
+				break;
+			
+			case MENU_CRAFTING:
+				dimage(112, 54, &img_arrowsall);
+				for(int dR = 0; dR < 8 && scroll + dR < numRecipes; dR++)
+				{
+					dimage(17 * dR, 0, &img_slot);
+					renderItem(17 * dR + 1, 1, (Item *)&recipes[scroll + dR].result);
+				}
+				dtext(0, 18, C_BLACK, items[recipes[scroll].result.id].name);
+				for(int dI = 0; dI < recipes[scroll].numIngredients; dI++)
+				{
+					dimage(17 * dI, 24, &img_slot);
+					renderItem(17 * dI + 1, 25, (Item *)&recipes[scroll].ingredients[dI]);
+				}
+				if(!ingredients) dimage(0, 0, &img_hotbarselect);
+				else
+				{
+					dimage(17 * ingredientsScroll, 24, &img_hotbarselect);
+					dtext(0, 42, C_BLACK, items[recipes[scroll].ingredients[ingredientsScroll].id].name);
+				}
+				break;
 		}
-		dimage(1, 74 - y + (lines - 1) * (height + 6), &img_confetti);
-		dimage(121, 0, &img_arrows);
+		dimage(0, 57, &img_abouttabs);
 		dupdate();
 
-		scroll = 0.5;
-
-		key = pollevent();
-		while(key.type != KEYEV_NONE) key = pollevent();
-		if(keydown(KEY_EXIT)) 
+		key = getkey_opt(GETKEY_REP_ARROWS, NULL);
+		switch(key.key)
 		{
-			timer_stop(timer);
-			return;
+			case KEY_EXIT:
+				dfont(NULL);
+				return;
+			
+			case KEY_F1:
+				menu = MENU_ABOUT;
+				break;
+			
+			case KEY_F2:
+				scroll = 0;
+				menu = MENU_CONTROLS;
+				break;
+
+			case KEY_F3:
+				scroll = 0;
+				ingredients = false;
+				ingredientsScroll = 0;
+				menu = MENU_CRAFTING;
+				break;
+			
+			case KEY_UP:
+				if(menu == MENU_CONTROLS)
+				{
+					if(scroll == 0) break;
+					scroll--;
+				}
+				else if(menu == MENU_CRAFTING)
+				{
+					if(!ingredients) break;
+					ingredients = false;
+				}
+				break;
+			
+			case KEY_DOWN:
+				if(menu == MENU_CONTROLS)
+				{
+					if(scroll == controlLines - 8) break;
+					scroll++;
+				}
+				else if(menu == MENU_CRAFTING)
+				{
+					if(ingredients) break;
+					ingredients = true;
+					ingredientsScroll = 0;
+				}
+				break;
+			
+			case KEY_LEFT:
+				if(menu == MENU_CRAFTING)
+				{
+					if((!ingredients && scroll == 0) || (ingredients && ingredientsScroll == 0)) break;
+					if(ingredients) ingredientsScroll--;
+					else scroll--;
+				}
+				break;
+			
+			case KEY_RIGHT:
+				if(menu == MENU_CRAFTING)
+				{
+					if((!ingredients && scroll == numRecipes - 1) || (ingredients && ingredientsScroll == recipes[scroll].numIngredients - 1)) break;
+					if(ingredients) ingredientsScroll++;
+					else scroll++;
+				}
+				break;
 		}
-		if(keydown(KEY_UP)) scroll = 0;
-		if(keydown(KEY_DOWN)) scroll = 3;
-		y += scroll;
-
-		while(!flag) sleep();
-		flag = 0;
 	}
-	timer_stop(timer);
-
-	timer = timer_setup(TIMER_ANY, 3000 * 1000, NULL);
-	timer_start(timer);
-	timer_wait(timer);
 }
 
 void lowSpaceMenu(int mediaFree)
