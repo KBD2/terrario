@@ -98,7 +98,6 @@ enum UpdateReturnCodes keyboardUpdate()
 			
 			case KEY_9:
 				if(key.type != KEYEV_DOWN) break;
-				player.inventory.ticksSinceInteracted = 0;
 				x = player.cursorTile.x;
 				y = player.cursorTile.y;
 				tile = getTile(x, y).id;
@@ -109,6 +108,7 @@ enum UpdateReturnCodes keyboardUpdate()
 						while(getTile(x, y).variant != 0) y--;
 						chest = world.chests.findChest(x, y);
 						if(chest == NULL) world.chests.addChest(x, y);
+						player.inventory.ticksSinceInteracted = 0;
 						inventoryMenu(world.chests.findChest(x, y));
 						break;
 

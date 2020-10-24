@@ -21,7 +21,8 @@ The world generation system and API functions.
 enum SupportTypes {
 	SUPPORT_NONE,
 	SUPPORT_KEEP,
-	SUPPORT_NEED
+	SUPPORT_NEED,
+	SUPPORT_TOP
 };
 
 /* I want to keep as much data as I can in here
@@ -70,6 +71,7 @@ enum Tiles {
 	TILE_DOOR_C,
 	TILE_DOOR_O_L_L, TILE_DOOR_O_L_R,
 	TILE_DOOR_O_R_L, TILE_DOOR_O_R_R,
+	TILE_VINE,
 
 	TILES_COUNT
 };

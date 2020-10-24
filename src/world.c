@@ -30,7 +30,8 @@ img_tile_anvil,
 img_tile_chest,
 img_tile_door_c,
 img_tile_door_o_l_l, img_tile_door_o_l_r,
-img_tile_door_o_r_l, img_tile_door_o_r_r;
+img_tile_door_o_r_l, img_tile_door_o_r_r,
+img_tile_vine;
 
 const TileData tiles[] = {
 //      Ptr to sprite       	Phys?			Render?	Type?			Support?		Friends (-1 to pad)							Item			Name
@@ -61,6 +62,7 @@ const TileData tiles[] = {
 	{	&img_tile_door_o_l_r,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_DOOR,		"Door O L R",	},	// TILE_DOOR_O_L_R
 	{	&img_tile_door_o_r_l,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_DOOR,		"Door O R L",	},	// TILE_DOOR_O_R_L
 	{	&img_tile_door_o_r_r,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NONE,	{-1, -1, -1},								ITEM_DOOR,		"Door O R R",	},	// TILE_DOOR_O_R_R
+	{	&img_tile_vine,			PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_TOP,	{-1, -1, -1},								ITEM_NULL,		"Vine",			},	// TILE_VINE
 };
 
 struct Coords *clumpCoords;
@@ -245,6 +247,7 @@ void generateWorld()
 	int x, y;
 	Tile* tile;
 	int copseHeight;
+	int yPositions[20];
 
 	clumpCoords = malloc(WORLD_CLUMP_BUFFER_SIZE * sizeof(struct Coords));
 	allocCheck(clumpCoords);
@@ -255,6 +258,23 @@ void generateWorld()
 
 //	Stone
 	perlin(6, 20, WORLD_HEIGHT / 2.8, TILE_STONE);
+
+//	Tunnels
+	middleText("Tunnels");
+	for(int i = 0; i < 10; i++)
+	{
+		x = rand() % (WORLD_WIDTH - 20);
+		for(int dX = 0; dX < 20; dX++)
+		{
+			y = 0;
+			while(getTile(x + dX, y + 7).id != TILE_DIRT) y++;
+			yPositions[dX] = y;
+		}
+		for(int dX = 0; dX < 20; dX++)
+		{
+			clump(x + dX, yPositions[dX], 5, TILE_DIRT, false);
+		}
+	}
 
 //	Rocks in dirt
 	middleText("Rocks In Dirt");
@@ -369,6 +389,19 @@ void generateWorld()
 		for(int y = 1; y < WORLD_HEIGHT; y++)
 		{
 			if(getTile(x, y).id == TILE_GRASS && getTile(x, y - 1).id == TILE_NOTHING && rand() % 4 > 0) getTile(x, y - 1) = (Tile){TILE_PLANT, makeVar()};
+		}
+	}
+
+//	Vines
+	middleText("Vines");
+	for(int x = 0; x < WORLD_WIDTH; x++)
+	{
+		for(int y = 0; y < WORLD_WIDTH / 4.5; y++)
+		{
+			if(getTile(x, y).id == TILE_GRASS && getTile(x, y + 1).id == TILE_NOTHING)
+			{
+				for(int dY = 1; dY < 11 && getTile(x, y + dY).id == TILE_NOTHING; dY++) getTile(x, y + dY) = (Tile){TILE_VINE, rand() % 4};
+			}
 		}
 	}
 
@@ -687,7 +720,10 @@ void removeTile(int x, int y)
 				break;
 		}
 		regionChange(x, y);
+
 		if(tile->id == TILE_NOTHING && tiles[getTile(x, y - 1).id].support == SUPPORT_NEED) removeTile(x, y - 1);
+
+		if(tiles[getTile(x, y + 1).id].support == SUPPORT_TOP) removeTile(x, y + 1);
 	}
 }
 
@@ -697,10 +733,10 @@ void openDoor(int x, int y)
 
 	while(getTile(x, y - 1).id == TILE_DOOR_C) y--;
 	if(!checkArea(x + 1, y, 1, 3, false) && !checkArea(x - 1, y, 1, 3, false)) return;
-	direction = player.anim.direction ? -1 : 1;
-	if(!checkArea(x + direction, y, 1, 3, false)) direction *= -1;
+	direction = player.anim.direction;
+	if(!checkArea(x + (direction ? -1 : 1), y, 1, 3, false)) direction ^= 1;
 	break1Wide(x, y, 3, TILE_DOOR_C);
-	if(direction == -1)
+	if(direction)
 	{
 		place1Wide(x - 1, y, 3, TILE_DOOR_O_L_L, -1, false);
 		place1Wide(x, y, 3, TILE_DOOR_O_L_R, -1, false);

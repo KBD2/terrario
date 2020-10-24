@@ -344,6 +344,7 @@ void aboutMenu()
 		" ",
 		VERSION,
 		__DATE__,
+		__TIME__,
 		" ",
 		" ",
 		"Enjoy!"

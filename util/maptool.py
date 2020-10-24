@@ -97,6 +97,17 @@ def generate():
     print("Generating stone...")
     perlin(6, 20, WORLD_HEIGHT // 2.8, Tiles.STONE)
 
+    print("Tunnels...")
+    for i in range(10):
+        x = random.randrange(0, WORLD_WIDTH - 20)
+        yPositions = []
+        for dX in range(20):
+            y = 0
+            while getTile(x + dX, y + 6) != Tiles.DIRT: y += 1
+            yPositions.append(y)
+        for dX, position in enumerate(yPositions):
+            clump(x + dX, position, 5, Tiles.DIRT, False)
+            
     print("Rocks in dirt...")
     for i in range(1000):
         x = random.randrange(0, WORLD_WIDTH)
