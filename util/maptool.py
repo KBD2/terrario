@@ -55,22 +55,28 @@ def poisson(mean):
 		p *= u
 	return k - 1
 
-def perlin(amplitude, wavelength, baseY, tile):
-    a = randFloat()
-    b = randFloat()
+def perlin(amplitude, wavelength, baseY, tile, iterations):
+    yPositions = [int(baseY)] * WORLD_WIDTH
+    for i in range(iterations):
+        a = randFloat()
+        b = randFloat()
+        for x in range(WORLD_WIDTH):
+            if(x % wavelength == 0):
+                a = b
+                b = randFloat()
+                perlinY = a * amplitude
+            else:
+                perlinY = interpolate(a, b, (x % wavelength) / wavelength) * amplitude
+            yPositions[x] += int(perlinY)
+        wavelength >>= 1
     for x in range(WORLD_WIDTH):
-        if(x % wavelength == 0):
-            a = b
-            b = randFloat()
-            perlinY = baseY + a * amplitude
-        else:
-            perlinY = baseY + interpolate(a, b, (x % wavelength) / wavelength) * amplitude
-        setTile(x, perlinY, tile)
-        for tempY in range(int(perlinY), WORLD_HEIGHT):
-            setTile(x, tempY, tile)
+        for y in range(yPositions[x], WORLD_HEIGHT):
+            setTile(x, y, tile)
 
 # Very versatile function
-def clump(x, y, num, tile, maskEmpty=False):
+# skewHorizontal and skewVertical must be between 0 and 1
+# Only one should be above 0
+def clump(x, y, num, tile, maskEmpty, skewHorizontal, skewVertical):
     if maskEmpty and getTile(x, y) == Tiles.NOTHING:
         return
     coords = [(x, y)]
@@ -85,6 +91,12 @@ def clump(x, y, num, tile, maskEmpty=False):
         for delta in ((0, -1), (1, 0), (0, 1), (-1, 0)):
             checkX = selectedTile[0] + delta[0]
             checkY = selectedTile[1] + delta[1]
+            if skewHorizontal > 0:
+                if delta[1] != 0 and random.random() < skewHorizontal:
+                    continue
+            if skewVertical > 0:
+                if delta[0] != 0 and random.random() < skewVertical:
+                    continue
             if getTile(checkX, checkY) == tile or (maskEmpty and getTile(checkX, checkY) == Tiles.NOTHING):
                 continue
             coords.append((checkX, checkY))
@@ -92,48 +104,51 @@ def clump(x, y, num, tile, maskEmpty=False):
 def generate():
     
     print("Generating dirt...")
-    perlin(10, 20, WORLD_HEIGHT // 5, Tiles.DIRT)
+    perlin(10, 40, WORLD_HEIGHT // 5, Tiles.DIRT, 3)
     
     print("Generating stone...")
-    perlin(6, 20, WORLD_HEIGHT // 2.8, Tiles.STONE)
+    perlin(6, 20, WORLD_HEIGHT // 2.8, Tiles.STONE, 1)
 
     print("Tunnels...")
-    for i in range(10):
-        x = random.randrange(0, WORLD_WIDTH - 20)
-        yPositions = []
-        for dX in range(20):
-            y = 0
-            while getTile(x + dX, y + 6) != Tiles.DIRT: y += 1
-            yPositions.append(y)
-        for dX, position in enumerate(yPositions):
-            clump(x + dX, position, 5, Tiles.DIRT, False)
+    x = 0
+    while x < WORLD_WIDTH - 50:
+        if random.random() < 0.005:
+            yPositions = []
+            for dX in range(0, 50, 5):
+                y = 0
+                while getTile(x + dX, y + 8) != Tiles.DIRT: y += 1
+                yPositions.append(y)
+            for dX, position in enumerate(yPositions):
+                clump(x + 5 * dX, position, 20, Tiles.DIRT, False, 0.5, 0)
+            x += 100
+        else: x += 1
             
     print("Rocks in dirt...")
     for i in range(1000):
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(0, WORLD_HEIGHT // 2.8)
         if getTile(x, y) == Tiles.DIRT:
-            clump(x, y, poisson(10), Tiles.STONE, True)
+            clump(x, y, poisson(10), Tiles.STONE, True, 0, 0)
 
     print("Dirt in rocks...")
     for i in range(3000):
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT // 2.8, WORLD_HEIGHT)
         if getTile(x, y) == Tiles.STONE:
-            clump(x, y, poisson(10), Tiles.DIRT, True)
+            clump(x, y, poisson(10), Tiles.DIRT, True, 0, 0)
 
     print("Small holes...")
     for i in range(750):
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT // 4, WORLD_HEIGHT)
-        clump(x, y, poisson(25), Tiles.NOTHING, True)
+        clump(x, y, poisson(25), Tiles.NOTHING, True, 0, 0)
 
     # A 500-length coord array should be enough for this
     print("Caves...")
     for i in range(150):
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT // 3.5, WORLD_HEIGHT)
-        clump(x, y, poisson(200), Tiles.NOTHING, True)
+        clump(x, y, poisson(200), Tiles.NOTHING, True, 0, 0)
     
     print("Generating grass...")
     for x in range(WORLD_WIDTH):
@@ -158,7 +173,7 @@ def generate():
     for i in range(750):
         x = random.randrange(WORLD_WIDTH)
         y = random.randrange(0, WORLD_HEIGHT)
-        clump(x, y, poisson(10), Tiles.IRON, True)
+        clump(x, y, poisson(10), Tiles.IRON, True, 0, 0)
 
 ##### END ALGORITHM #####
 

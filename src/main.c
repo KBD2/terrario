@@ -17,6 +17,7 @@
 #include "save.h"
 #include "crafting.h"
 #include "update.h"
+#include "generate.h"
 
 // Fixes linker problem for newlib
 int __errno = 0;

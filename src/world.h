@@ -3,7 +3,7 @@
 /*
 ----- WORLD -----
 
-The world generation system and API functions.
+World API functions.
 */
 
 #include <gint/display.h>
@@ -92,11 +92,6 @@ struct World {
 	
 extern struct World world;
 
-/* generateWorld
-Generates a world.
-*/
-void generateWorld();
-
 /* regionChange
 Sets the status of the region the given coordinates are in. Used to keep track
 of which world regions are to be saved to file.
@@ -111,6 +106,14 @@ Returns a random number between 0 and 2 inclusive, used for tile variations.
 Returns the random number.
 */
 unsigned char makeVar();
+
+/* generateTree
+Generates a tree.
+
+x, y: Coordinates of the tree's base.
+baseHeight: Height of the tree before random variation.
+*/
+void generateTree(int x, int y, int baseHeight);
 
 /* breakTree
 Breaks a tree, starting from the given trunk coordinate.
