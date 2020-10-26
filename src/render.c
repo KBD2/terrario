@@ -57,7 +57,7 @@ void render()
 	unsigned int tileTopY = max(0, ((camY - (SCREEN_HEIGHT >> 1)) >> 3));
 	unsigned int tileBottomY = min(WORLD_HEIGHT - 1, tileTopY + (SCREEN_HEIGHT >> 3));
 
-	Tile *tile;
+	Tile tile;
 	const TileData *currTile;
 	unsigned int currTileX, currTileY;
 	int camOffsetX = (camX - (SCREEN_WIDTH >> 1));
@@ -122,8 +122,8 @@ void render()
 	{
 		for(unsigned int x = tileLeftX; x <= tileRightX; x++)
 		{
-			tile = &getTile(x, y);
-			currTile = &tiles[tile->id];
+			tile = getTile(x, y);
+			currTile = &tiles[tile.id];
 			currTileX = (x << 3) - camOffsetX;
 			currTileY = (y << 3) - camOffsetY;
 			if(currTile->render)
@@ -154,8 +154,8 @@ void render()
 						subrectX = ((state & 3) << 3) + (state & 3) + 1;
 						subrectY = ((state >> 2) << 3) + (state >> 2) + 1;
 					}
-					if(currTile->spriteType == TYPE_TILE_VAR) subrectX = 9 * tile->variant + 1;
-					if(currTile->spriteType == TYPE_SHEET_VAR) subrectX += 37 * tile->variant;
+					if(currTile->spriteType == TYPE_TILE_VAR) subrectX = 9 * tile.variant + 1;
+					if(currTile->spriteType == TYPE_SHEET_VAR) subrectX += 37 * tile.variant;
 					dsubimage(currTileX, currTileY, currTile->sprite, subrectX, subrectY, 8, 8, flags);
 				}
 				else

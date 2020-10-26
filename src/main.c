@@ -45,7 +45,7 @@ int frameCallback(volatile int *flag)
 bool testRAM()
 {
 // Make sure we don't mess with the RAM on GIII models
-#ifndef USE_HEAP
+#ifndef USE_PRAM
 	unsigned int *RAMAddress = (void*)RAM_START;
 	unsigned int *RAMTestAddress = (void*)0x88000000;
 	unsigned int save = *RAMAddress;
@@ -68,7 +68,7 @@ void positionPlayerAtWorldMiddle()
 	int playerY = 0;
 	while(1)
 	{
-		if(getTile(playerX, playerY).id != TILE_NOTHING)
+		if(getTile(playerX, playerY).id != TILE_NOTHING || playerY == WORLD_HEIGHT)
 		{
 			playerY = (playerY - 3);
 			break;
@@ -142,31 +142,30 @@ int main(void)
 	volatile int flag = 0;
 	int mediaFree[2];
 
+#ifdef USE_PRAM
+	spu_zero();
+#endif
+
 	save = (struct SaveData){
 		.tileDataSize = WORLD_HEIGHT * WORLD_WIDTH * sizeof(Tile),
 		.regionsX = REGIONS_X,
 		.regionsY = REGIONS_Y,
-#ifndef USE_HEAP
-		.tileData = (void*)RAM_START,
+#ifndef USE_PRAM
+		.tileData = (void *)RAM_START,
 #else
-		.tileData = malloc(WORLD_WIDTH * WORLD_HEIGHT),
+		.tileData = (void *)PRAM_START,
 #endif
 		.regionData = { 0 },
 		.error = -99,
 	};
 
-#ifndef USE_HEAP
+#ifndef USE_PRAM
 	if(!testRAM()) 
 	{
 		incompatibleMenu();
 		return 1;
 	}
-#else
-	allocCheck(save.tileData);
 #endif
-
-//	Makes it easier to see if a world load error occurs
-	memset(save.tileData, 0, WORLD_WIDTH * WORLD_HEIGHT * sizeof(Tile));
 
 	srand(RTC_GetTicks());
 
@@ -273,6 +272,9 @@ int main(void)
 		dgray(DGRAY_ON);
 	}
 
+	dclear(C_WHITE);
+	dupdate();
+
 	dfont(&font_smalltext);
 
 	positionPlayerAtWorldMiddle();
@@ -301,7 +303,7 @@ int main(void)
 	Bfile_GetMediaFree_OS(u"\\\\fls0", mediaFree);
 	if(mediaFree[1] < 250000) lowSpaceMenu(mediaFree[1]);
 
-#ifdef USE_HEAP
+#ifdef USE_PRAM
 	free(save.tileData);
 #endif
 

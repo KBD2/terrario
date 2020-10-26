@@ -4,9 +4,10 @@
 
 #include "generate.h"
 #include "world.h"
+#include "chest.h"
 
-struct Coords *clumpCoords;
-int *yPositions;
+GXRAM struct Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
+GXRAM unsigned char yPositions[WORLD_WIDTH];
 
 float interpolate(float a, float b, float x){
 	float f = (1.0 - cosf(x * PI)) * 0.5;
@@ -23,11 +24,11 @@ int randRange(int low, int high)
 	return (rand() % (high - low)) + low;
 }
 
-int poisson(int lambda)
+int poisson(double lambda)
 {
 	int k = 0;
 	float p = 1;
-	double L = pow(E, -(double)lambda);
+	double L = pow(E, -lambda);
 	while(p > L)
 	{
 		k++;
@@ -69,7 +70,7 @@ void perlin(int amplitude, int wavelength, int baseY, enum Tiles tile, int itera
 	{
 		for(int y = yPositions[x]; y < WORLD_HEIGHT; y++)
 		{
-			getTile(x, y) = (Tile){tile, makeVar()};
+			setTile(x, y, tile, makeVar());
 		}
 	}
 }
@@ -80,7 +81,7 @@ void clump(int x, int y, int num, enum Tiles tile, bool maskEmpty, float skewHor
 	int selected;
 	struct Coords selectedTile;
 	int deltas[4][2] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
-	Tile* tileCheck;
+	Tile tileCheck;
 	int checkX, checkY;
 
 	if(maskEmpty && getTile(x, y).id == TILE_NOTHING) return;
@@ -94,7 +95,7 @@ void clump(int x, int y, int num, enum Tiles tile, bool maskEmpty, float skewHor
 		selectedTile = clumpCoords[selected];
 		clumpCoords[selected] = clumpCoords[end - 1];
 		end--;
-		getTile(selectedTile.x, selectedTile.y) = (Tile){tile, makeVar()};
+		setTile(selectedTile.x, selectedTile.y, tile, makeVar());
 		num--;
 		for(int delta = 0; delta < 4; delta++)
 		{
@@ -109,8 +110,8 @@ void clump(int x, int y, int num, enum Tiles tile, bool maskEmpty, float skewHor
 				if(deltas[delta][0] != 0 && randFloat() < skewVertical) continue;
 			}
 			if(checkX < 0 || checkX >= WORLD_WIDTH || checkY < 0 || checkY >= WORLD_HEIGHT) continue;
-			tileCheck = &getTile(checkX, checkY);
-			if(tileCheck->id == tile || (maskEmpty && tileCheck->id == TILE_NOTHING)) continue;
+			tileCheck = getTile(checkX, checkY);
+			if(tileCheck.id == tile || (maskEmpty && tileCheck.id == TILE_NOTHING)) continue;
 			clumpCoords[end] = (struct Coords){checkX, checkY};
 			end++;
 			if(end >= WORLD_CLUMP_BUFFER_SIZE) end = 0;
@@ -118,21 +119,42 @@ void clump(int x, int y, int num, enum Tiles tile, bool maskEmpty, float skewHor
 	}
 }
 
+void box(int x, int y, int width, int height, enum Tiles tile, float coverage, enum Tiles swap)
+{
+	for(int dX = 0; dX < width; dX++)
+	{
+		for(int dY = 0; dY < height; dY++)
+		{
+			if(dY == 0 || dY == height - 1 || dX == 0 || dX == width - 1)
+			{
+				if(randFloat() < coverage)
+				{
+					setTile(x + dX, y + dY, tile, makeVar());
+				}
+				else{
+					setTile(x + dX, y + dY, swap, makeVar());
+				}
+			}
+			else
+			{
+				setTile(x + dX, y + dY, TILE_NOTHING, 0);
+			}
+		}
+	}
+}
+
 void generateWorld()
 {
 	int x, y;
-	Tile* tile;
+	Tile tile;
 	int copseHeight;
 	int tunnelYPositions[10];
-
-	clumpCoords = malloc(WORLD_CLUMP_BUFFER_SIZE * sizeof(struct Coords));
-	allocCheck(clumpCoords);
-
-	yPositions = malloc(WORLD_WIDTH * sizeof(int));
-	allocCheck(yPositions);
+	int num, width, tempX, tries;
+	bool placedChest;
+	Item check;
 
 	middleText("Terrain");
-	
+
 //	Dirt
 	perlin(10, 40, WORLD_HEIGHT / 5, TILE_DIRT, 3);
 
@@ -141,15 +163,15 @@ void generateWorld()
 
 //	Tunnels
 	middleText("Tunnels");
-	x = 0;
-	while(x < WORLD_WIDTH - 50)
+	x = 100;
+	while(x < WORLD_WIDTH - 100)
 	{
 		if(randFloat() < 0.005)
 		{
 			for(int dX = 0; dX < 50; dX += 5)
 			{
 				y = 0;
-				while(getTile(x + dX, y + 8).id != TILE_DIRT) y++;
+				while(getTile(x + dX, y + 8).id != TILE_DIRT && y < WORLD_HEIGHT) y++;
 				tunnelYPositions[dX / 5] = y;
 			}
 			for(int dX = 0; dX < 50; dX += 5)
@@ -209,18 +231,18 @@ void generateWorld()
 	{
 		for(int y = 0; y < WORLD_HEIGHT; y++)
 		{
-			tile = &getTile(x, y);
-			if(tile->id == TILE_DIRT)
+			tile = getTile(x, y);
+			if(tile.id == TILE_DIRT)
 			{
-				tile->id = TILE_GRASS;
+				tile.id = TILE_GRASS;
 				if(x == 0 || x == WORLD_WIDTH - 1 || y == WORLD_HEIGHT) break;
 				if(getTile(x - 1, y).id == TILE_NOTHING || getTile(x + 1, y).id == TILE_NOTHING)
 				{
-					getTile(x, y + 1).id = TILE_GRASS;
+					setTile(x, y + 1, TILE_GRASS, makeVar());
 				}
 				break;
 			}
-			else if(tile->id != TILE_NOTHING) break;
+			else if(tile.id != TILE_NOTHING) break;
 		}
 	}
 
@@ -230,7 +252,7 @@ void generateWorld()
 		{
 			if(getTile(x, y).id == TILE_DIRT && findState(x, y) != 15)
 			{
-				getTile(x, y).id = TILE_GRASS;
+				setTile(x, y, TILE_GRASS, makeVar());
 			}
 		}
 	}
@@ -244,6 +266,52 @@ void generateWorld()
 		clump(x, y, poisson(10), TILE_IRON_ORE, true, 0, 0);
 	}
 
+//	Buried Chests
+	middleText("Buried Chests");
+	for(int i = 0; i < 30; i++)
+	{
+		placedChest = false;
+		num = min(max(1, round(poisson(1.25))), 3);
+		do
+		{
+			x = randRange(25, WORLD_WIDTH - 25);
+			y = randRange(WORLD_HEIGHT / 2.8, WORLD_HEIGHT);
+		}
+		while(getTile(x, y).id != TILE_NOTHING);
+		for(int room = 0; room < num; room++)
+		{
+			width = randRange(10, 20);
+			box(x, y, width, 6, TILE_WOOD, 0.9, TILE_NOTHING);
+			tempX = randRange(x + 1, x + width - 5);
+			for(int dX = 0; dX < randRange(2, 5); dX++)
+			{
+				setTile(tempX + dX, y, TILE_PLATFORM, 0);
+			}
+			if(!placedChest)
+			{
+				if(randRange(0, num) == 0 || room == num - 1)
+				{
+					tries = 0;
+					check = (Item){ITEM_CHEST, 1};
+					do
+					{
+						tempX = randRange(x, x + width - 2);
+						placeTile(tempX, y + 3, &check);
+						tries++;
+					}
+					while(check.amount == 1 && tries < 50);
+					if(check.amount == 0) placedChest = true;
+				}
+			}
+			tempX = randFloat() < 0.5 ? x : x + width - 1;
+			for(int dY = 2; dY < 5; dY++) setTile(tempX, y + dY, TILE_NOTHING, 0);
+			check = (Item){ITEM_DOOR, 1};
+			placeTile(tempX, y + 2, &check);
+			y += 7;
+			x += randRange(-(width - 3), width - 3);
+		}
+	}
+
 //	Trees
 	middleText("Planting Trees");
 	for(int x = 0; x < WORLD_WIDTH; x++)
@@ -255,13 +323,13 @@ void generateWorld()
 			{
 				for(int y = 1; y < WORLD_WIDTH; y++)
 				{
-					tile = &getTile(x, y);
-					if(tile->id == TILE_GRASS)
+					tile = getTile(x, y);
+					if(tile.id == TILE_GRASS)
 					{
 						generateTree(x, y - 1, copseHeight);
 						break;
 					}
-					else if(tile->id != TILE_NOTHING) break;
+					else if(tile.id != TILE_NOTHING) break;
 				}
 			}
 		}
@@ -273,7 +341,7 @@ void generateWorld()
 	{
 		for(int y = 1; y < WORLD_HEIGHT; y++)
 		{
-			if(getTile(x, y).id == TILE_GRASS && getTile(x, y - 1).id == TILE_NOTHING && rand() % 4 > 0) getTile(x, y - 1) = (Tile){TILE_PLANT, makeVar()};
+			if(getTile(x, y).id == TILE_GRASS && getTile(x, y - 1).id == TILE_NOTHING && rand() % 4 > 0) setTile(x, y - 1, TILE_PLANT, makeVar());;
 		}
 	}
 
@@ -285,10 +353,8 @@ void generateWorld()
 		{
 			if(getTile(x, y).id == TILE_GRASS && getTile(x, y + 1).id == TILE_NOTHING)
 			{
-				for(int dY = 1; dY < 11 && getTile(x, y + dY).id == TILE_NOTHING; dY++) getTile(x, y + dY) = (Tile){TILE_VINE, rand() % 4};
+				for(int dY = 1; dY < 11 && getTile(x, y + dY).id == TILE_NOTHING; dY++) setTile(x, y + dY, TILE_VINE, rand() % 4);
 			}
 		}
 	}
-
-	free(clumpCoords);
 }

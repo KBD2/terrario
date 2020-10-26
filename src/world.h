@@ -16,8 +16,6 @@ World API functions.
 
 #define MAX_FRIENDS 3
 
-#define getTile(x, y) (world.tiles[(y) * WORLD_WIDTH + (x)])
-
 enum SupportTypes {
 	SUPPORT_NONE,
 	SUPPORT_KEEP,
@@ -75,6 +73,14 @@ enum Tiles {
 
 	TILES_COUNT
 };
+
+#ifndef USE_PRAM
+#define getTile(x, y) world.tiles[(y) * WORLD_WIDTH + (x)]
+#define setTile(x, y, tile, var) getTile(x, y) = (Tile){tile, var}
+#else
+Tile getTile(int x, int y);
+void setTile(int x, int y, enum Tiles tile, int var);
+#endif
 
 struct World {
 	Tile *tiles;

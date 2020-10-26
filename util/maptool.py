@@ -19,6 +19,8 @@ class Tiles(Enum):
     DIRT = (152, 106, 76)
     GRASS = (38, 127, 0)
     IRON = (140,101,80)
+    WOOD = (151, 107, 75)
+    PLATFORM = (191, 141, 111)
 
 # Gets replaced with the appropriate function in the actual code
 def setTile(x, y, tile):
@@ -101,6 +103,17 @@ def clump(x, y, num, tile, maskEmpty, skewHorizontal, skewVertical):
                 continue
             coords.append((checkX, checkY))
 
+def box(x, y, width, height, tile, coverage, swap):
+    for dX in range(width):
+        for dY in range(height):
+            if dY == 0 or dY == height - 1 or dX == 0 or dX == width - 1:
+                if random.random() < coverage:
+                    setTile(x + dX, y + dY, tile)
+                else:
+                    setTile( x + dX, y + dY, swap)
+            else:
+                setTile(x + dX, y + dY, Tiles.NOTHING)
+
 def generate():
     
     print("Generating dirt...")
@@ -175,6 +188,23 @@ def generate():
         y = random.randrange(0, WORLD_HEIGHT)
         clump(x, y, poisson(10), Tiles.IRON, True, 0, 0)
 
+    print("Buried chests...")
+    for i in range(30):
+        num = min(max(1, round(poisson(1.25))), 3)
+        x = random.randrange(25, WORLD_WIDTH - 25)
+        y = random.randrange(int(WORLD_HEIGHT / 2.8), WORLD_HEIGHT)
+        while getTile(x, y) != Tiles.NOTHING:
+            x = random.randrange(25, WORLD_WIDTH - 25)
+            y = random.randrange(int(WORLD_HEIGHT / 2.8), WORLD_HEIGHT)
+        for room in range(num):
+            width = random.randrange(10, 20)
+            box(x, y, width, 6, Tiles.WOOD, 0.9, Tiles.NOTHING)
+            platformX = random.randrange(x + 1, x + width - 5)
+            for dX in range(random.randrange(2, 5)):
+                setTile(platformX + dX, y, Tiles.PLATFORM)
+            y += 7
+            x += random.randrange(-(width - 3), width - 3)
+
 ##### END ALGORITHM #####
 
 image = Image.new("RGB", (WORLD_WIDTH, WORLD_HEIGHT), (123, 152, 254))
@@ -182,4 +212,4 @@ generate()
 mpplot.imshow(image)
 mpplot.show()
 if input("Save image? ").lower() in ('y', 'yes'):
-    image.save("./map.png")
+    image.resize((2000, 500), Image.NEAREST).save("./map.png")

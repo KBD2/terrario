@@ -123,7 +123,7 @@ void saveGame()
 						}
 						else
 						{
-							*tile = world.tiles[tileY * WORLD_WIDTH + tileX];
+							*tile = getTile(tileX, tileY);
 						}
 					}
 				}
@@ -167,6 +167,8 @@ void loadSave()
 	int regionStartX, regionStartY;
 
 	struct PlayerSave playerSave;
+
+	Tile tile;
 
 	error = BFile_FindFirst(playerPath, &handle, foundPath, &fileInfo);
 	BFile_FindClose(handle);
@@ -223,7 +225,8 @@ void loadSave()
 				for(int tileX = regionStartX; tileX < regionStartX + REGION_SIZE; tileX++)
 				{
 					if(tileX >= WORLD_WIDTH || tileY >= WORLD_HEIGHT) continue;
-					world.tiles[tileY * WORLD_WIDTH + tileX] = regionBuffer[(tileY - regionStartY) * REGION_SIZE + (tileX - regionStartX)];
+					tile = regionBuffer[(tileY - regionStartY) * REGION_SIZE + (tileX - regionStartX)];
+					setTile(tileX, tileY, tile.id, tile.variant);
 				}
 			}
 		}
