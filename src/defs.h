@@ -49,5 +49,12 @@ Various macros, constant definitions, and utility functions used throughout the 
 // 1/<x> chance to spawn an entity each frame
 #define SPAWN_CHANCE 600
 
+/*
+Must be even.
+This WILL break any old saves if changed! Make sure you have a very good reason
+before doing so!
+*/
+#define VERSION_BUFFER_SIZE 16
+
 // Callback used to govern loops that have a framerate
 int frameCallback(volatile int *flag);

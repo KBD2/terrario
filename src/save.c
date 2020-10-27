@@ -3,10 +3,16 @@
 #include <gint/std/stdio.h>
 #include <gint/std/string.h>
 #include <gint/std/stdlib.h>
+#include <string.h>
 
 #include "save.h"
 #include "defs.h"
 #include "world.h"
+
+struct SaveInfo {
+		char version[VERSION_BUFFER_SIZE];
+		int time;
+};
 
 // Checks if \\fls0\TERRARIO\save.info exists
 bool getSave()
@@ -25,10 +31,13 @@ bool getSave()
 void getVersionInfo()
 {
 	extern char versionBuffer[16];
+	struct SaveInfo info;
 	const uint16_t *infoPath = u"\\\\fls0\\TERRARIO\\save.info";
 	int descriptor = BFile_Open(infoPath, BFile_ReadOnly);
-	BFile_Read(descriptor, (void *)versionBuffer, 16, 0);
+
+	BFile_Read(descriptor, &info, sizeof(struct SaveInfo), 0);
 	BFile_Close(descriptor);
+	strncpy(versionBuffer, info.version, VERSION_BUFFER_SIZE);
 }
 
 void dumpRegions()
@@ -49,23 +58,26 @@ void saveGame()
 	const uint16_t *playerPath = u"\\\\fls0\\TERRARIO\\player.dat";
 	const uint16_t *infoPath = u"\\\\fls0\\TERRARIO\\save.info";
 	const uint16_t *chestPath = u"\\\\fls0\\TERRARIO\\chests.dat";
+
 	int handle;
+	int descriptor;
 	uint16_t foundPath[30];
 	struct BFile_FileInfo fileInfo;
 	int error;
 
 	Tile *tile;
 	int regionStartX, regionStartY;
+	Tile regionBuffer[REGION_SIZE * REGION_SIZE];
 
 	char buffer[30];
 	uint16_t filePath[30];
-	Tile regionBuffer[REGION_SIZE * REGION_SIZE];
-	int descriptor;
+
+	struct SaveInfo info;
+
 	int regionFileSize = sizeof(regionBuffer);
-	int infoFileSize = 20;
+	int playerSaveSize = sizeof(struct PlayerSave);
+	int infoFileSize = sizeof(struct SaveInfo);
 	int chestDataSize = world.chests.number * sizeof(struct Chest);
-	char infoBuffer[20];
-	memset(infoBuffer, 0, 20);
 
 	save.timeTicks = world.timeTicks;
 
@@ -74,20 +86,19 @@ void saveGame()
 	BFile_FindClose(handle);
 	if(error == -1) BFile_Create(folderPath, BFile_Folder, NULL);
 
-//	Create save.info and put the nersion and day ticks inside
-	sprintf(infoBuffer, VERSION);
-	*((int *)(infoBuffer + 16)) = save.timeTicks;
+//	Create save.info and put the version and day ticks inside
+	strncpy(info.version, VERSION, VERSION_BUFFER_SIZE);
+	info.time = save.timeTicks;
 	BFile_Remove(infoPath);
 	BFile_Create(infoPath, BFile_File, &infoFileSize);
 	descriptor = BFile_Open(infoPath, BFile_WriteOnly);
-	BFile_Write(descriptor, infoBuffer, 20);
+	BFile_Write(descriptor, &info, sizeof(info));
 	BFile_Close(descriptor);
 
 //	Create player.dat and put in player information and inventory
 	struct PlayerSave playerSave;
 	playerSave.health = player.combat.health;
 	memcpy(playerSave.items, player.inventory.items, INVENTORY_SIZE * sizeof(Item));
-	int playerSaveSize = sizeof(struct PlayerSave);
 	BFile_Remove(playerPath);
 	BFile_Create(playerPath, BFile_File, &playerSaveSize);
 	descriptor = BFile_Open(playerPath, BFile_WriteOnly);
@@ -154,7 +165,8 @@ void loadSave()
 	const uint16_t *chestPath = u"\\\\fls0\\TERRARIO\\chests.dat";
 	char buffer[30];
 	uint16_t filePath[30];
-	char infoBuffer[20];
+
+	struct SaveInfo info;
 
 	int handle;
 	uint16_t foundPath[30];
@@ -182,9 +194,10 @@ void loadSave()
 	BFile_Close(descriptor);
 
 	descriptor = BFile_Open(infoPath, BFile_ReadOnly);
-	BFile_Read(descriptor, &infoBuffer, 20, 0);
+	BFile_Read(descriptor, &info, sizeof(struct SaveInfo), 0);
 	BFile_Close(descriptor);
-	memcpy((void *)&save.timeTicks, (void *)(infoBuffer + 16), 4);
+
+	save.timeTicks = info.time;
 	world.timeTicks = save.timeTicks;
 
 	error = BFile_FindFirst(chestPath, &handle, foundPath, &fileInfo);
