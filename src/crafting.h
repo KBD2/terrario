@@ -25,3 +25,8 @@ extern const int numRecipes;
 The crafting menu.
 */
 void craftingMenu();
+
+/* craftingCleanup
+Frees buffers.
+*/
+void craftingCleanup();

@@ -12,25 +12,28 @@
 #define PI 3.14159265358979323846
 
 #ifdef USE_PRAM
+union {
+	Tile tiles[4];
+	uint32_t aligned;
+} group;
+
 Tile getTile(int x, int y)
 {
 	int tileWanted = y * WORLD_WIDTH + x;
-	int nearest = tileWanted & ~3;
-	Tile group[4] = { 0 };
 
-	*(int *)group = *(int *)(world.tiles + nearest);
-	return group[tileWanted - nearest];
+	group.aligned = *(uint32_t *)(save.tileData + (tileWanted & ~3));
+	
+	return group.tiles[tileWanted & 3];
 }
 
 void setTile(int x, int y, enum Tiles tile, int var)
 {
 	int tileWanted = y * WORLD_WIDTH + x;
-	int nearest = tileWanted & ~3;
-	Tile group[4] = { 0 };
+	uint32_t *nearest = save.tileData + (tileWanted & ~3);
 
-	*(int *)group = *(int *)(world.tiles + nearest);
-	group[tileWanted - nearest] = (Tile){tile, var};
-	*(int *)(world.tiles + nearest) = *(int *)group;
+	group.aligned = *nearest;
+	group.tiles[tileWanted & 3] = (Tile){tile, var};
+	*nearest = group.aligned;
 }
 #endif
 
@@ -489,6 +492,7 @@ void removeTile(int x, int y)
 		}
 		regionChange(x, y);
 
+		tile = getTile(x, y);
 		if(tile.id == TILE_NOTHING && tiles[getTile(x, y - 1).id].support == SUPPORT_NEED) removeTile(x, y - 1);
 
 		if(tiles[getTile(x, y + 1).id].support == SUPPORT_TOP) removeTile(x, y + 1);

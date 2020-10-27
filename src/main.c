@@ -70,7 +70,7 @@ void positionPlayerAtWorldMiddle()
 	{
 		if(getTile(playerX, playerY).id != TILE_NOTHING || playerY == WORLD_HEIGHT)
 		{
-			playerY = (playerY - 3);
+			playerY -= 3;
 			break;
 		}
 		playerY++;
@@ -295,6 +295,7 @@ int main(void)
 
 	free(world.entities);
 	destroyExplosion(&world.explosion);
+	craftingCleanup();
 
 	gint_switch(&saveGame);
 	free(world.chests.chests);

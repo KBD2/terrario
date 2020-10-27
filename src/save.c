@@ -64,8 +64,8 @@ void saveGame()
 	int regionFileSize = sizeof(regionBuffer);
 	int infoFileSize = 20;
 	int chestDataSize = world.chests.number * sizeof(struct Chest);
-	char *infoBuffer = calloc(20, 1);
-	allocCheck(infoBuffer);
+	char infoBuffer[20];
+	memset(infoBuffer, 0, 20);
 
 	save.timeTicks = world.timeTicks;
 

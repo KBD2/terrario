@@ -14,6 +14,9 @@
 #include "defs.h"
 #include "render.h"
 
+bool *tilesBuffer = NULL;
+short *craftableRecipes = NULL;
+
 const struct Recipe recipes[] = {
 //		Workbench			Result				N	Ingredient list
 	{	TILE_NULL,			{ITEM_PLATFORM, 2},	1,	(const Item[]){ {ITEM_WOOD, 1}										}	},
@@ -30,15 +33,13 @@ const struct Recipe recipes[] = {
 
 const int numRecipes = sizeof(recipes) / sizeof(struct Recipe);
 
-bool *findNearTiles()
+void findNearTiles()
 {
-	bool *buffer = (bool*)malloc(TILES_COUNT * sizeof(bool));
-	allocCheck(buffer);
 	int playerTileX = player.props.x >> 3;
 	int playerTileY = player.props.y >> 3;
 	int checkX, checkY;
 
-	memset(buffer, 0, TILES_COUNT * sizeof(bool));
+	memset(tilesBuffer, 0, TILES_COUNT * sizeof(bool));
 
 	for(enum Tiles tile = TILE_NOTHING; tile < TILES_COUNT; tile++)
 	{
@@ -51,13 +52,11 @@ bool *findNearTiles()
 				if(checkX < 0 || checkX >= WORLD_WIDTH || checkY < 0 || checkY >= WORLD_HEIGHT) continue;
 				if(getTile(checkX, checkY).id == tile)
 				{
-					buffer[tile] = true;
+					tilesBuffer[tile] = true;
 				}
 			}
 		}
 	}
-
-	return buffer;
 }
 
 bool checkRecipeIsCraftable(int recipe)
@@ -77,37 +76,34 @@ bool checkRecipeIsCraftable(int recipe)
 	return craftable;
 }
 
-void findCraftableRecipes(short *buffer)
+void findCraftableRecipes()
 {
 	const struct Recipe *currRecipe;
 	bool craftable;
-	bool *nearTiles = findNearTiles();
 	int count = 0;
 
-	for(int i = 0; i < RECIPE_BUFFER_SIZE; i++) buffer[i] = -1;
+	findNearTiles();
+
+	for(int i = 0; i < RECIPE_BUFFER_SIZE; i++) craftableRecipes[i] = -1;
 
 	for(unsigned int recipe = 0; recipe < numRecipes; recipe++)
 	{
 		currRecipe = &recipes[recipe];
-		if(currRecipe->required != TILE_NULL && !nearTiles[currRecipe->required]) continue;
+		if(currRecipe->required != TILE_NULL && !tilesBuffer[currRecipe->required]) continue;
 		craftable = checkRecipeIsCraftable(recipe);
 		if(craftable)
 		{
-			buffer[count] = recipe;
+			craftableRecipes[count] = recipe;
 			count++;
 			if(count == RECIPE_BUFFER_SIZE) break;
 		}
 	}
-
-	free(nearTiles);
 }
 
 void craftingMenu()
 {
 	int selected = 0;
 	int currCraftable;
-	short *craftableRecipes = malloc(RECIPE_BUFFER_SIZE * sizeof(short));
-	allocCheck(craftableRecipes);
 	extern bopti_image_t img_slot, img_hotbarselect;
 	key_event_t key;
 	int recipesMax = 0;
@@ -117,7 +113,19 @@ void craftingMenu()
 	Item result;
 	enum Items crafting = ITEM_NULL;
 
-	findCraftableRecipes(craftableRecipes);
+	if(craftableRecipes == NULL)
+	{
+		craftableRecipes = malloc(RECIPE_BUFFER_SIZE * sizeof(short));
+		allocCheck(craftableRecipes);
+	}
+
+	if(tilesBuffer == NULL)
+	{
+		tilesBuffer = (bool*)malloc(TILES_COUNT * sizeof(bool));
+		allocCheck(tilesBuffer);
+	}
+
+	findCraftableRecipes();
 
 	while(true)
 	{
@@ -156,11 +164,7 @@ void craftingMenu()
 		switch(key.key)
 		{
 			case KEY_SHIFT: case KEY_ALPHA:
-				if(key.type == KEYEV_DOWN)
-				{
-					free(craftableRecipes);
-					return;
-				}
+				if(key.type == KEYEV_DOWN) return;
 				break;
 
 			case KEY_OPTN:
@@ -199,7 +203,7 @@ void craftingMenu()
 				}
 
 // 				Regen valid recipe buffer as multiple may have changed
-				findCraftableRecipes(craftableRecipes); 
+				findCraftableRecipes(); 
 				for(int i = 0; i < RECIPE_BUFFER_SIZE; i++) 
 				{
 					if(craftableRecipes[i] == -1)
@@ -223,4 +227,10 @@ void craftingMenu()
 		}
 		selected = min(max(0, selected), recipesMax);
 	}
+}
+
+void craftingCleanup()
+{
+	if(tilesBuffer != NULL) free(tilesBuffer);
+	if(craftableRecipes != NULL) free(craftableRecipes);
 }
