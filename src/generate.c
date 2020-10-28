@@ -155,6 +155,12 @@ void generateWorld()
 
 	yPositions = malloc(game.WORLD_WIDTH * sizeof(unsigned char));
 
+	middleText("Reset");
+	for(int y = 0; y < game.WORLD_HEIGHT; y++)
+	{
+		for(int x = 0; x < game.WORLD_WIDTH; x++) setTile(x, y, TILE_NOTHING, 0);
+	}
+
 	middleText("Terrain");
 
 //	Dirt

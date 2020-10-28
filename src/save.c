@@ -13,8 +13,6 @@ struct SaveInfo {
 	int time;
 };
 
-GYRAM char regionData[MAX_REGIONS];
-
 // Checks if \\fls0\TERRARIO\save.info exists
 bool getSave()
 {

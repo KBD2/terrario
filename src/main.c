@@ -314,7 +314,7 @@ int main(void)
 	if(save.error != -99) saveFailMenu();
 	
 	Bfile_GetMediaFree_OS(u"\\\\fls0", mediaFree);
-	if(mediaFree[1] < 250000) lowSpaceMenu(mediaFree[1]);
+	if(mediaFree[1] < 350000) lowSpaceMenu(mediaFree[1]);
 
 	return 1;
 }

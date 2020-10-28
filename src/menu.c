@@ -314,13 +314,12 @@ void aboutMenu()
 {
 	const char *aboutText[] = {
 		"Special thanks to:",
-		"Re-Logic - Terraria",
 		"Lephenixnoir - Gint",
 		"Memallox - Newlib",
 		"Dark Storm",
+		"Yatis",
 		"",
 		VERSION,
-//		Hacky way to inline them
 		__DATE__ " " __TIME__
 	};
 	const char *controlsText[] = {
@@ -487,7 +486,7 @@ void lowSpaceMenu(int mediaFree)
 	dprint(0, 0, C_BLACK, "Only %.1jkB", (int)((float)mediaFree/100));
 	dtext(0, 8, C_BLACK, "of SMEM free!");
 	dtext(0, 16, C_BLACK, "Please optimise SMEM");
-	dtext(0, 24, C_BLACK, "and ensure 300kB free");
+	dtext(0, 24, C_BLACK, "and ensure 350kB free");
 	dtext(0, 40, C_BLACK, "[EXIT] to exit");
 	dupdate();
 
