@@ -49,7 +49,7 @@ void findNearTiles()
 			{
 				checkX = playerTileX + dX;
 				checkY = playerTileY + dY;
-				if(checkX < 0 || checkX >= WORLD_WIDTH || checkY < 0 || checkY >= WORLD_HEIGHT) continue;
+				if(checkX < 0 || checkX >= game.WORLD_WIDTH || checkY < 0 || checkY >= game.WORLD_HEIGHT) continue;
 				if(getTile(checkX, checkY).id == tile)
 				{
 					tilesBuffer[tile] = true;

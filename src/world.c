@@ -11,32 +11,6 @@
 
 #define PI 3.14159265358979323846
 
-#ifdef USE_PRAM
-union {
-	Tile tiles[4];
-	uint32_t aligned;
-} group;
-
-Tile getTile(int x, int y)
-{
-	int tileWanted = y * WORLD_WIDTH + x;
-
-	group.aligned = *(uint32_t *)(save.tileData + (tileWanted & ~3));
-	
-	return group.tiles[tileWanted & 3];
-}
-
-void setTile(int x, int y, enum Tiles tile, int var)
-{
-	int tileWanted = y * WORLD_WIDTH + x;
-	uint32_t *nearest = save.tileData + (tileWanted & ~3);
-
-	group.aligned = *nearest;
-	group.tiles[tileWanted & 3] = (Tile){tile, var};
-	*nearest = group.aligned;
-}
-#endif
-
 extern bopti_image_t 
 img_tile_nothing,
 img_tile_stone,
@@ -117,7 +91,7 @@ void generateTree(int x, int y, int baseHeight)
 	int top = 0;
 	int height = max(1, baseHeight + (rand() % 3) - 1);
 
-	if(x == 0 || x == WORLD_WIDTH - 1 ||y < 0 || y >= WORLD_HEIGHT - height) return;
+	if(x == 0 || x == game.WORLD_WIDTH - 1 ||y < 0 || y >= game.WORLD_HEIGHT - height) return;
 	for(int i = 0; i < height; i++) if(
 		getTile(x - 1, y - i).id == TILE_TRUNK
 	 || getTile(x + 1, y - i).id == TILE_TRUNK
@@ -152,7 +126,7 @@ void breakTree(int x, int y)
 		regionChange(x - 1, y);
 		wood++;
 	}
-	if(x < WORLD_WIDTH - 1 && getTile(x + 1, y).id == TILE_ROOT_R)
+	if(x < game.WORLD_WIDTH - 1 && getTile(x + 1, y).id == TILE_ROOT_R)
 	{
 		setTile(x + 1, y, TILE_NOTHING, makeVar());
 		regionChange(x + 1, y);
@@ -182,7 +156,7 @@ bool isSameOrFriend(int x, int y, unsigned char idx)
 	const unsigned char *friends;
 
 //	Outside world?
-	if(x < 0 || x >= WORLD_WIDTH || y < 0 || y >= WORLD_HEIGHT) return 0;
+	if(x < 0 || x >= game.WORLD_WIDTH || y < 0 || y >= game.WORLD_HEIGHT) return 0;
 	tile = getTile(x, y);
 //	Same tile type?
 	if(tile.id == idx) return 1;
@@ -222,17 +196,17 @@ bool checkArea(int x, int y, int width, int height, bool support)
 	if(y < 0 || x < 0) return false;
 	for(int dY = 0; dY < height; dY++)
 	{
-		if(y + dY >= WORLD_HEIGHT) return false;
+		if(y + dY >= game.WORLD_HEIGHT) return false;
 		for(int dX = 0; dX < width; dX++)
 		{
-			if(x + dX >= WORLD_WIDTH) return false;
+			if(x + dX >= game.WORLD_WIDTH) return false;
 			tile = getTile(x + dX, y + dY);
 			if(tile.id != TILE_NOTHING && tile.id != TILE_PLANT) return false;
 		}
 	}
 	if(!support) return true;
 // 	Check the tiles below can support the object
-	if(y + height == WORLD_HEIGHT) return false;
+	if(y + height == game.WORLD_HEIGHT) return false;
 	for(int dX = 0; dX < width; dX++)
 	{
 		tile = getTile(x + dX, y + height);
@@ -358,7 +332,7 @@ void break1Wide(int x, int y, int height, enum Tiles tile)
 
 void placeTile(int x, int y, Item *item)
 {
-	if(x < 0 || x >= WORLD_WIDTH || y < 0 || y >= WORLD_HEIGHT) return;
+	if(x < 0 || x >= game.WORLD_WIDTH || y < 0 || y >= game.WORLD_HEIGHT) return;
 	Tile tile = getTile(x, y);
 	bool success = true;
 	int checkDeltas[4][2] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
@@ -405,7 +379,7 @@ void placeTile(int x, int y, Item *item)
 					{
 						checkX = x + checkDeltas[check][0];
 						checkY = y + checkDeltas[check][1];
-						if(checkX < 0 || checkX >= WORLD_WIDTH || checkY < 0 || checkY >= WORLD_HEIGHT) continue;
+						if(checkX < 0 || checkX >= game.WORLD_WIDTH || checkY < 0 || checkY >= game.WORLD_HEIGHT) continue;
 						if(getTile(checkX, checkY).id != TILE_NOTHING)
 						{
 							success = true;
@@ -427,7 +401,7 @@ void placeTile(int x, int y, Item *item)
 
 void removeTile(int x, int y)
 {
-	if(x < 0 || x >= WORLD_WIDTH || y < 0 || y >= WORLD_HEIGHT) return;
+	if(x < 0 || x >= game.WORLD_WIDTH || y < 0 || y >= game.WORLD_HEIGHT) return;
 	Tile tile = getTile(x, y);
 	int freeSlot;
 

@@ -13,6 +13,7 @@ World API functions.
 #include "render.h"
 #include "entity.h"
 #include "chest.h"
+#include "save.h"
 
 #define MAX_FRIENDS 3
 
@@ -74,14 +75,6 @@ enum Tiles {
 	TILES_COUNT
 };
 
-#ifndef USE_PRAM
-#define getTile(x, y) world.tiles[(y) * WORLD_WIDTH + (x)]
-#define setTile(x, y, tile, var) getTile(x, y) = (Tile){tile, var}
-#else
-Tile getTile(int x, int y);
-void setTile(int x, int y, enum Tiles tile, int var);
-#endif
-
 struct World {
 	Tile *tiles;
 	Entity *entities;
@@ -97,6 +90,49 @@ struct World {
 };
 	
 extern struct World world;
+
+union {
+	Tile tiles[4];
+	uint32_t aligned;
+} group;
+
+static inline Tile getTile(int x, int y)
+{
+	int tileWanted = y * game.WORLD_WIDTH + x;
+
+	switch(game.HWMODE)
+	{
+		case MODE_RAM:
+			return world.tiles[tileWanted];
+		
+		case MODE_PRAM:
+			group.aligned = *(uint32_t *)(save.tileData + (tileWanted & ~3));
+			return group.tiles[tileWanted & 3];
+		
+		default:
+			return (Tile){TILE_NULL, 0};
+	}
+}
+
+static inline void setTile(int x, int y, enum Tiles tile, int var)
+{
+	int tileWanted = y * game.WORLD_WIDTH + x;
+	uint32_t *nearest;
+
+	switch(game.HWMODE)
+	{
+		case MODE_RAM:
+			world.tiles[tileWanted] = (Tile){tile, var};
+			return;
+		
+		case MODE_PRAM:
+			nearest = save.tileData + (tileWanted & ~3);
+			group.aligned = *nearest;
+			group.tiles[tileWanted & 3] = (Tile){tile, var};
+			*nearest = group.aligned;
+			return;
+	}
+}
 
 /* regionChange
 Sets the status of the region the given coordinates are in. Used to keep track

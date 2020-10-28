@@ -138,16 +138,16 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames)
 			max(0, (self->y >> 3) - 1)
 		},
 		{
-			min(WORLD_WIDTH - 1, ((self->x + self->width) >> 3) + 1),
-			min(WORLD_HEIGHT - 1, ((self->y + self->height) >> 3) + 1)
+			min(game.WORLD_WIDTH - 1, ((self->x + self->width) >> 3) + 1),
+			min(game.WORLD_HEIGHT - 1, ((self->y + self->height) >> 3) + 1)
 		}
 	};
 
 	int checkLeft, checkRight, checkTop, checkBottom;
 	int overlapX, overlapY;
 
-	int xMax = (WORLD_WIDTH << 3) - self->width;
-	int yMax = (WORLD_HEIGHT << 3) - self->height;
+	int xMax = (game.WORLD_WIDTH << 3) - self->width;
+	int yMax = (game.WORLD_HEIGHT << 3) - self->height;
 
 	self->yVel = min(10, self->yVel + GRAVITY_ACCEL);
 	if(abs(self->xVel) < 0.1) self->xVel = 0;
@@ -232,7 +232,7 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames)
 		self->yVel = 0;
 		self->y = min(max(self->y, 0), yMax);
 	}
-	if(self->y + self->height >= (WORLD_HEIGHT << 3) - 1)
+	if(self->y + self->height >= (game.WORLD_HEIGHT << 3) - 1)
 	{
 		self->yVel = 0;
 		self->touchingTileTop = true;
@@ -417,14 +417,14 @@ void doSpawningCycle()
 			spawnX = playerTileX + (((rand() % 49) - 24));
 //			This prohibits entities from spawning below or above the player, should be properly fixed
 			if(spawnX <= playerTileX) spawnX = min(max(spawnX, 0), playerTileX - 9);
-			else spawnX = min(max(spawnX, playerTileX + 9), WORLD_WIDTH - 1);
+			else spawnX = min(max(spawnX, playerTileX + 9), game.WORLD_WIDTH - 1);
 
 			spawnY = playerTileY + (((rand() % 25) - 12));
-			spawnY = min(max(spawnY, 0), WORLD_HEIGHT - 1);
+			spawnY = min(max(spawnY, 0), game.WORLD_HEIGHT - 1);
 
 			if(tiles[getTile(spawnX, spawnY).id].physics == PHYS_SOLID) continue;
 
-			while(spawnY < WORLD_HEIGHT)
+			while(spawnY < game.WORLD_HEIGHT)
 			{
 				spawnY++;
 				if(tiles[getTile(spawnX, spawnY).id].physics == PHYS_SOLID)

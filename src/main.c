@@ -29,10 +29,11 @@ const unsigned int sc0236[] = { SCA, SCB, SCE, 0x0236 };
 const unsigned int sc042E[] = { SCA, SCB, SCE, 0x042E };
 
 // Global variables
-struct SaveData save;
+GYRAM struct SaveData save;
 struct World world;
 struct Player player;
 char versionBuffer[16];
+struct GameCompatibilityPresets game;
 
 // Governs the 60UPS loop
 int frameCallback(volatile int *flag)
@@ -44,31 +45,27 @@ int frameCallback(volatile int *flag)
 // Checks if the RAM we'll be using to store world tiles works
 bool testRAM()
 {
-// Make sure we don't mess with the RAM on GIII models
-#ifndef USE_PRAM
-	unsigned int *RAMAddress = (void*)RAM_START;
-	unsigned int *RAMTestAddress = (void*)0x88000000;
+	unsigned int *RAMAddress = game.RAM_START;
 	unsigned int save = *RAMAddress;
 //	Ensures this isn't a 256kB-RAM calc
 	if(gint[HWRAM] < 500000) return false;
 	*RAMAddress = 0xC0FFEE;
-	if(*RAMAddress == 0xC0FFEE && *RAMAddress != *RAMTestAddress)
+	if(*RAMAddress == 0xC0FFEE)
 	{
 		*RAMAddress = save;
 		return true;
 	}
 	*RAMAddress = save;
-#endif
 	return false;
 }
 
 void positionPlayerAtWorldMiddle()
 {
-	int playerX = (WORLD_WIDTH / 2);
+	int playerX = (game.WORLD_WIDTH / 2);
 	int playerY = 0;
 	while(1)
 	{
-		if(getTile(playerX, playerY).id != TILE_NOTHING || playerY == WORLD_HEIGHT)
+		if(getTile(playerX, playerY).id != TILE_NOTHING || playerY == game.WORLD_HEIGHT)
 		{
 			playerY -= 3;
 			break;
@@ -142,30 +139,45 @@ int main(void)
 	volatile int flag = 0;
 	int mediaFree[2];
 
-#ifdef USE_PRAM
-	spu_zero();
-#endif
+	switch(gint[HWCALC])
+	{
+		case HWCALC_FX9860G_SH4:
+			game = (struct GameCompatibilityPresets) {
+				.HWMODE = MODE_RAM,
+				.RAM_START = (void *)0x88040000,
+				.WORLD_WIDTH = 1000,
+				.WORLD_HEIGHT = 250
+			};
+			break;
+		
+		case HWCALC_G35PE2:
+			spu_zero();
+			game = (struct GameCompatibilityPresets) {
+				.HWMODE = MODE_PRAM,
+				.RAM_START = (void *)0xFE200000,
+				.WORLD_WIDTH = 640,
+				.WORLD_HEIGHT = 250
+			};
+			break;
+		
+		default:
+			incompatibleMenu(gint[HWCALC]);
+			return 0;
+	}
 
 	save = (struct SaveData){
-		.tileDataSize = WORLD_HEIGHT * WORLD_WIDTH * sizeof(Tile),
-		.regionsX = REGIONS_X,
-		.regionsY = REGIONS_Y,
-#ifndef USE_PRAM
-		.tileData = (void *)RAM_START,
-#else
-		.tileData = (void *)PRAM_START,
-#endif
-		.regionData = { 0 },
+		.tileDataSize = game.WORLD_HEIGHT * game.WORLD_WIDTH * sizeof(Tile),
+		.regionsX = game.WORLD_WIDTH / REGION_SIZE + 1,
+		.regionsY = game.WORLD_HEIGHT / REGION_SIZE + 1,
+		.tileData = game.RAM_START,
 		.error = -99,
 	};
 
-#ifndef USE_PRAM
 	if(!testRAM()) 
 	{
-		incompatibleMenu();
+		incompatibleMenu(-99);
 		return 1;
 	}
-#endif
 
 	srand(RTC_GetTicks());
 
@@ -303,10 +315,6 @@ int main(void)
 	
 	Bfile_GetMediaFree_OS(u"\\\\fls0", mediaFree);
 	if(mediaFree[1] < 250000) lowSpaceMenu(mediaFree[1]);
-
-#ifdef USE_PRAM
-	free(save.tileData);
-#endif
 
 	return 1;
 }

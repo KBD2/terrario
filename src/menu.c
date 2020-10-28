@@ -81,7 +81,7 @@ void debugMenu()
 	int which = 0;
 	key_event_t key;
 
-	memset(save.tileData, 0, WORLD_WIDTH * WORLD_HEIGHT);
+	memset(save.tileData, 0, game.WORLD_WIDTH * game.WORLD_HEIGHT);
 
 	while(true)
 	{
@@ -278,16 +278,16 @@ void memoryErrorMenu()
 	}
 }
 
-void incompatibleMenu()
+void incompatibleMenu(int code)
 {
 	key_event_t key;
 
 	dclear(C_WHITE);
-	dtext(0, 0, C_BLACK, "This addin build is");
-	dtext(0, 8, C_BLACK, "incompatible! Please");
-	dtext(0, 16, C_BLACK, "use the GIII-");
-	dtext(0, 24, C_BLACK, "compatible version.");
-	dtext(0, 40, C_BLACK, "[EXIT] to exit");
+	dtext(0, 0, C_BLACK, "Sorry, this game is");
+	dtext(0, 8, C_BLACK, "not compatible with");
+	dtext(0, 16, C_BLACK, "your calculator :(");
+	dprint(0, 32, C_BLACK, "HW code: %d", code);
+	dtext(0, 48, C_BLACK, "[EXIT] to exit");
 	dupdate();
 
 	while(1)

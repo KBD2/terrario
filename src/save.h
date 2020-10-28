@@ -8,16 +8,12 @@ The game save/load system.
 
 #include "entity.h"
 
-#define REGIONS_X (WORLD_WIDTH / REGION_SIZE + 1)
-#define REGIONS_Y (WORLD_HEIGHT / REGION_SIZE + 1)
-#define NUM_REGIONS REGIONS_X * REGIONS_Y
-
 struct SaveData {
 	int tileDataSize;
 	int regionsX;
 	int regionsY;
 	void *tileData;
-	char regionData[NUM_REGIONS];
+	char regionData[MAX_REGIONS];
 	int timeTicks;
 	int error;
 };

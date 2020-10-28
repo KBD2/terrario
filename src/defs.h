@@ -6,8 +6,19 @@
 Various macros, constant definitions, and utility functions used throughout the game.
 */
 
-// Only use for fx9750GIII builds
-//#define USE_PRAM
+enum HWModes {
+	MODE_RAM,
+	MODE_PRAM
+};
+
+struct GameCompatibilityPresets {
+	enum HWModes HWMODE;
+	void *RAM_START;
+	int WORLD_WIDTH;
+	int WORLD_HEIGHT;
+};
+
+extern struct GameCompatibilityPresets game;
 
 #define allocCheck(x) if((x) == NULL) memoryErrorMenu()
 
@@ -16,22 +27,11 @@ Various macros, constant definitions, and utility functions used throughout the 
 #define PI 3.14159265358979323846
 #define E 2.718281828459045
 
-// Start of the 250kB static RAM region used to store the world
-#define RAM_START 0x88040000
-#define PRAM_START 0xfe200000
 // Size in tiles of each world region
 #define REGION_SIZE 96
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
-
-#ifndef USE_PRAM
-#define WORLD_WIDTH 1000
-#define WORLD_HEIGHT 250
-#else
-#define WORLD_WIDTH 640
-#define WORLD_HEIGHT 250
-#endif
 
 #define MAX_CHESTS 50
 
@@ -40,6 +40,9 @@ Various macros, constant definitions, and utility functions used throughout the 
 #define GRAVITY_ACCEL 0.15
 
 #define INVENTORY_SIZE 24
+
+// Arbitrary size, not using GYRAM for anything else
+#define MAX_REGIONS 1000
 
 // 12 minutes
 #define DAY_TICKS 43200

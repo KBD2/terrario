@@ -7,7 +7,7 @@
 #include "chest.h"
 
 GXRAM struct Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
-GXRAM unsigned char yPositions[WORLD_WIDTH];
+unsigned char *yPositions;
 
 float interpolate(float a, float b, float x){
 	float f = (1.0 - cosf(x * PI)) * 0.5;
@@ -43,13 +43,13 @@ void perlin(int amplitude, int wavelength, int baseY, enum Tiles tile, int itera
 	float a;
 	float b;
 
-	for(int x = 0; x < WORLD_WIDTH; x++) yPositions[x] = baseY;
+	for(int x = 0; x < game.WORLD_WIDTH; x++) yPositions[x] = baseY;
 
 	for(int i = 0; i < iterations; i++)
 	{
 		a = randFloat();
 		b = randFloat();
-		for(int x = 0; x < WORLD_WIDTH; x++)
+		for(int x = 0; x < game.WORLD_WIDTH; x++)
 		{
 			if(x % wavelength == 0)
 			{
@@ -66,9 +66,9 @@ void perlin(int amplitude, int wavelength, int baseY, enum Tiles tile, int itera
 		wavelength >>= 1;
 	}
 
-	for(int x = 0; x < WORLD_WIDTH; x++)
+	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
-		for(int y = yPositions[x]; y < WORLD_HEIGHT; y++)
+		for(int y = yPositions[x]; y < game.WORLD_HEIGHT; y++)
 		{
 			setTile(x, y, tile, makeVar());
 		}
@@ -109,7 +109,7 @@ void clump(int x, int y, int num, enum Tiles tile, bool maskEmpty, float skewHor
 			{
 				if(deltas[delta][0] != 0 && randFloat() < skewVertical) continue;
 			}
-			if(checkX < 0 || checkX >= WORLD_WIDTH || checkY < 0 || checkY >= WORLD_HEIGHT) continue;
+			if(checkX < 0 || checkX >= game.WORLD_WIDTH || checkY < 0 || checkY >= game.WORLD_HEIGHT) continue;
 			tileCheck = getTile(checkX, checkY);
 			if(tileCheck.id == tile || (maskEmpty && tileCheck.id == TILE_NOTHING)) continue;
 			clumpCoords[end] = (struct Coords){checkX, checkY};
@@ -153,25 +153,27 @@ void generateWorld()
 	bool placedChest;
 	Item check;
 
+	yPositions = malloc(game.WORLD_WIDTH * sizeof(unsigned char));
+
 	middleText("Terrain");
 
 //	Dirt
-	perlin(10, 40, WORLD_HEIGHT / 5, TILE_DIRT, 3);
+	perlin(10, 40, game.WORLD_HEIGHT / 5, TILE_DIRT, 3);
 
 //	Stone
-	perlin(6, 20, WORLD_HEIGHT / 2.8, TILE_STONE, 1);
+	perlin(6, 20, game.WORLD_HEIGHT / 2.8, TILE_STONE, 1);
 
 //	Tunnels
 	middleText("Tunnels");
 	x = 100;
-	while(x < WORLD_WIDTH - 100)
+	while(x < game.WORLD_WIDTH - 100)
 	{
 		if(randFloat() < 0.005)
 		{
 			for(int dX = 0; dX < 50; dX += 5)
 			{
 				y = 0;
-				while(getTile(x + dX, y + 8).id != TILE_DIRT && y < WORLD_HEIGHT) y++;
+				while(getTile(x + dX, y + 8).id != TILE_DIRT && y < game.WORLD_HEIGHT) y++;
 				tunnelYPositions[dX / 5] = y;
 			}
 			for(int dX = 0; dX < 50; dX += 5)
@@ -187,8 +189,8 @@ void generateWorld()
 	middleText("Rocks In Dirt");
 	for(int i = 0; i < 1000; i++)
 	{
-		x = rand() % WORLD_WIDTH;
-		y = rand() % (int)(WORLD_HEIGHT / 2.8);
+		x = rand() % game.WORLD_WIDTH;
+		y = rand() % (int)(game.WORLD_HEIGHT / 2.8);
 		if(getTile(x, y).id == TILE_DIRT)
 		{
 			clump(x, y, poisson(10), TILE_STONE, true, 0, 0);
@@ -199,8 +201,8 @@ void generateWorld()
 	middleText("Dirt In Rocks");
 	for(int i = 0; i < 3000; i++)
 	{
-		x = rand() % WORLD_WIDTH;
-		y = min((rand() % (int)(WORLD_HEIGHT - WORLD_HEIGHT / 2.8)) + WORLD_HEIGHT / 2.8, WORLD_HEIGHT - 1);
+		x = rand() % game.WORLD_WIDTH;
+		y = min((rand() % (int)(game.WORLD_HEIGHT - game.WORLD_HEIGHT / 2.8)) + game.WORLD_HEIGHT / 2.8, game.WORLD_HEIGHT - 1);
 		if(getTile(x, y).id == TILE_STONE)
 		{
 			clump(x, y, poisson(10), TILE_DIRT, true, 0, 0);
@@ -211,8 +213,8 @@ void generateWorld()
 	middleText("Small Holes");
 	for(int i = 0; i < 750; i++)
 	{
-		x = rand() % WORLD_WIDTH;
-		y = min((rand() % (int)(WORLD_HEIGHT - WORLD_HEIGHT / 4)) + WORLD_HEIGHT / 4, WORLD_HEIGHT - 1);
+		x = rand() % game.WORLD_WIDTH;
+		y = min((rand() % (int)(game.WORLD_HEIGHT - game.WORLD_HEIGHT / 4)) + game.WORLD_HEIGHT / 4, game.WORLD_HEIGHT - 1);
 		clump(x, y, poisson(25), TILE_NOTHING, true, 0, 0);
 	}
 
@@ -220,22 +222,22 @@ void generateWorld()
 	middleText("Caves");
 	for(int i = 0; i < 150; i++)
 	{
-		x = rand() % WORLD_WIDTH;
-		y = min((rand() % (int)(WORLD_HEIGHT - WORLD_HEIGHT / 3.5)) + WORLD_HEIGHT / 3.5, WORLD_HEIGHT - 1);
+		x = rand() % game.WORLD_WIDTH;
+		y = min((rand() % (int)(game.WORLD_HEIGHT - game.WORLD_HEIGHT / 3.5)) + game.WORLD_HEIGHT / 3.5, game.WORLD_HEIGHT - 1);
 		clump(x, y, poisson(200), TILE_NOTHING, true, 0, 0);
 	}
 
 //	Grass
 	middleText("Grass");
-	for(int x = 0; x < WORLD_WIDTH; x++)
+	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
-		for(int y = 0; y < WORLD_HEIGHT; y++)
+		for(int y = 0; y < game.WORLD_HEIGHT; y++)
 		{
 			tile = getTile(x, y);
 			if(tile.id == TILE_DIRT)
 			{
 				tile.id = TILE_GRASS;
-				if(x == 0 || x == WORLD_WIDTH - 1 || y == WORLD_HEIGHT) break;
+				if(x == 0 || x == game.WORLD_WIDTH - 1 || y == game.WORLD_HEIGHT) break;
 				if(getTile(x - 1, y).id == TILE_NOTHING || getTile(x + 1, y).id == TILE_NOTHING)
 				{
 					setTile(x, y + 1, TILE_GRASS, makeVar());
@@ -246,9 +248,9 @@ void generateWorld()
 		}
 	}
 
-	for(int x = 0; x < WORLD_WIDTH; x++)
+	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
-		for(int y = 0; y < WORLD_HEIGHT / 2.8; y++)
+		for(int y = 0; y < game.WORLD_HEIGHT / 2.8; y++)
 		{
 			if(getTile(x, y).id == TILE_DIRT && findState(x, y) != 15)
 			{
@@ -261,8 +263,8 @@ void generateWorld()
 	middleText("Shinies");
 	for(int i = 0; i < 750; i++)
 	{
-		x = rand() % WORLD_WIDTH;
-		y = rand() % WORLD_HEIGHT;
+		x = rand() % game.WORLD_WIDTH;
+		y = rand() % game.WORLD_HEIGHT;
 		clump(x, y, poisson(10), TILE_IRON_ORE, true, 0, 0);
 	}
 
@@ -274,8 +276,8 @@ void generateWorld()
 		num = min(max(1, round(poisson(1.25))), 3);
 		do
 		{
-			x = randRange(25, WORLD_WIDTH - 25);
-			y = randRange(WORLD_HEIGHT / 2.8, WORLD_HEIGHT);
+			x = randRange(25, game.WORLD_WIDTH - 25);
+			y = randRange(game.WORLD_HEIGHT / 2.8, game.WORLD_HEIGHT);
 		}
 		while(getTile(x, y).id != TILE_NOTHING);
 		for(int room = 0; room < num; room++)
@@ -314,14 +316,14 @@ void generateWorld()
 
 //	Trees
 	middleText("Planting Trees");
-	for(int x = 0; x < WORLD_WIDTH; x++)
+	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
 		if(rand() % 40 == 0)
 		{
 			copseHeight = rand() % 7 + 1;
-			for(; rand() % 10 != 0 && x < WORLD_WIDTH; x += 4)
+			for(; rand() % 10 != 0 && x < game.WORLD_WIDTH; x += 4)
 			{
-				for(int y = 1; y < WORLD_WIDTH; y++)
+				for(int y = 1; y < game.WORLD_WIDTH; y++)
 				{
 					tile = getTile(x, y);
 					if(tile.id == TILE_GRASS)
@@ -337,9 +339,9 @@ void generateWorld()
 
 //	Weeds
 	middleText("Weeds");
-	for(int x = 0; x < WORLD_WIDTH; x++)
+	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
-		for(int y = 1; y < WORLD_HEIGHT; y++)
+		for(int y = 1; y < game.WORLD_HEIGHT; y++)
 		{
 			if(getTile(x, y).id == TILE_GRASS && getTile(x, y - 1).id == TILE_NOTHING && rand() % 4 > 0) setTile(x, y - 1, TILE_PLANT, makeVar());;
 		}
@@ -347,9 +349,9 @@ void generateWorld()
 
 //	Vines
 	middleText("Vines");
-	for(int x = 0; x < WORLD_WIDTH; x++)
+	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
-		for(int y = 0; y < WORLD_WIDTH / 4.5; y++)
+		for(int y = 0; y < game.WORLD_WIDTH / 4.5; y++)
 		{
 			if(getTile(x, y).id == TILE_GRASS && getTile(x, y + 1).id == TILE_NOTHING)
 			{
@@ -357,4 +359,6 @@ void generateWorld()
 			}
 		}
 	}
+
+	free(yPositions);
 }

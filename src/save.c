@@ -3,16 +3,17 @@
 #include <gint/std/stdio.h>
 #include <gint/std/string.h>
 #include <gint/std/stdlib.h>
-#include <string.h>
 
 #include "save.h"
 #include "defs.h"
 #include "world.h"
 
 struct SaveInfo {
-		char version[VERSION_BUFFER_SIZE];
-		int time;
+	char version[VERSION_BUFFER_SIZE];
+	int time;
 };
+
+GYRAM char regionData[MAX_REGIONS];
 
 // Checks if \\fls0\TERRARIO\save.info exists
 bool getSave()
@@ -128,7 +129,7 @@ void saveGame()
 					for(int tileX = regionStartX; tileX < regionStartX + REGION_SIZE; tileX++)
 					{
 						tile = &regionBuffer[(tileY - regionStartY) * REGION_SIZE + (tileX - regionStartX)];
-						if(tileX >= WORLD_WIDTH || tileY >= WORLD_HEIGHT)
+						if(tileX >= game.WORLD_WIDTH || tileY >= game.WORLD_HEIGHT)
 						{
 							*tile = (Tile){ 0 };
 						}
@@ -237,7 +238,7 @@ void loadSave()
 			{
 				for(int tileX = regionStartX; tileX < regionStartX + REGION_SIZE; tileX++)
 				{
-					if(tileX >= WORLD_WIDTH || tileY >= WORLD_HEIGHT) continue;
+					if(tileX >= game.WORLD_WIDTH || tileY >= game.WORLD_HEIGHT) continue;
 					tile = regionBuffer[(tileY - regionStartY) * REGION_SIZE + (tileX - regionStartX)];
 					setTile(tileX, tileY, tile.id, tile.variant);
 				}

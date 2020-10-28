@@ -15,11 +15,6 @@
 #include "inventory.h"
 #include "menu.h"
 
-const unsigned int camMinX = SCREEN_WIDTH >> 1;
-const unsigned int camMaxX = (WORLD_WIDTH << 3) - (SCREEN_WIDTH >> 1);
-const unsigned int camMinY = SCREEN_HEIGHT >> 1;
-const unsigned int camMaxY = (WORLD_HEIGHT << 3) - (SCREEN_HEIGHT >> 1);
-
 /*
 For right-facing player
 This compensates for the changing arm/handle position
@@ -44,6 +39,10 @@ void renderItem(int x, int y, Item *item)
 
 void render()
 {
+	unsigned int camMinX = SCREEN_WIDTH >> 1;
+	unsigned int camMaxX = (game.WORLD_WIDTH << 3) - (SCREEN_WIDTH >> 1);
+	unsigned int camMinY = SCREEN_HEIGHT >> 1;
+	unsigned int camMaxY = (game.WORLD_HEIGHT << 3) - (SCREEN_HEIGHT >> 1);
 	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect,
 	img_leaves, img_swing_copper_sword, img_swing_copper_pick, img_deathtext,
 	img_bg_underground, img_sunmoon, img_bg_night;
@@ -53,9 +52,9 @@ void render()
 
 //	Translating cam bounds to tile bounds is painful
 	unsigned int tileLeftX = max(0, ((camX - (SCREEN_WIDTH >> 1)) >> 3));
-	unsigned int tileRightX = min(WORLD_WIDTH - 1, tileLeftX + (SCREEN_WIDTH >> 3));
+	unsigned int tileRightX = min(game.WORLD_WIDTH - 1, tileLeftX + (SCREEN_WIDTH >> 3));
 	unsigned int tileTopY = max(0, ((camY - (SCREEN_HEIGHT >> 1)) >> 3));
-	unsigned int tileBottomY = min(WORLD_HEIGHT - 1, tileTopY + (SCREEN_HEIGHT >> 3));
+	unsigned int tileBottomY = min(game.WORLD_HEIGHT - 1, tileTopY + (SCREEN_HEIGHT >> 3));
 
 	Tile tile;
 	const TileData *currTile;
@@ -86,7 +85,7 @@ void render()
 
 	dclear(C_WHITE);
 
-	if(player.props.y > (WORLD_HEIGHT / 2.8) * 8) dimage(0, 0, &img_bg_underground);
+	if(player.props.y > (game.WORLD_HEIGHT / 2.8) * 8) dimage(0, 0, &img_bg_underground);
 	else
 	{
 		if(world.timeTicks < timeToTicks(4, 30) || world.timeTicks > timeToTicks(19, 30)) dimage(0, 0, &img_bg_night);
@@ -104,9 +103,9 @@ void render()
 		dsubimage(orbX, orbY, &img_sunmoon, 16, 0, 16, 16, DIMAGE_NONE);
 	}
 
-	for(unsigned int y = tileTopY; y <= min(tileBottomY + 4, WORLD_HEIGHT - 1); y++)
+	for(unsigned int y = tileTopY; y <= min(tileBottomY + 4, game.WORLD_HEIGHT - 1); y++)
 	{
-		for(unsigned int x = max(0, tileLeftX - 2); x <= min(tileRightX + 2, WORLD_WIDTH - 1); x++)
+		for(unsigned int x = max(0, tileLeftX - 2); x <= min(tileRightX + 2, game.WORLD_WIDTH - 1); x++)
 		{
 			if(getTile(x, y).id == TILE_LEAVES)
 			{
