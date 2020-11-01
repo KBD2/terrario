@@ -321,14 +321,17 @@ void renderAndUpdateExplosion(struct ParticleExplosion *explosion, int offsetX, 
 	explosion->deltaTicks++;
 }
 
-void middleText(char *text)
+void middleText(char *text, int progress)
 {
-	extern bopti_image_t img_generate;
+	extern bopti_image_t img_generate, img_loadbar;
 	dclear(C_WHITE);
 	dsubimage(0, 47, &img_generate, 0, 0, 21, 17, DIMAGE_NONE);
 	dsubimage(107, 47, &img_generate, 22, 0, 21, 17, DIMAGE_NONE);
 	dsubimage(50, 0, &img_generate, 44, 0, 26, 17, DIMAGE_NONE);
 	dtext_opt(64, 32, C_BLACK, C_WHITE, DTEXT_CENTER, DTEXT_CENTER, text);
+	dsubimage(11, 40, &img_loadbar, 0, 0, 4, 8, DIMAGE_NONE);
+	dsubimage(113, 40, &img_loadbar, 5, 0, 4, 8, DIMAGE_NONE);
+	drect(14, 42, 14 + progress, 45, C_BLACK);
 	dupdate();
 }
 

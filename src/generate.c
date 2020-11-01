@@ -6,8 +6,19 @@
 #include "world.h"
 #include "chest.h"
 
+#define NUM_WORLD_GEN_PARTS 13
+
 GXRAM struct Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
 unsigned char *yPositions;
+
+int updateProgress()
+{
+	static int progress = 0;
+
+	progress += 100 / NUM_WORLD_GEN_PARTS;
+
+	return progress;
+}
 
 float interpolate(float a, float b, float x){
 	float f = (1.0 - cosf(x * PI)) * 0.5;
@@ -156,13 +167,13 @@ void generateWorld()
 
 	yPositions = malloc(game.WORLD_WIDTH * sizeof(unsigned char));
 
-	middleText("Reset");
+	middleText("Reset", updateProgress());
 	for(int y = 0; y < game.WORLD_HEIGHT; y++)
 	{
 		for(int x = 0; x < game.WORLD_WIDTH; x++) setTile(x, y, TILE_NOTHING, 0);
 	}
 
-	middleText("Terrain");
+	middleText("Terrain", updateProgress());
 
 //	Dirt
 	perlin(10, 30, game.WORLD_HEIGHT / 5, TILE_DIRT, 3);
@@ -171,7 +182,7 @@ void generateWorld()
 	perlin(6, 20, game.WORLD_HEIGHT / 2.8, TILE_STONE, 1);
 
 //	Tunnels
-	middleText("Tunnels");
+	middleText("Tunnels", updateProgress());
 	x = 100;
 	while(x < game.WORLD_WIDTH - 100)
 	{
@@ -193,7 +204,7 @@ void generateWorld()
 	}
 
 //	Rocks in dirt
-	middleText("Rocks In Dirt");
+	middleText("Rocks In Dirt", updateProgress());
 	for(int i = 0; i < 1000; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
@@ -205,7 +216,7 @@ void generateWorld()
 	}
 
 //	Dirt in rocks
-	middleText("Dirt In Rocks");
+	middleText("Dirt In Rocks", updateProgress());
 	for(int i = 0; i < 3000; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
@@ -217,7 +228,7 @@ void generateWorld()
 	}
 
 //	Small holes
-	middleText("Small Holes");
+	middleText("Small Holes", updateProgress());
 	for(int i = 0; i < 750; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
@@ -226,7 +237,7 @@ void generateWorld()
 	}
 
 //	Caves
-	middleText("Caves");
+	middleText("Caves", updateProgress());
 	for(int i = 0; i < 150; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
@@ -235,7 +246,7 @@ void generateWorld()
 	}
 
 //	Grass
-	middleText("Grass");
+	middleText("Grass", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
 		for(int y = 0; y < game.WORLD_HEIGHT; y++)
@@ -267,7 +278,7 @@ void generateWorld()
 	}
 
 //	Shinies
-	middleText("Shinies");
+	middleText("Shinies", updateProgress());
 	for(int i = 0; i < 750; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
@@ -276,7 +287,7 @@ void generateWorld()
 	}
 
 //	Buried Chests
-	middleText("Buried Chests");
+	middleText("Buried Chests", updateProgress());
 	for(int i = 0; i < 30; i++)
 	{
 		placedChest = false;
@@ -322,7 +333,7 @@ void generateWorld()
 	}
 
 //	Trees
-	middleText("Planting Trees");
+	middleText("Planting Trees", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
 		if(rand() % 40 == 0)
@@ -345,7 +356,7 @@ void generateWorld()
 	}
 
 //	Weeds
-	middleText("Weeds");
+	middleText("Weeds", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
 		for(int y = 1; y < game.WORLD_HEIGHT; y++)
@@ -355,7 +366,7 @@ void generateWorld()
 	}
 
 //	Vines
-	middleText("Vines");
+	middleText("Vines", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
 		for(int y = 0; y < game.WORLD_WIDTH / 4.5; y++)

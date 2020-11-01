@@ -77,8 +77,10 @@ void renderAndUpdateExplosion(struct ParticleExplosion *explosion, int offsetX, 
 
 /* middleText
 Clears the screen and displays some text in the middle.
+Renders a progress bar.
 Meant to be used with world generation.
 
 text: Pointer to the string to display.
+progress: Percent progress.
 */
-void middleText(char *text);
+void middleText(char *text, int progress);
