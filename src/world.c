@@ -88,10 +88,10 @@ unsigned char makeVar()
 
 void generateTree(int x, int y, int baseHeight)
 {
-	int top = 0;
+	int top;
 	int height = max(1, baseHeight + (rand() % 3) - 1);
 
-	if(x == 0 || x == game.WORLD_WIDTH - 1 ||y < 0 || y >= game.WORLD_HEIGHT - height) return;
+	if(x == 0 || x == game.WORLD_WIDTH - 1 || y < 0 || y >= game.WORLD_HEIGHT - height) return;
 	for(int i = 0; i < height; i++) if(
 		getTile(x - 1, y - i).id == TILE_TRUNK
 	 || getTile(x + 1, y - i).id == TILE_TRUNK
@@ -99,7 +99,7 @@ void generateTree(int x, int y, int baseHeight)
 	 || getTile(x + 2, y - i).id == TILE_TRUNK
 	 ) return;
 
-	for(; top < height; top++)
+	for(top = 0; top < height; top++)
 	{
 		setTile(x, y - top, TILE_TRUNK, makeVar());
 	}

@@ -64,6 +64,7 @@ void perlin(int amplitude, int wavelength, int baseY, enum Tiles tile, int itera
 			yPositions[x] += perlinY;
 		}
 		wavelength >>= 1;
+		amplitude >>= 1;
 	}
 
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
@@ -164,7 +165,7 @@ void generateWorld()
 	middleText("Terrain");
 
 //	Dirt
-	perlin(10, 40, game.WORLD_HEIGHT / 5, TILE_DIRT, 3);
+	perlin(10, 30, game.WORLD_HEIGHT / 5, TILE_DIRT, 3);
 
 //	Stone
 	perlin(6, 20, game.WORLD_HEIGHT / 2.8, TILE_STONE, 1);
@@ -174,7 +175,7 @@ void generateWorld()
 	x = 100;
 	while(x < game.WORLD_WIDTH - 100)
 	{
-		if(randFloat() < 0.005)
+		if(randFloat() < 0.01)
 		{
 			for(int dX = 0; dX < 50; dX += 5)
 			{
@@ -329,7 +330,7 @@ void generateWorld()
 			copseHeight = rand() % 7 + 1;
 			for(; rand() % 10 != 0 && x < game.WORLD_WIDTH; x += 4)
 			{
-				for(int y = 1; y < game.WORLD_WIDTH; y++)
+				for(int y = 1; y < game.WORLD_HEIGHT; y++)
 				{
 					tile = getTile(x, y);
 					if(tile.id == TILE_GRASS)
@@ -359,9 +360,9 @@ void generateWorld()
 	{
 		for(int y = 0; y < game.WORLD_WIDTH / 4.5; y++)
 		{
-			if(getTile(x, y).id == TILE_GRASS && getTile(x, y + 1).id == TILE_NOTHING)
+			if(getTile(x, y).id == TILE_GRASS && getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 3) > 0)
 			{
-				for(int dY = 1; dY < 11 && getTile(x, y + dY).id == TILE_NOTHING; dY++) setTile(x, y + dY, TILE_VINE, rand() % 4);
+				for(int dY = 1; dY < randRange(3, 11) && getTile(x, y + dY).id == TILE_NOTHING; dY++) setTile(x, y + dY, TILE_VINE, rand() % 4);
 			}
 		}
 	}

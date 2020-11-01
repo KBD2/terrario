@@ -21,6 +21,8 @@ class Tiles(Enum):
     IRON = (140,101,80)
     WOOD = (151, 107, 75)
     PLATFORM = (191, 141, 111)
+    VINE = (23, 177, 76)
+    TREE = (151, 107, 75)
 
 # Gets replaced with the appropriate function in the actual code
 def setTile(x, y, tile):
@@ -48,14 +50,14 @@ def randFloat():
     return random.random()
 
 def poisson(mean):
-	k = 0
-	p = 1
-	L = math.pow(math.e, -mean)
-	while p > L:
-		k += 1
-		u = random.random()
-		p *= u
-	return k - 1
+    k = 0
+    p = 1
+    L = math.pow(math.e, -mean)
+    while p > L:
+        k += 1
+        u = random.random()
+        p *= u
+    return k - 1
 
 def perlin(amplitude, wavelength, baseY, tile, iterations):
     yPositions = [int(baseY)] * WORLD_WIDTH
@@ -71,6 +73,7 @@ def perlin(amplitude, wavelength, baseY, tile, iterations):
                 perlinY = interpolate(a, b, (x % wavelength) / wavelength) * amplitude
             yPositions[x] += int(perlinY)
         wavelength >>= 1
+        amplitude >>= 1
     for x in range(WORLD_WIDTH):
         for y in range(yPositions[x], WORLD_HEIGHT):
             setTile(x, y, tile)
@@ -114,22 +117,44 @@ def box(x, y, width, height, tile, coverage, swap):
             else:
                 setTile(x + dX, y + dY, Tiles.NOTHING)
 
+def generateTree(x, y, baseHeight):
+    top = 0
+    height = max(1, baseHeight + random.randrange(0, 3) - 1)
+
+    if x == 0 or x == WORLD_WIDTH - 1 or y < 0 or y >= WORLD_HEIGHT - height: return
+    for i in range(height):
+        if getTile(x - 1, y - i) == Tiles.TREE \
+        or getTile(x + 1, y - i) == Tiles.TREE \
+        or getTile(x - 2, y - i) == Tiles.TREE \
+        or getTile(x + 2, y - i) == Tiles.TREE:
+            return
+
+    while top < height:
+        setTile(x, y - top, Tiles.TREE)
+        top += 1
+
+    setTile(x, y - top, Tiles.TREE)
+    if getTile(x - 1, y + 1) == Tiles.GRASS and random.randrange(0, 3) <= 1:
+        setTile(x - 1, y, Tiles.TREE)
+    if getTile(x + 1, y + 1) == Tiles.GRASS and random.randrange(0, 3) <= 1: 
+        setTile(x + 1, y, Tiles.TREE)
+
 def generate():
     
     print("Generating dirt...")
-    perlin(10, 40, WORLD_HEIGHT // 5, Tiles.DIRT, 3)
+    perlin(10, 30, WORLD_HEIGHT // 5, Tiles.DIRT, 3)
     
     print("Generating stone...")
     perlin(6, 20, WORLD_HEIGHT // 2.8, Tiles.STONE, 1)
 
     print("Tunnels...")
-    x = 0
-    while x < WORLD_WIDTH - 50:
-        if random.random() < 0.005:
+    x = 100
+    while x < WORLD_WIDTH - 100:
+        if random.random() < 0.01:
             yPositions = []
             for dX in range(0, 50, 5):
                 y = 0
-                while getTile(x + dX, y + 8) != Tiles.DIRT: y += 1
+                while y < WORLD_HEIGHT and getTile(x + dX, y + 8) != Tiles.DIRT: y += 1
                 yPositions.append(y)
             for dX, position in enumerate(yPositions):
                 clump(x + 5 * dX, position, 20, Tiles.DIRT, False, 0.5, 0)
@@ -188,7 +213,7 @@ def generate():
         y = random.randrange(0, WORLD_HEIGHT)
         clump(x, y, poisson(10), Tiles.IRON, True, 0, 0)
 
-    print("Buried chests...")
+    print("Buried Chests...")
     for i in range(30):
         num = min(max(1, round(poisson(1.25))), 3)
         x = random.randrange(25, WORLD_WIDTH - 25)
@@ -204,6 +229,29 @@ def generate():
                 setTile(platformX + dX, y, Tiles.PLATFORM)
             y += 7
             x += random.randrange(-(width - 3), width - 3)
+
+    print("Planting Trees...")
+    x = 0
+    while x < WORLD_WIDTH:
+        if random.randrange(0, 40) == 0:
+            copseHeight = random.randrange(1, 8)
+            while random.randrange(0, 10) != 0 and x < WORLD_WIDTH:
+                x += 4
+                for y in range(1, WORLD_HEIGHT):
+                    tile = getTile(x, y)
+                    if tile == Tiles.GRASS:
+                        generateTree(x, y - 1, copseHeight)
+                        break
+                    elif tile != Tiles.NOTHING: break   
+        x += 1
+
+    print("Vines...")
+    for x in range(WORLD_WIDTH):
+        for y in range(int(WORLD_WIDTH // 4.5)):
+            if getTile(x, y) == Tiles.GRASS and getTile(x, y + 1) == Tiles.NOTHING and random.randrange(0, 3) > 0:
+                for dY in range(1, random.randrange(3, 11)):
+                    if getTile(x, y + dY) != Tiles.NOTHING: break;
+                    setTile(x, y + dY, Tiles.VINE)
 
 ##### END ALGORITHM #####
 
