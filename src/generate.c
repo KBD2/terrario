@@ -205,7 +205,7 @@ void generateWorld()
 
 //	Rocks in dirt
 	middleText("Rocks In Dirt", updateProgress());
-	for(int i = 0; i < 1000; i++)
+	for(int i = 0; i < 1000 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
 		y = rand() % (int)(game.WORLD_HEIGHT / 2.8);
@@ -217,7 +217,7 @@ void generateWorld()
 
 //	Dirt in rocks
 	middleText("Dirt In Rocks", updateProgress());
-	for(int i = 0; i < 3000; i++)
+	for(int i = 0; i < 3000 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
 		y = min((rand() % (int)(game.WORLD_HEIGHT - game.WORLD_HEIGHT / 2.8)) + game.WORLD_HEIGHT / 2.8, game.WORLD_HEIGHT - 1);
@@ -229,7 +229,7 @@ void generateWorld()
 
 //	Small holes
 	middleText("Small Holes", updateProgress());
-	for(int i = 0; i < 750; i++)
+	for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
 		y = min((rand() % (int)(game.WORLD_HEIGHT - game.WORLD_HEIGHT / 4)) + game.WORLD_HEIGHT / 4, game.WORLD_HEIGHT - 1);
@@ -238,7 +238,7 @@ void generateWorld()
 
 //	Caves
 	middleText("Caves", updateProgress());
-	for(int i = 0; i < 150; i++)
+	for(int i = 0; i < 150 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
 		y = min((rand() % (int)(game.WORLD_HEIGHT - game.WORLD_HEIGHT / 3.5)) + game.WORLD_HEIGHT / 3.5, game.WORLD_HEIGHT - 1);
@@ -279,7 +279,7 @@ void generateWorld()
 
 //	Shinies
 	middleText("Shinies", updateProgress());
-	for(int i = 0; i < 750; i++)
+	for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
 		y = rand() % game.WORLD_HEIGHT;
@@ -288,7 +288,7 @@ void generateWorld()
 
 //	Buried Chests
 	middleText("Buried Chests", updateProgress());
-	for(int i = 0; i < 30; i++)
+	for(int i = 0; i < 30 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		placedChest = false;
 		num = min(max(1, round(poisson(1.25))), 3);

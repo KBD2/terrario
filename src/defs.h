@@ -16,6 +16,7 @@ struct GameCompatibilityPresets {
 	void *RAM_START;
 	int WORLD_WIDTH;
 	int WORLD_HEIGHT;
+	float WORLDGEN_MULTIPLIER;
 };
 
 extern struct GameCompatibilityPresets game;
