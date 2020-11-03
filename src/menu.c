@@ -485,8 +485,8 @@ void lowSpaceMenu(int mediaFree)
 	dclear(C_WHITE);
 	dprint(0, 0, C_BLACK, "Only %.1jkB", (int)((float)mediaFree/100));
 	dtext(0, 8, C_BLACK, "of SMEM free!");
-	dtext(0, 16, C_BLACK, "Please optimise SMEM");
-	dtext(0, 24, C_BLACK, "and ensure 350kB free");
+	dtext(0, 16, C_BLACK, "Please ensure");
+	dtext(0, 24, C_BLACK, "350kB free.");
 	dtext(0, 40, C_BLACK, "[EXIT] to exit");
 	dupdate();
 

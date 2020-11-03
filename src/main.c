@@ -18,6 +18,7 @@
 #include "crafting.h"
 #include "update.h"
 #include "generate.h"
+#include "optimise.h"
 
 // Fixes linker problem for newlib
 int __errno = 0;
@@ -317,6 +318,8 @@ int main(void)
 	
 	Bfile_GetMediaFree_OS(u"\\\\fls0", mediaFree);
 	if(mediaFree[1] < 350000) lowSpaceMenu(mediaFree[1]);
+
+	gint_switch(&JumpOptimising);
 
 	return 1;
 }
