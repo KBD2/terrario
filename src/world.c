@@ -48,7 +48,8 @@ const TileData tiles[] = {
 	{	&img_tile_wbench,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_WBENCH,	"Workbench L"	},	// TILE_WBENCH_L
 	{	&img_tile_wbench,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_WBENCH,	"Workbench R"	},	// TILE_WBENCH_R
 	{	&img_tile_platform,		PHYS_PLATFORM,	true,	TYPE_SHEET,		SUPPORT_NONE,	{-1, -1, -1},								ITEM_PLATFORM,	"Platform"		},	// TILE_PLATFORM
-	{	&img_tile_chair,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_CHAIR,		"Chair"			},	// TILE_CHAIR
+	{	&img_tile_chair,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_CHAIR,		"Chair L"		},	// TILE_CHAIR_L
+	{	&img_tile_chair,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_CHAIR,		"Chair R"		},	// TILE_CHAIR_R
 	{	&img_tile_torch,		PHYS_NON_SOLID,	true,	TYPE_SHEET,		SUPPORT_NONE,	{TILE_NOTHING, -1, -1},						ITEM_TORCH,		"Torch"			},	// TILE_TORCH
 	{	&img_tile_furnace_edge,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_FURNACE,	"Furnace"		},	// TILE_FURNACE_EDGE
 	{	&img_tile_furnace_mid,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1, -1, -1},								ITEM_FURNACE,	"Furnace"		},	// TILE_FURNACE_MID
@@ -101,16 +102,16 @@ void generateTree(int x, int y, int baseHeight)
 
 	for(top = 0; top < height; top++)
 	{
-		setTile(x, y - top, TILE_TRUNK, makeVar());
+		setTile(x, y - top, TILE_TRUNK);
 	}
-	setTile(x, y - top, TILE_LEAVES, makeVar());
+	setTile(x, y - top, TILE_LEAVES);
 	if(getTile(x - 1, y + 1).id == TILE_GRASS && tiles[getTile(x - 1, y).id].physics == PHYS_NON_SOLID && rand() % 3 <= 1)
 	{
-		setTile(x - 1, y, TILE_ROOT_L, makeVar());
+		setTile(x - 1, y, TILE_ROOT_L);
 	} 
 	if(getTile(x + 1, y + 1).id == TILE_GRASS && tiles[getTile(x + 1, y).id].physics == PHYS_NON_SOLID && rand() % 3 <= 1) 
 	{
-		setTile(x + 1, y, TILE_ROOT_R, makeVar());
+		setTile(x + 1, y, TILE_ROOT_R);
 	}
 }
 
@@ -122,19 +123,19 @@ void breakTree(int x, int y)
 	
 	if(x > 0 && getTile(x - 1, y).id == TILE_ROOT_L)
 	{
-		setTile(x - 1, y, TILE_NOTHING, 0);
+		setTile(x - 1, y, TILE_NOTHING);
 		regionChange(x - 1, y);
 		wood++;
 	}
 	if(x < game.WORLD_WIDTH - 1 && getTile(x + 1, y).id == TILE_ROOT_R)
 	{
-		setTile(x + 1, y, TILE_NOTHING, makeVar());
+		setTile(x + 1, y, TILE_NOTHING);
 		regionChange(x + 1, y);
 		wood++;
 	}
 	for(; y >= 0 && (getTile(x, y).id == TILE_TRUNK || getTile(x, y).id == TILE_LEAVES); y--)
 	{
-		setTile(x, y, TILE_NOTHING, 0);
+		setTile(x, y, TILE_NOTHING);
 		regionChange(x, y);
 		wood++;
 	}
@@ -219,7 +220,6 @@ bool checkArea(int x, int y, int width, int height, bool support)
 bool place3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle, bool support)
 {
 	int xTemp;
-	int variation = 0;
 
 //	Place the edges
 	if(!checkArea(x, y, 3, height, support)) return false;
@@ -228,18 +228,17 @@ bool place3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle, bo
 		for(int dY = 0; dY < height; dY++)
 		{
 			xTemp = side ? x + 2 : x;
-			setTile(xTemp, y + dY, edge, variation);
+			setTile(xTemp, y + dY, edge);
 			regionChange(xTemp, y + dY);
-			variation++;
+			setVar(xTemp, y + dY);
 		}
 	}
 //	Place the middle
-	variation = 0;
 	x++;
 	for(int dY = 0; dY < height; dY++)
 	{
-		setTile(x, y + dY, middle, variation);
-		variation++;
+		setTile(x, y + dY, middle);
+		setVar(x, y + dY);
 	}
 	return true;
 }
@@ -254,13 +253,13 @@ void break3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle)
 		if(getTile(x - 1, y).id == middle) x -= 2;
 	}
 	else x--;
-	while(getTile(x, y).variant != 0) y--;
+	while(getTile(x, y).id != edge) y--;
 
 	for(int dY = 0; dY < height; dY++)
 	{
 		for(int dX = 0; dX < 3; dX++)
 		{
-			setTile(x + dX, y + dY, TILE_NOTHING, 0);
+			setTile(x + dX, y + dY, TILE_NOTHING);
 			regionChange(x + dX, y + dY);
 		}
 	}
@@ -268,22 +267,20 @@ void break3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle)
 
 bool place2Wide(int x, int y, int height, enum Tiles left, enum Tiles right, bool support)
 {
-	int var = 0;
-
 	if(!checkArea(x, y, 2, height, support)) return false;
 
 	for(int dY = 0; dY < height; dY++)
 	{
-		setTile(x, y, left, var);
+		setTile(x, y, left);
 		regionChange(x, y + dY);
-		var++;
+		setVar(x, y + dY);
 	}
 
 	for(int dY = 0; dY < height; dY++)
 	{
-		setTile(x + 1, y + dY, right, var);
+		setTile(x + 1, y + dY, right);
 		regionChange(x + 1, y + dY);
-		var++;
+		setVar(x + 1, y + dY);
 	}
 
 	return true;
@@ -293,27 +290,24 @@ bool place2Wide(int x, int y, int height, enum Tiles left, enum Tiles right, boo
 void break2Wide(int x, int y, int height, enum Tiles left)
 {
 	if(getTile(x, y).id != left) x--;
-	while(getTile(x, y).variant > 0) y--;
+	while(getTile(x, y).id != left) y--;
 	for(int dY = 0; dY < height; dY++)
 	{
-		setTile(x, y + dY, TILE_NOTHING, 0);
+		setTile(x, y + dY, TILE_NOTHING);
 		regionChange(x, y + dY);
-		setTile(x + 1, y + dY, TILE_NOTHING, 0);
+		setTile(x + 1, y + dY, TILE_NOTHING);
 		regionChange(x + 1, y + dY);
 	}
 }
 
-bool place1Wide(int x, int y, int height, enum Tiles tile, int startVar, bool support)
+bool place1Wide(int x, int y, int height, enum Tiles tile, bool support)
 {
-	int var = 0;
-
 	if(!checkArea(x, y, 1, height, support)) return false;
 
-	if(startVar > 0) var = startVar;
 	for(int dY = 0; dY < height; dY++)
 	{
-		setTile(x, y + dY, tile, var);
-		var++;
+		setTile(x, y + dY, tile);
+		setVar(x, y + dY);
 	}
 	regionChange(x, y);
 
@@ -325,7 +319,7 @@ void break1Wide(int x, int y, int height, enum Tiles tile)
 	while(getTile(x, y - 1).id == tile) y--;
 	for(int dY = 0; dY < height; dY++)
 	{
-		setTile(x, y + dY, TILE_NOTHING, 0);
+		setTile(x, y + dY, TILE_NOTHING);
 		regionChange(x, y + dY);
 	}
 }
@@ -362,7 +356,7 @@ void placeTile(int x, int y, Item *item)
 					break;
 				
 				case ITEM_CHAIR:
-					if(!place1Wide(x, y, 2, TILE_CHAIR, player.anim.direction ? 0 : 2, true)) success = false;
+					if(!place1Wide(x, y, 2, player.anim.direction ? TILE_CHAIR_R : TILE_CHAIR_L, true)) success = false;
 					break;
 				
 				case ITEM_FURNACE:
@@ -370,7 +364,7 @@ void placeTile(int x, int y, Item *item)
 					break;
 				
 				case ITEM_DOOR:
-					if(!place1Wide(x, y, 3, TILE_DOOR_C, -1, true)) success = false;
+					if(!place1Wide(x, y, 3, TILE_DOOR_C, true)) success = false;
 					break;
 
 				default:
@@ -386,7 +380,7 @@ void placeTile(int x, int y, Item *item)
 							break;
 						}
 					}
-					if(success) setTile(x, y, items[item->id].tile, makeVar());
+					if(success) setTile(x, y, items[item->id].tile);
 					break;
 			}
 			if(success)
@@ -431,13 +425,13 @@ void removeTile(int x, int y)
 			case TILE_CHEST_R:
 				x--;
 			case TILE_CHEST_L:
-				while(getTile(x, y).variant != 0) y--;
+				while(getTile(x, y).id != TILE_CHEST_L) y--;
 				world.chests.removeChest(x, y);
 				break2Wide(x, y, 2, TILE_CHEST_L);
 				break;
 
-			case TILE_CHAIR:
-				break1Wide(x, y, 2, TILE_CHAIR);
+			case TILE_CHAIR_L: case TILE_CHAIR_R:
+				break1Wide(x, y, 2, tile.id);
 				break;
 			
 			case TILE_FURNACE_EDGE: case TILE_FURNACE_MID:
@@ -457,11 +451,11 @@ void removeTile(int x, int y)
 				break;
 			
 			case TILE_GRASS:
-				setTile(x, y, TILE_DIRT, makeVar());
+				setTile(x, y, TILE_DIRT);
 				break;
 
 			default:
-				setTile(x, y, TILE_NOTHING, 0);
+				setTile(x, y, TILE_NOTHING);
 				break;
 		}
 		regionChange(x, y);
@@ -484,13 +478,13 @@ void openDoor(int x, int y)
 	break1Wide(x, y, 3, TILE_DOOR_C);
 	if(direction)
 	{
-		place1Wide(x - 1, y, 3, TILE_DOOR_O_L_L, -1, false);
-		place1Wide(x, y, 3, TILE_DOOR_O_L_R, -1, false);
+		place1Wide(x - 1, y, 3, TILE_DOOR_O_L_L, false);
+		place1Wide(x, y, 3, TILE_DOOR_O_L_R, false);
 	}
 	else
 	{
-		place1Wide(x, y, 3, TILE_DOOR_O_R_L, -1, false);
-		place1Wide(x + 1, y, 3, TILE_DOOR_O_R_R, -1, false);
+		place1Wide(x, y, 3, TILE_DOOR_O_R_L, false);
+		place1Wide(x + 1, y, 3, TILE_DOOR_O_R_R, false);
 	}
 }
 
@@ -512,7 +506,7 @@ void closeDoor(int x, int y)
 			break2Wide(x, y, 3, TILE_DOOR_O_R_L);
 			break;
 	}
-	place1Wide(x, y, 3, TILE_DOOR_C, -1, false);
+	place1Wide(x, y, 3, TILE_DOOR_C, false);
 }
 
 int spawnEntity(enum Entities entity, int x, int y)

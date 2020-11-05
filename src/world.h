@@ -44,8 +44,7 @@ extern const TileData tiles[];
 
 typedef struct {
 //	Index in tiles array
-	unsigned char id:6;
-	unsigned char variant:2;
+	unsigned char id:8;
 } Tile;
 
 enum Tiles {
@@ -61,7 +60,7 @@ enum Tiles {
 	TILE_PLANT,
 	TILE_WBENCH_L, TILE_WBENCH_R,
 	TILE_PLATFORM,
-	TILE_CHAIR,
+	TILE_CHAIR_L, TILE_CHAIR_R,
 	TILE_TORCH,
 	TILE_FURNACE_EDGE, TILE_FURNACE_MID,
 	TILE_IRON_ORE,
@@ -110,11 +109,11 @@ static inline Tile getTile(int x, int y)
 			return group.tiles[tileWanted & 3];
 		
 		default:
-			return (Tile){TILE_NULL, 0};
+			return (Tile){TILE_NULL};
 	}
 }
 
-static inline void setTile(int x, int y, enum Tiles tile, int var)
+static inline void setTile(int x, int y, enum Tiles tile)
 {
 	int tileWanted = y * game.WORLD_WIDTH + x;
 	uint32_t *nearest;
@@ -122,13 +121,13 @@ static inline void setTile(int x, int y, enum Tiles tile, int var)
 	switch(game.HWMODE)
 	{
 		case MODE_RAM:
-			world.tiles[tileWanted] = (Tile){tile, var};
+			world.tiles[tileWanted] = (Tile){tile};
 			return;
 		
 		case MODE_PRAM:
 			nearest = save.tileData + (tileWanted & ~3);
 			group.aligned = *nearest;
-			group.tiles[tileWanted & 3] = (Tile){tile, var};
+			group.tiles[tileWanted & 3] = (Tile){tile};
 			*nearest = group.aligned;
 			return;
 	}

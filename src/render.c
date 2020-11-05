@@ -15,6 +15,8 @@
 #include "inventory.h"
 #include "menu.h"
 
+struct Coords varBufferPos = {0, 0};
+
 /*
 For right-facing player
 This compensates for the changing arm/handle position
@@ -80,8 +82,12 @@ void render()
 
 	int hour, minute;
 
+	char var;
+
 	player.cursorTile.x = (camX + player.cursor.x - (SCREEN_WIDTH >> 1)) >> 3;
 	player.cursorTile.y = (camY + player.cursor.y - (SCREEN_HEIGHT >> 1)) >> 3;
+
+	updateVarBuffer(tileLeftX, tileTopY);
 
 	dclear(C_WHITE);
 
@@ -111,7 +117,8 @@ void render()
 			{
 				currTileX = (x << 3) - camOffsetX;
 				currTileY = (y << 3) - camOffsetY;
-				dsubimage(currTileX - 16, currTileY - 32, &img_leaves, 41 * getTile(x, y).variant + 1, 0, 40, 40, DIMAGE_NONE);
+				var = varBuffer[y - varBufferPos.y][x - varBufferPos.x];
+				dsubimage(currTileX - 16, currTileY - 32, &img_leaves, 41 * var + 1, 0, 40, 40, DIMAGE_NONE);
 				continue;
 			}
 		}
@@ -153,8 +160,9 @@ void render()
 						subrectX = ((state & 3) << 3) + (state & 3) + 1;
 						subrectY = ((state >> 2) << 3) + (state >> 2) + 1;
 					}
-					if(currTile->spriteType == TYPE_TILE_VAR) subrectX = 9 * tile.variant + 1;
-					if(currTile->spriteType == TYPE_SHEET_VAR) subrectX += 37 * tile.variant;
+					var = varBuffer[y - varBufferPos.y][x - varBufferPos.x];
+					if(currTile->spriteType == TYPE_TILE_VAR) subrectX = 9 * var + 1;
+					if(currTile->spriteType == TYPE_SHEET_VAR) subrectX += 37 * var;
 					dsubimage(currTileX, currTileY, currTile->sprite, subrectX, subrectY, 8, 8, flags);
 				}
 				else
@@ -335,103 +343,101 @@ void middleText(char *text, int progress)
 	dupdate();
 }
 
-// Prefer the vram capture as this is original size and not good for the web
-/*
-void takeScreenshot()
+void setVar(int x, int y)
 {
-	uint32_t *light;
-	uint32_t *dark;
+	int virtX = x - varBufferPos.x;
+	int virtY = y - varBufferPos.y;
+	int dY = 0;
+	int var = 0;
+	Tile tile = getTile(x, y);
 
-	uint16_t *path = u"\\\\fls0\\scrncapt.bmp";
-	int descriptor;
+//	Catch any sneaky out-of-buffer variant change requests
+	if(virtX < 0 || virtX >= VAR_BUF_WIDTH || virtY < 0 || virtY >= VAR_BUF_HEIGHT) return;
 
-	unsigned char *VRAMBuffer = malloc(2048);
-	unsigned char *lightBuffer = VRAMBuffer;
-	unsigned char *darkBuffer = VRAMBuffer + 1024;
-
-	unsigned char *buffer = malloc(4096 + 70);
-
-	unsigned int width = 128;
-	unsigned int height = 64;
-	unsigned int dataSize = width * height / 2;
-	unsigned int size = dataSize + 70;
-
-	unsigned char header[70] = {
-		// All integers are stored as little-endian chars
-		0x42, 0x4d,						// Identifier
-		(unsigned char)size,			// Filesize
-		(unsigned char)(size >> 8),
-		(unsigned char)(size >> 16),
-		(unsigned char)(size >> 24),
-		0x00, 0x00, 0x00, 0x00,			// Not used
-		0x46, 0x00, 0x00, 0x00,			// Image data offset
-		// DIB
-		0x28, 0x00, 0x00, 0x00,			// DIB size
-		(unsigned char)width,			// Bitmap width
-		(unsigned char)(width >> 8),
-		(unsigned char)(width >> 16),
-		(unsigned char)(width >> 24),
-		(unsigned char)height,			// Bitmap height
-		(unsigned char)(height >> 8),
-		(unsigned char)(height >> 16),
-		(unsigned char)(height >> 24),
-		0x01, 0x00,						//.amount of colour planes
-		0x04, 0x00,						// BPP
-		0x00, 0x00, 0x00, 0x00,			// Compression method
-		(unsigned char)dataSize,		// Raw bitmap data size
-		(unsigned char)(dataSize >> 8),
-		(unsigned char)(dataSize >> 16),
-		(unsigned char)(dataSize >> 24),
-		0xff, 0x00, 0x00, 0x00,			// Horizontal resolution
-		0xff, 0x00, 0x00, 0x00,			// Vertical resolution
-		0x04, 0x00, 0x00, 0x00,			//.amount of palette colours
-		0x00, 0x00, 0x00, 0x00,			//.amount of important colours
-		// Colour Table
-		0xff, 0xff, 0xff, 0x00,			// White
-		0x88, 0x88, 0x88, 0x00, 		// Light gray
-		0x10, 0x10, 0x10, 0x00, 		// Dark gray
-		0x00, 0x00, 0x00, 0x00 			// Black
-	};
-	Pair *imageBuffer = (Pair*)(buffer + 70);
-	int place;
-	int lightOn;
-	int darkOn;
-	unsigned char col;
-	int sizeInt = size;
-
-	dgray_getvram(&light, &dark);
-
-	memcpy(lightBuffer, light, 1024);
-	memcpy(darkBuffer, dark, 1024);
-
-	memcpy(buffer, header, 70);
-
-	for (unsigned int y = 0; y < height; y++)
+	switch(tile.id)
 	{
-		for (unsigned int x = 0; x < width; x++)
+//		Ugly but optimised
+
+		case TILE_WBENCH_R:
+		case TILE_ANVIL_R:
+			var = 1;
+		case TILE_WBENCH_L:
+		case TILE_ANVIL_L:
+			varBuffer[virtY][virtX] = var;
+			break;
+		
+		case TILE_FURNACE_EDGE:
+			if(x == 0 || getTile(x - 1 , y).id != TILE_FURNACE_EDGE) var += 3;
+		case TILE_CHAIR_L:
+			if(tile.id == TILE_CHAIR_R) var += 2;
+		case TILE_CHAIR_R:
+		case TILE_FURNACE_MID:
+		case TILE_CHEST_L:
+		case TILE_CHEST_R:
+		case TILE_DOOR_C:
+		case TILE_DOOR_O_L_L: case TILE_DOOR_O_L_R:
+		case TILE_DOOR_O_R_L: case TILE_DOOR_O_R_R:
+		while(y - dY - 1 >= 0 && getTile(x, y - dY - 1).id == tile.id) dY++;
+		var += dY;
+		varBuffer[virtY][virtX] = var;
+		break;
+
+		default:
+			varBuffer[virtY][virtX] = makeVar();
+			break;
+	}
+}
+
+void fillVarBuffer(int startX, int startY, int width, int height)
+{
+	for(int dY = startY; dY < startY + height; dY++)
+	{
+		for(int dX = startX; dX < startX + width; dX++) setVar(varBufferPos.x + dX, varBufferPos.y + dY);
+	}
+}
+
+void updateVarBuffer(int x, int y)
+{
+	int offsetX = x - (varBufferPos.x + VAR_BUF_OFFSET);
+	int offsetY = y - (varBufferPos.y + VAR_BUF_OFFSET);
+	char *source, *dest;
+	int length;
+
+	varBufferPos.x = x - VAR_BUF_OFFSET;
+	varBufferPos.y = y - VAR_BUF_OFFSET;
+
+	if(abs(offsetY) >= VAR_BUF_HEIGHT || abs(offsetX) >= VAR_BUF_WIDTH) fillVarBuffer(0, 0, VAR_BUF_WIDTH, VAR_BUF_HEIGHT);
+	else
+	{
+		if(offsetY != 0)
 		{
-			lightOn = lightBuffer[(y * width + x) >> 3] & (1 << (7 - (x % 8)));
-			darkOn = darkBuffer[(y * width + x) >> 3] & (1 << (7 - (x % 8)));
-			place = (((height - 1) - y) * width + x) >> 1;
+			source = offsetY > 0 ? varBuffer[offsetY] : (char *)varBuffer;
+			dest = offsetY > 0 ? (char *)varBuffer : varBuffer[-offsetY];
+			length = (VAR_BUF_HEIGHT - abs(offsetY)) * VAR_BUF_WIDTH;
+			memmove(dest, source, length);
 
-			if (darkOn && lightOn) col = 3;
-			else if (darkOn) col = 2;
-			else if (lightOn) col = 1;
-			else col = 0;
-
-			if (x % 2 == 0) imageBuffer[place].pixel0 = col;
-			else imageBuffer[place].pixel1 = col;
+			fillVarBuffer(
+				0,
+				offsetY > 0 ? VAR_BUF_HEIGHT - offsetY - 1 : 0,
+				VAR_BUF_WIDTH,
+				abs(offsetY)
+			);
+		}
+		if(offsetX != 0)
+		{
+			for(int dY = 0; dY < VAR_BUF_HEIGHT; dY++)
+			{
+				source = varBuffer[dY] + (offsetX > 0 ? offsetX : 0);
+				dest = varBuffer[dY] + (offsetX > 0 ? 0 : -offsetX);
+				length = VAR_BUF_WIDTH - abs(offsetX);
+				memmove(dest, source, length);
+			}
+			fillVarBuffer(
+				offsetX > 0 ? VAR_BUF_WIDTH - offsetX - 1 : 0,
+				0,
+				abs(offsetX),
+				VAR_BUF_HEIGHT
+			);
 		}
 	}
-
-	BFile_Remove(path);
-	BFile_Create(path, BFile_File, &sizeInt);
-
-	descriptor = BFile_Open(path, BFile_WriteOnly);
-	BFile_Write(descriptor, buffer, size);
-	BFile_Close(descriptor);
-
-	free(VRAMBuffer);
-	free(buffer);
 }
-*/

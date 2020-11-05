@@ -238,7 +238,7 @@ void loadSave()
 				{
 					if(tileX >= game.WORLD_WIDTH || tileY >= game.WORLD_HEIGHT) continue;
 					tile = regionBuffer[(tileY - regionStartY) * REGION_SIZE + (tileX - regionStartX)];
-					setTile(tileX, tileY, tile.id, tile.variant);
+					setTile(tileX, tileY, tile.id);
 				}
 			}
 		}

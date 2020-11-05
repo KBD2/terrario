@@ -372,6 +372,10 @@ void doEntityCycle(int frames)
 
 void doSpawningCycle()
 {
+	#ifdef DEBUGMODE
+	return;
+	#endif
+
 	Entity* ent;
 	int spawnX, spawnY;
 	int playerTileX = player.props.x >> 3;

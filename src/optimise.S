@@ -2,7 +2,7 @@
 .global _SMEM_optimise_codelength
 .global _App_GetAddinEstripInfo
 
-.section .rodata
+.section .ilram, "ax"
 
 //; int SMEM_optimise_frame (unsigned char *title);
 _SMEM_optimise_frame:

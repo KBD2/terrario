@@ -28,10 +28,7 @@ struct ParticleExplosion {
 	int deltaTicks;
 };
 
-typedef struct {
-	unsigned char pixel0 : 4;
-	unsigned char pixel1 : 4;
-} Pair;
+extern char varBuffer[VAR_BUF_HEIGHT][VAR_BUF_WIDTH];
 
 /* render
 Renders the world using a calculated camera position and a HUD.
@@ -84,3 +81,9 @@ text: Pointer to the string to display.
 progress: Percent progress.
 */
 void middleText(char *text, int progress);
+
+void fillVarBuffer(int startX, int startY, int width, int height);
+
+void updateVarBuffer(int x, int y);
+
+void setVar(int x, int y);

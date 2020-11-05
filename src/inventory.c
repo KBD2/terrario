@@ -35,7 +35,7 @@ const ItemData items[] = {
 	{	&img_item_wood,			999,	TILE_WOOD,			"Wood",			false	},	// ITEM_WOOD
 	{	&img_item_wbench,		99,		TILE_WBENCH_L,		"Workbench",	false	},	// ITEM_WORKBENCH
 	{	&img_item_platform,		999,	TILE_PLATFORM,		"Platform",		false	},	// ITEM_PLATFORM
-	{	&img_item_chair,		99,		TILE_CHAIR,			"Chair",		false	},	// ITEM_CHAIR
+	{	&img_item_chair,		99,		TILE_CHAIR_L,		"Chair",		false	},	// ITEM_CHAIR
 	{	&img_item_copper_sword,	1,		TILE_NULL,			"Copper Sword",	true	},	// ITEM_COPPER_SWORD
 	{	&img_item_copper_pick,	1,		TILE_NULL,			"Copper Pick",	true	},	// ITEM_COPPER_PICK
 	{	&img_item_gel,			999,	TILE_NULL,			"Gel",			false	},	// ITEM_GEL

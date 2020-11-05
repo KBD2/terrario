@@ -2,10 +2,6 @@
 #include <gint/std/string.h>
 #include "optimise.h"
 
-#define CODESIZE 0x100
-
-GILRAM char optimiserCode[CODESIZE];
-
 typedef struct{
 	char name[8];
 	void *address;
@@ -39,6 +35,5 @@ void JumpOptimising(){
 
 	GetCallbackAddressPtr( &p0, &p1 );
 	*(int *)p1 = 0;
-	memcpy((void*)optimiserCode, &SMEM_optimise_frame, SMEM_optimise_codelength);
-	((int (*)(unsigned char *))optimiserCode)(title);
+	SMEM_optimise_frame(title);
 }

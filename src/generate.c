@@ -82,7 +82,7 @@ void perlin(int amplitude, int wavelength, int baseY, enum Tiles tile, int itera
 	{
 		for(int y = yPositions[x]; y < game.WORLD_HEIGHT; y++)
 		{
-			setTile(x, y, tile, makeVar());
+			setTile(x, y, tile);
 		}
 	}
 }
@@ -107,7 +107,7 @@ void clump(int x, int y, int num, enum Tiles tile, bool maskEmpty, float skewHor
 		selectedTile = clumpCoords[selected];
 		clumpCoords[selected] = clumpCoords[end - 1];
 		end--;
-		setTile(selectedTile.x, selectedTile.y, tile, makeVar());
+		setTile(selectedTile.x, selectedTile.y, tile);
 		num--;
 		for(int delta = 0; delta < 4; delta++)
 		{
@@ -141,15 +141,15 @@ void box(int x, int y, int width, int height, enum Tiles tile, float coverage, e
 			{
 				if(randFloat() < coverage)
 				{
-					setTile(x + dX, y + dY, tile, makeVar());
+					setTile(x + dX, y + dY, tile);
 				}
 				else{
-					setTile(x + dX, y + dY, swap, makeVar());
+					setTile(x + dX, y + dY, swap);
 				}
 			}
 			else
 			{
-				setTile(x + dX, y + dY, TILE_NOTHING, 0);
+				setTile(x + dX, y + dY, TILE_NOTHING);
 			}
 		}
 	}
@@ -170,7 +170,7 @@ void generateWorld()
 	middleText("Reset", updateProgress());
 	for(int y = 0; y < game.WORLD_HEIGHT; y++)
 	{
-		for(int x = 0; x < game.WORLD_WIDTH; x++) setTile(x, y, TILE_NOTHING, 0);
+		for(int x = 0; x < game.WORLD_WIDTH; x++) setTile(x, y, TILE_NOTHING);
 	}
 
 	middleText("Terrain", updateProgress());
@@ -258,7 +258,7 @@ void generateWorld()
 				if(x == 0 || x == game.WORLD_WIDTH - 1 || y == game.WORLD_HEIGHT) break;
 				if(getTile(x - 1, y).id == TILE_NOTHING || getTile(x + 1, y).id == TILE_NOTHING)
 				{
-					setTile(x, y + 1, TILE_GRASS, makeVar());
+					setTile(x, y + 1, TILE_GRASS);
 				}
 				break;
 			}
@@ -272,7 +272,7 @@ void generateWorld()
 		{
 			if(getTile(x, y).id == TILE_DIRT && findState(x, y) != 15)
 			{
-				setTile(x, y, TILE_GRASS, makeVar());
+				setTile(x, y, TILE_GRASS);
 			}
 		}
 	}
@@ -305,7 +305,7 @@ void generateWorld()
 			tempX = randRange(x + 1, x + width - 5);
 			for(int dX = 0; dX < randRange(2, 5); dX++)
 			{
-				setTile(tempX + dX, y, TILE_PLATFORM, 0);
+				setTile(tempX + dX, y, TILE_PLATFORM);
 			}
 			if(!placedChest)
 			{
@@ -324,7 +324,7 @@ void generateWorld()
 				}
 			}
 			tempX = randFloat() < 0.5 ? x : x + width - 1;
-			for(int dY = 2; dY < 5; dY++) setTile(tempX, y + dY, TILE_NOTHING, 0);
+			for(int dY = 2; dY < 5; dY++) setTile(tempX, y + dY, TILE_NOTHING);
 			check = (Item){ITEM_DOOR, 1};
 			placeTile(tempX, y + 2, &check);
 			y += 7;
@@ -361,7 +361,7 @@ void generateWorld()
 	{
 		for(int y = 1; y < game.WORLD_HEIGHT; y++)
 		{
-			if(getTile(x, y).id == TILE_GRASS && getTile(x, y - 1).id == TILE_NOTHING && rand() % 4 > 0) setTile(x, y - 1, TILE_PLANT, makeVar());;
+			if(getTile(x, y).id == TILE_GRASS && getTile(x, y - 1).id == TILE_NOTHING && rand() % 4 > 0) setTile(x, y - 1, TILE_PLANT);
 		}
 	}
 
@@ -373,7 +373,7 @@ void generateWorld()
 		{
 			if(getTile(x, y).id == TILE_GRASS && getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 3) > 0)
 			{
-				for(int dY = 1; dY < randRange(3, 11) && getTile(x, y + dY).id == TILE_NOTHING; dY++) setTile(x, y + dY, TILE_VINE, rand() % 4);
+				for(int dY = 1; dY < randRange(3, 11) && getTile(x, y + dY).id == TILE_NOTHING; dY++) setTile(x, y + dY, TILE_VINE);
 			}
 		}
 	}

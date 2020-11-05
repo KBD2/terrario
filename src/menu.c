@@ -34,6 +34,9 @@ int mainMenu()
 		dclear(C_WHITE);
 		dimage(0, 0, &img_mainmenu);
 		dimage(65, selectPositions[selected], &img_mainmenuselect);
+		#ifdef DEBUGMODE
+		dtext_opt(0, 0, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, "DEBUG BUILD");
+		#endif
 		dupdate();
 
 		key = getkey_opt(GETKEY_NONE, NULL);

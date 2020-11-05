@@ -35,6 +35,7 @@ struct World world;
 struct Player player;
 char versionBuffer[16];
 struct GameCompatibilityPresets game;
+GYRAM char varBuffer[VAR_BUF_HEIGHT][VAR_BUF_WIDTH];
 
 // Governs the 60UPS loop
 int frameCallback(volatile int *flag)
@@ -122,7 +123,9 @@ void gameLoop(volatile int *flag)
 		else renderThisFrame = true;
 
 		frames++;
+		#ifndef DEBUGMODE
 		world.timeTicks++;
+		#endif
 		if(world.timeTicks >= DAY_TICKS) world.timeTicks = 0;
 		while(!*flag) sleep();
 		*flag = 0;
@@ -296,6 +299,8 @@ int main(void)
 
 	timer = timer_setup(TIMER_ANY, (1000 / 60) * 1000, &frameCallback, &flag);
 	timer_start(timer);
+
+	fillVarBuffer(0, 0, VAR_BUF_WIDTH, VAR_BUF_HEIGHT);
 
 	// Do the game
 	gameLoop(&flag);

@@ -6,6 +6,12 @@
 Various macros, constant definitions, and utility functions used throughout the game.
 */
 
+/*
+Disables certain game features to make testing easier. Adds warnings in the
+main menu and game version in case it's accidentally left enabled.
+*/
+//#define DEBUGMODE
+
 enum HWModes {
 	MODE_RAM,
 	MODE_PRAM
@@ -23,7 +29,11 @@ extern struct GameCompatibilityPresets game;
 
 #define allocCheck(x) if((x) == NULL) memoryErrorMenu()
 
-#define VERSION "v0.7.0-indev"
+#ifndef DEBUGMODE
+#define VERSION "v0.7.1-indev"
+#else
+#define VERSION "DEBUG BUILD!"
+#endif
 
 #define PI 3.14159265358979323846
 #define E 2.718281828459045
@@ -33,6 +43,10 @@ extern struct GameCompatibilityPresets game;
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
+
+#define VAR_BUF_WIDTH 28
+#define VAR_BUF_HEIGHT 20
+#define VAR_BUF_OFFSET 5
 
 #define MAX_CHESTS 50
 
@@ -50,6 +64,7 @@ extern struct GameCompatibilityPresets game;
 
 // Amount of entity slots
 #define MAX_ENTITIES 5
+
 // 1/<x> chance to spawn an entity each frame
 #define SPAWN_CHANCE 600
 
