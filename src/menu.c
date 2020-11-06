@@ -9,6 +9,7 @@
 #include <gint/std/string.h>
 #include <gint/std/stdlib.h>
 #include <gint/clock.h>
+#include <gint/std/stdio.h>
 
 #include "menu.h"
 #include "syscalls.h"
@@ -19,6 +20,14 @@
 #include "render.h"
 #include "world.h"
 #include "crafting.h"
+
+struct {
+	char year[5];
+	char month[3];
+	char day[3];
+	char hour[3];
+	char minute[3];
+} timestamp;
 
 int mainMenu()
 {
@@ -315,6 +324,29 @@ enum MenuTabs {
 
 void aboutMenu()
 {
+	const char *months[12] = {
+		"Jan",
+		"Feb",
+		"Mar",
+		"Apr",
+		"May",
+		"Jun",
+		"Jul",
+		"Aug",
+		"Sep",
+		"Oct",
+		"Nov",
+		"Dec"
+	};
+	char buffer[64];
+	memset(&timestamp, 0, sizeof(timestamp));
+	memcpy(timestamp.year, (char *)0x0030003C, 4);
+	memcpy(timestamp.month, (char *)0x00300041, 2);
+	memcpy(timestamp.day, (char *)0x00300043, 2);
+	memcpy(timestamp.hour, (char *)0x00300046, 2);
+	memcpy(timestamp.minute, (char *)0x00300048, 2);
+	const char *month = months[atoi(timestamp.month) - 1];
+	sprintf(buffer, "%s %s %s %s:%s", timestamp.day, month, timestamp.year, timestamp.hour, timestamp.minute);
 	const char *aboutText[] = {
 		"Special thanks to:",
 		"Lephenixnoir - Gint",
@@ -323,7 +355,7 @@ void aboutMenu()
 		"Yatis",
 		"",
 		VERSION,
-		__DATE__ " " __TIME__
+		buffer
 	};
 	const char *controlsText[] = {
 		"World:",

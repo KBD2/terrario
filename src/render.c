@@ -369,7 +369,7 @@ void setVar(int x, int y)
 		case TILE_FURNACE_EDGE:
 			if(x == 0 || getTile(x - 1 , y).id != TILE_FURNACE_EDGE) var += 3;
 		case TILE_CHAIR_L:
-			if(tile.id == TILE_CHAIR_R) var += 2;
+			if(tile.id == TILE_CHAIR_L) var += 2;
 		case TILE_CHAIR_R:
 		case TILE_FURNACE_MID:
 		case TILE_CHEST_L:
@@ -381,6 +381,9 @@ void setVar(int x, int y)
 		var += dY;
 		varBuffer[virtY][virtX] = var;
 		break;
+
+		case TILE_VINE:
+			varBuffer[virtY][virtX] = rand() & 3;
 
 		default:
 			varBuffer[virtY][virtX] = makeVar();

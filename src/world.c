@@ -461,7 +461,7 @@ void removeTile(int x, int y)
 		regionChange(x, y);
 
 		tile = getTile(x, y);
-		if(tile.id == TILE_NOTHING && tiles[getTile(x, y - 1).id].support == SUPPORT_NEED) removeTile(x, y - 1);
+		if(tiles[getTile(x, y - 1).id].support == SUPPORT_NEED) removeTile(x, y - 1);
 
 		if(tiles[getTile(x, y + 1).id].support == SUPPORT_TOP) removeTile(x, y + 1);
 	}

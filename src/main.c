@@ -28,6 +28,7 @@ const unsigned int sc003B[] = { SCA, SCB, SCE, 0x003B };
 const unsigned int sc019F[] = { SCA, SCB, SCE, 0x019F };
 const unsigned int sc0236[] = { SCA, SCB, SCE, 0x0236 };
 const unsigned int sc042E[] = { SCA, SCB, SCE, 0x042E };
+const unsigned int sc015F[] = { SCA, SCB, SCE, 0x015F };
 
 // Global variables
 GYRAM struct SaveData save;

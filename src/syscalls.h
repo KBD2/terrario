@@ -13,9 +13,11 @@ Syscall definitions.
 typedef void(*sc_vv)(void);
 typedef int(*sc_iv)(void);
 typedef int(*sc_uspip)(unsigned short*, int*);
+typedef int(*sc_icp)(char*);
 extern const unsigned int sc003B[];
 extern const unsigned int sc0236[];
 extern const unsigned int sc042E[];
+extern const unsigned int sc015F[];
 
 // Used with srand()
 #define RTC_GetTicks (*(sc_iv)sc003B)
@@ -25,3 +27,5 @@ extern const unsigned int sc042E[];
 
 // Used to check if the player needs to optimise their storage memory
 #define Bfile_GetMediaFree_OS (*(sc_uspip)sc042E)
+
+#define atoi (*(sc_icp)sc015F)

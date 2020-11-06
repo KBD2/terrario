@@ -191,4 +191,4 @@ install-cg: $(TARGET_CG)
 	@ umount /dev/Prizm1
 	@- eject /dev/Prizm1
 
-.PHONY: all all-fx all-cg clean distclean install-fx install-cg src/menu.c
+.PHONY: all all-fx all-cg clean distclean install-fx install-cg
