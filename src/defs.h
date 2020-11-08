@@ -39,7 +39,7 @@ extern struct GameCompatibilityPresets game;
 #define E 2.718281828459045
 
 // Size in tiles of each world region
-#define REGION_SIZE 96
+#define REGION_SIZE 90
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64

@@ -31,12 +31,12 @@ const unsigned int sc042E[] = { SCA, SCB, SCE, 0x042E };
 const unsigned int sc015F[] = { SCA, SCB, SCE, 0x015F };
 
 // Global variables
+GYRAM char varBuffer[VAR_BUF_HEIGHT][VAR_BUF_WIDTH];
 GYRAM struct SaveData save;
 struct World world;
 struct Player player;
 char versionBuffer[16];
 struct GameCompatibilityPresets game;
-GYRAM char varBuffer[VAR_BUF_HEIGHT][VAR_BUF_WIDTH];
 
 // Governs the 60UPS loop
 int frameCallback(volatile int *flag)

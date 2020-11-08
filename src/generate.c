@@ -8,7 +8,7 @@
 
 #define NUM_WORLD_GEN_PARTS 13
 
-GXRAM struct Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
+GYRAM struct Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
 unsigned char *yPositions;
 
 int updateProgress()

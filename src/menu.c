@@ -340,6 +340,8 @@ void aboutMenu()
 	};
 	char buffer[64];
 	memset(&timestamp, 0, sizeof(timestamp));
+//	Offset 0x3C into the addin file is the start of the build timestamp.
+//	0x00300000 in memory is the start of the mapped addin in ROM.
 	memcpy(timestamp.year, (char *)0x0030003C, 4);
 	memcpy(timestamp.month, (char *)0x00300041, 2);
 	memcpy(timestamp.day, (char *)0x00300043, 2);

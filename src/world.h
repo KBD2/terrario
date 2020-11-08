@@ -38,13 +38,14 @@ typedef struct {
 	unsigned char friends[MAX_FRIENDS];
 	enum Items item;
 	char *name;
+	bool compress;
 } TileData;
 
 extern const TileData tiles[];
 
 typedef struct {
 //	Index in tiles array
-	unsigned char id:8;
+	unsigned char id;
 } Tile;
 
 enum Tiles {

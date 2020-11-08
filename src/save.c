@@ -13,6 +13,13 @@ struct SaveInfo {
 	int time;
 };
 
+union RegionTile {
+	Tile tile;
+	unsigned char count;
+};
+
+GXRAM union RegionTile regionBuffer[REGION_SIZE * REGION_SIZE];
+
 // Checks if \\fls0\TERRARIO\save.info exists
 bool getSave()
 {
@@ -64,19 +71,22 @@ void saveGame()
 	struct BFile_FileInfo fileInfo;
 	int error;
 
-	Tile *tile;
+	union RegionTile *tile;
 	int regionStartX, regionStartY;
-	Tile regionBuffer[REGION_SIZE * REGION_SIZE];
 
 	char buffer[30];
 	uint16_t filePath[30];
 
 	struct SaveInfo info;
 
-	int regionFileSize = sizeof(regionBuffer);
+	int regionFileSize;
 	int playerSaveSize = sizeof(struct PlayerSave);
 	int infoFileSize = sizeof(struct SaveInfo);
 	int chestDataSize = world.chests.number * sizeof(struct Chest);
+
+	int regionIndex, count;
+
+	Tile worldTile;
 
 	save.timeTicks = world.timeTicks;
 
@@ -122,25 +132,36 @@ void saveGame()
 			{
 				regionStartX = x * REGION_SIZE;
 				regionStartY = y * REGION_SIZE;
+				regionIndex = 0;
 				for(int tileY = regionStartY; tileY < regionStartY + REGION_SIZE; tileY++)
 				{
 					for(int tileX = regionStartX; tileX < regionStartX + REGION_SIZE; tileX++)
 					{
-						tile = &regionBuffer[(tileY - regionStartY) * REGION_SIZE + (tileX - regionStartX)];
-						if(tileX >= game.WORLD_WIDTH || tileY >= game.WORLD_HEIGHT)
-						{
-							*tile = (Tile){ 0 };
-						}
+						if(tileX >= game.WORLD_WIDTH || tileY >= game.WORLD_HEIGHT) break;
 						else
 						{
-							*tile = getTile(tileX, tileY);
+							tile = &regionBuffer[regionIndex];
+							worldTile = getTile(tileX, tileY);
+							if(tiles[worldTile.id].compress)
+							{
+								count = 1;
+								while((tileX + count) - regionStartX < REGION_SIZE && tileX + count < game.WORLD_WIDTH && getTile(tileX + count, tileY).id == worldTile.id) count++;
+								tile->tile = worldTile;
+								(tile + 1)->count = count;
+								tileX += count - 1;
+								regionIndex++;
+							}
+							else tile->tile = getTile(tileX, tileY);
 						}
+						regionIndex++;
 					}
 				}
 
 				sprintf(buffer, "\\\\fls0\\TERRARIO\\reg%i-%i.dat", y, x);
 				for(int i = 0; i < 30; i++) filePath[i] = buffer[i];
 				BFile_Remove(filePath);
+				regionFileSize = regionIndex;
+				if(regionFileSize & 1) regionFileSize++;
 				error = BFile_Create(filePath, BFile_File, &regionFileSize);
 				if(error < 0)
 				{
@@ -173,13 +194,14 @@ void loadSave()
 	int error;
 
 	int descriptor;
-	Tile regionBuffer[REGION_SIZE * REGION_SIZE];
 
 	int regionStartX, regionStartY;
 
 	struct PlayerSave playerSave;
 
-	Tile tile;
+	union RegionTile *tile;
+
+	int regionIndex, count;
 
 	error = BFile_FindFirst(playerPath, &handle, foundPath, &fileInfo);
 	BFile_FindClose(handle);
@@ -204,8 +226,8 @@ void loadSave()
 	if(error == 0)
 	{
 		descriptor = BFile_Open(chestPath, BFile_ReadOnly);
-		world.chests.number = fileInfo.data_size / sizeof(struct Chest);
-		BFile_Read(descriptor, (void *)world.chests.chests, fileInfo.data_size, 0);
+		world.chests.number = BFile_Size(descriptor) / sizeof(struct Chest);
+		BFile_Read(descriptor, (void *)world.chests.chests, BFile_Size(descriptor), 0);
 		BFile_Close(descriptor);
 	}
 
@@ -227,18 +249,26 @@ void loadSave()
 			}
 
 			descriptor = BFile_Open(filePath, BFile_ReadOnly);
-			BFile_Read(descriptor, regionBuffer, sizeof(regionBuffer), 0);
+			BFile_Read(descriptor, regionBuffer, BFile_Size(descriptor), 0);
 			BFile_Close(descriptor);
 
 			regionStartX = x * REGION_SIZE;
 			regionStartY = y * REGION_SIZE;
+			regionIndex = 0;
 			for(int tileY = regionStartY; tileY < regionStartY + REGION_SIZE; tileY++)
 			{
 				for(int tileX = regionStartX; tileX < regionStartX + REGION_SIZE; tileX++)
 				{
-					if(tileX >= game.WORLD_WIDTH || tileY >= game.WORLD_HEIGHT) continue;
-					tile = regionBuffer[(tileY - regionStartY) * REGION_SIZE + (tileX - regionStartX)];
-					setTile(tileX, tileY, tile.id);
+					if(tileX >= game.WORLD_WIDTH || tileY >= game.WORLD_HEIGHT) break;
+					tile = &regionBuffer[regionIndex];
+					if(tiles[tile->tile.id].compress)
+					{
+						for(count = 0; count < (tile + 1)->count; count++) setTile(tileX + count, tileY, tile->tile.id);
+						tileX += count - 1;
+						regionIndex++;
+					}
+					else setTile(tileX, tileY, tile->tile.id);
+					regionIndex++;
 				}
 			}
 		}

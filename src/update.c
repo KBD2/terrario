@@ -105,7 +105,7 @@ enum UpdateReturnCodes keyboardUpdate()
 				{
 					case TILE_CHEST_L: case TILE_CHEST_R:
 						if(tile == TILE_CHEST_R) x--;
-						while(getTile(x, y).id != TILE_CHEST_L) y--;
+						while(getTile(x, y - 1).id == TILE_CHEST_L) y--;
 						chest = world.chests.findChest(x, y);
 						if(chest == NULL) world.chests.addChest(x, y);
 						player.inventory.ticksSinceInteracted = 0;
