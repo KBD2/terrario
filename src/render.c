@@ -41,10 +41,10 @@ void renderItem(int x, int y, Item *item)
 
 void render()
 {
-	unsigned int camMinX = SCREEN_WIDTH >> 1;
-	unsigned int camMaxX = (game.WORLD_WIDTH << 3) - (SCREEN_WIDTH >> 1);
-	unsigned int camMinY = SCREEN_HEIGHT >> 1;
-	unsigned int camMaxY = (game.WORLD_HEIGHT << 3) - (SCREEN_HEIGHT >> 1);
+	unsigned int camMinX = ((VAR_BUF_OFFSET + 1) << 3) + (SCREEN_WIDTH >> 1);
+	unsigned int camMaxX = ((game.WORLD_WIDTH - (VAR_BUF_OFFSET + 1)) << 3) - (SCREEN_WIDTH >> 1);
+	unsigned int camMinY = ((VAR_BUF_OFFSET + 1) << 3) + (SCREEN_HEIGHT >> 1);
+	unsigned int camMaxY = ((game.WORLD_HEIGHT - (VAR_BUF_OFFSET + 1)) << 3) - (SCREEN_HEIGHT >> 1);
 	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect,
 	img_leaves, img_swing_copper_sword, img_swing_copper_pick, img_deathtext,
 	img_bg_underground, img_sunmoon, img_bg_night;
@@ -384,7 +384,12 @@ void setVar(int x, int y)
 		break;
 
 		case TILE_VINE:
-			varBuffer[virtY][virtX] = rand() & 3;
+			varBuffer[virtY][virtX] = rand() % 4;
+			break;
+
+		case TILE_PLANT:
+			varBuffer[virtY][virtX] = rand() % 10;
+			break;
 
 		default:
 			varBuffer[virtY][virtX] = makeVar();

@@ -395,6 +395,7 @@ void aboutMenu()
 	key_event_t key;
 	extern font_t font_smalltext;
 	enum MenuTabs menu = MENU_ABOUT;
+	char *workbench;
 
 	dfont(&font_smalltext);
 
@@ -427,7 +428,9 @@ void aboutMenu()
 					dimage(17 * dR, 0, &img_slot);
 					renderItem(17 * dR + 1, 1, (Item *)&recipes[scroll + dR].result);
 				}
-				dtext(0, 18, C_BLACK, items[recipes[scroll].result.id].name);
+				if(recipes[scroll].required == TILE_NULL) workbench = "anywhere";
+				else workbench = tiles[recipes[scroll].required].name;
+				dprint(0, 18, C_BLACK, "%s at %s", items[recipes[scroll].result.id].name, workbench);
 				for(int dI = 0; dI < recipes[scroll].numIngredients; dI++)
 				{
 					dimage(17 * dI, 24, &img_slot);

@@ -218,6 +218,10 @@ void playerUpdate(int frames)
 //	Handle the physics for the player
 	player.physics(&player.props, frames);
 
+//	Cap the player's position at an offset so variant buffer doesn't corrupt YRAM
+	player.props.x = min(max((VAR_BUF_OFFSET + 1) << 3, player.props.x), (game.WORLD_WIDTH - (VAR_BUF_OFFSET + 1)) << 3);
+	player.props.y = min(max((VAR_BUF_OFFSET + 1) << 3, player.props.y), (game.WORLD_HEIGHT - (VAR_BUF_OFFSET + 1)) << 3);
+
 	if(player.props.yVel < 0) player.pixelsFallen = 0;
 	else
 	{
@@ -229,6 +233,7 @@ void playerUpdate(int frames)
 				damage = max(1, 10 * ((player.pixelsFallen >> 3) - 25) - player.combat.defense / 2);
 				player.combat.health = max(0, player.combat.health - damage);
 				player.combat.currImmuneFrames = player.combat.immuneFrames;
+				player.ticksSinceHit = 0;
 			}
 			player.pixelsFallen = 0;
 		}
@@ -246,7 +251,7 @@ void playerUpdate(int frames)
 		if(regen > 0 && frames % (int)(60.0/regen) == 0) player.combat.health += 1;
 	}
 
-	player.ticksSinceHit++;
+	if(player.combat.health > 0) player.ticksSinceHit++;
 
 //	Figure out which animation frame the player should be in right now
 	if(player.props.xVel > 0)
