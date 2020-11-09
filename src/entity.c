@@ -149,7 +149,7 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames)
 	int xMax = (game.WORLD_WIDTH << 3) - self->width;
 	int yMax = (game.WORLD_HEIGHT << 3) - self->height;
 
-	self->yVel = min(10, self->yVel + GRAVITY_ACCEL);
+	self->yVel = min(max(-4, self->yVel + GRAVITY_ACCEL), 4);
 	if(abs(self->xVel) < 0.1) self->xVel = 0;
 	if(abs(self->xVel) < 1 && frames % (int)roundf(1.0 / self->xVel) == 0) self->x += 1 * sgn(self->xVel);
 	else self->x += roundf(self->xVel);

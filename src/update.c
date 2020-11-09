@@ -212,9 +212,27 @@ void playerUpdate(int frames)
 	int time;
 	float regen;
 	int playerXSave = player.props.x;
+	int playerYSave = player.props.y;
+	int damage;
 
 //	Handle the physics for the player
 	player.physics(&player.props, frames);
+
+	if(player.props.yVel < 0) player.pixelsFallen = 0;
+	else
+	{
+		player.pixelsFallen += (player.props.y - playerYSave);
+		if(player.props.touchingTileTop)
+		{
+			if(player.pixelsFallen >> 3 > 25)
+			{
+				damage = max(1, 10 * ((player.pixelsFallen >> 3) - 25) - player.combat.defense / 2);
+				player.combat.health = max(0, player.combat.health - damage);
+				player.combat.currImmuneFrames = player.combat.immuneFrames;
+			}
+			player.pixelsFallen = 0;
+		}
+	}
 
 	if(player.combat.health < player.maxHealth)
 	{
