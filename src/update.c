@@ -2,6 +2,7 @@
 #include <gint/gint.h>
 #include <gint/defs/util.h>
 #include <math.h>
+#include <gint/std/stdlib.h>
 
 #include "update.h"
 #include "defs.h"
@@ -21,6 +22,7 @@ enum UpdateReturnCodes keyboardUpdate()
 	bool playerDead =  player.combat.health <= 0;
 	int currID;
 	struct Chest* chest;
+	struct PickData *heldPickData;
 	
 	player.inventory.ticksSinceInteracted++;
 
@@ -68,21 +70,21 @@ enum UpdateReturnCodes keyboardUpdate()
 				player.inventory.ticksSinceInteracted = 0;
 				if(player.swingFrame == 0 && !playerDead) player.inventory.hotbarSlot = keycode_function(key.key) - 1;
 				currID = player.inventory.getSelected()->id;
-				switch(currID)
+				switch(items[currID].type)
 				{
-					case ITEM_COPPER_PICK:
+					case TOOL_TYPE_PICK:
 						player.tool.type = TOOL_TYPE_PICK;
-						for(int i = 0; i < NUM_PICKS; i++)
+						for(int i = 0; i < NUM_TOOLS; i++)
 						{
-							if(pickMap[i][0] == currID) player.tool.data.pickData = pickData[pickMap[i][1]];
+							if(toolMap[i][0] == currID) player.tool.data.pickData = pickData[toolMap[i][1]];
 						}
 						break;
 					
-					case ITEM_COPPER_SWORD:
+					case TOOL_TYPE_SWORD:
 						player.tool.type = TOOL_TYPE_SWORD;
-						for(int i = 0; i < NUM_SWORDS; i++)
+						for(int i = 0; i < NUM_TOOLS; i++)
 						{
-							if(swordMap[i][0] == currID) player.tool.data.swordData = swordData[swordMap[i][1]];
+							if(toolMap[i][0] == currID) player.tool.data.swordData = swordData[toolMap[i][1]];
 						}
 						break;
 					
@@ -140,22 +142,37 @@ enum UpdateReturnCodes keyboardUpdate()
 	{
 		if(keydown(KEY_7))
 		{
-			if(items[player.inventory.getSelected()->id].canSwing)
+			if(items[player.inventory.getSelected()->id].type != TOOL_TYPE_NONE)
 			{
 				if(player.swingFrame == 0) player.swingFrame = 32;
 				player.swingDir = player.cursorTile.x < player.props.x >> 3;
 				switch(player.tool.type)
 				{
 					case TOOL_TYPE_PICK:
-						if(player.tool.data.pickData.currFramesLeft == 0)
+						heldPickData = &player.tool.data.pickData;
+						if(heldPickData->currFramesLeft == 0)
 						{
 							x = player.cursorTile.x;
 							y = player.cursorTile.y;
 							player.inventory.ticksSinceInteracted = 0;
-							world.removeTile(x, y);
-							player.tool.data.pickData.currFramesLeft = player.tool.data.pickData.speed;
+							if(x != heldPickData->targeted.x || y != heldPickData->targeted.y)
+							{
+//								You can safely assume this will be called at least once.
+								heldPickData->targeted.x = x;
+								heldPickData->targeted.y = y;
+								heldPickData->targeted.damage = 0;
+								heldPickData->targeted.crackVar = rand() % 6;
+							}
+							heldPickData->targeted.damage += (float)heldPickData->power / tiles[getTile(x, y).id].hitpoints;
+							if(heldPickData->targeted.damage >= 100)
+							{
+								world.removeTile(x, y);
+								heldPickData->targeted.damage = 0;
+							}
+							else setVar(x, y);
+							heldPickData->currFramesLeft = heldPickData->speed;
 						}
-						else player.tool.data.pickData.currFramesLeft--;
+						else heldPickData->currFramesLeft--;
 
 					default:
 						break;
@@ -215,18 +232,24 @@ void playerUpdate(int frames)
 	int playerYSave = player.props.y;
 	int damage;
 
+	int minX = VAR_BUF_OFFSET << 3;
+	int maxX = ((game.WORLD_WIDTH - VAR_BUF_OFFSET) << 3) - player.props.width;
+	int minY = VAR_BUF_OFFSET << 3;
+	int maxY = ((game.WORLD_HEIGHT - VAR_BUF_OFFSET) << 3) - player.props.height;
+
 //	Handle the physics for the player
 	player.physics(&player.props, frames);
 
 //	Cap the player's position at an offset so variant buffer doesn't corrupt YRAM
-	player.props.x = min(max((VAR_BUF_OFFSET + 1) << 3, player.props.x), (game.WORLD_WIDTH - (VAR_BUF_OFFSET + 1)) << 3);
-	player.props.y = min(max((VAR_BUF_OFFSET + 1) << 3, player.props.y), (game.WORLD_HEIGHT - (VAR_BUF_OFFSET + 1)) << 3);
+	player.props.x = min(max(minX, player.props.x), maxX);
+	player.props.y = min(max(minY, player.props.y), maxY);
+	if(player.props.y == maxY) player.props.touchingTileTop = true;
 
 	if(player.props.yVel < 0) player.pixelsFallen = 0;
 	else
 	{
 		player.pixelsFallen += (player.props.y - playerYSave);
-		if(player.props.touchingTileTop)
+		if(player.props.touchingTileTop && player.pixelsFallen > 0)
 		{
 			if(player.pixelsFallen >> 3 > 25)
 			{

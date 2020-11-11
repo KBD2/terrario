@@ -14,7 +14,7 @@ The crafting menu and system.
 struct Recipe {
 	enum Tiles required;
 	Item result;
-	unsigned char numIngredients;
+	int numIngredients;
 	const Item *ingredients;
 };
 

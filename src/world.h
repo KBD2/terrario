@@ -39,6 +39,7 @@ typedef struct {
 	enum Items item;
 	char *name;
 	bool compress;
+	float hitpoints;
 } TileData;
 
 extern const TileData tiles[];

@@ -41,13 +41,13 @@ void renderItem(int x, int y, Item *item)
 
 void render()
 {
-	unsigned int camMinX = ((VAR_BUF_OFFSET + 1) << 3) + (SCREEN_WIDTH >> 1);
-	unsigned int camMaxX = ((game.WORLD_WIDTH - (VAR_BUF_OFFSET + 1)) << 3) - (SCREEN_WIDTH >> 1);
-	unsigned int camMinY = ((VAR_BUF_OFFSET + 1) << 3) + (SCREEN_HEIGHT >> 1);
-	unsigned int camMaxY = ((game.WORLD_HEIGHT - (VAR_BUF_OFFSET + 1)) << 3) - (SCREEN_HEIGHT >> 1);
+	unsigned int camMinX = (VAR_BUF_OFFSET << 3) + (SCREEN_WIDTH >> 1);
+	unsigned int camMaxX = ((game.WORLD_WIDTH - VAR_BUF_OFFSET) << 3) - (SCREEN_WIDTH >> 1);
+	unsigned int camMinY = (VAR_BUF_OFFSET << 3) + (SCREEN_HEIGHT >> 1);
+	unsigned int camMaxY = ((game.WORLD_HEIGHT - VAR_BUF_OFFSET) << 3) - (SCREEN_HEIGHT >> 1);
 	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect,
 	img_leaves, img_swing_copper_sword, img_swing_copper_pick, img_deathtext,
-	img_bg_underground, img_sunmoon, img_bg_night;
+	img_bg_underground, img_sunmoon, img_bg_night, img_tile_cracks;
 	bopti_image_t *swingSprite;
 	int camX = min(max(player.props.x + (player.props.width >> 1), camMinX), camMaxX);
 	int camY = min(max(player.props.y + (player.props.height >> 1), camMinY), camMaxY);
@@ -83,6 +83,8 @@ void render()
 	int hour, minute;
 
 	char var;
+
+	struct PickData *heldPickData;
 
 	player.cursorTile.x = (camX + player.cursor.x - (SCREEN_WIDTH >> 1)) >> 3;
 	player.cursorTile.y = (camY + player.cursor.y - (SCREEN_HEIGHT >> 1)) >> 3;
@@ -173,6 +175,21 @@ void render()
 		}
 	}
 
+	if(player.tool.type == TOOL_TYPE_PICK && player.tool.data.pickData.targeted.damage > 0)
+	{
+		heldPickData = &player.tool.data.pickData;
+		subrectX = heldPickData->targeted.crackVar * 9 + 1;
+		subrectY = (int)(4.0 / 100.0 * heldPickData->targeted.damage) * 9 + 1;
+		dsubimage(
+			(heldPickData->targeted.x << 3) - camOffsetX, 
+			(heldPickData->targeted.y << 3) - camOffsetY, 
+			&img_tile_cracks, 
+			subrectX, subrectY, 
+			8, 8, 
+			DIMAGE_NONE
+			);
+	}
+
 	for(int idx = 0; idx < MAX_ENTITIES; idx++)
 	{
 		if(world.entities[idx].id != -1)
@@ -200,7 +217,7 @@ void render()
 		else
 		{
 //			Render top half of swing and bottom half of whatever animation would be playing otherwise
-			entSubrectX = !player.swingDir ? 0 : 16;
+			entSubrectX = player.swingDir ? 16 : 0;
 			dsubimage(entX, entY + 15, &img_player, entSubrectX, entSubrectY + 15, player.props.width + 4, player.props.height - 14, DIMAGE_NONE);
 
 			entSubrectY = (4 - (player.swingFrame >> 3)) * (player.props.height + 2) + 1;

@@ -28,37 +28,36 @@ img_item_chest,
 img_item_door;
 
 const ItemData items[] = {
-//		Sprite				Max			Tile							Swingable?
-	{	&img_item_null,			0,		TILE_NULL,			"Null",			false	},	// ITEM_NULL
-	{	&img_item_stone,		999,	TILE_STONE,			"Stone",		false	},	// ITEM_STONE
-	{	&img_item_dirt,			999,	TILE_DIRT,			"Dirt",			false	},	// ITEM_DIRT
-	{	&img_item_wood,			999,	TILE_WOOD,			"Wood",			false	},	// ITEM_WOOD
-	{	&img_item_wbench,		99,		TILE_WBENCH_L,		"Workbench",	false	},	// ITEM_WORKBENCH
-	{	&img_item_platform,		999,	TILE_PLATFORM,		"Platform",		false	},	// ITEM_PLATFORM
-	{	&img_item_chair,		99,		TILE_CHAIR_L,		"Chair",		false	},	// ITEM_CHAIR
-	{	&img_item_copper_sword,	1,		TILE_NULL,			"Copper Sword",	true	},	// ITEM_COPPER_SWORD
-	{	&img_item_copper_pick,	1,		TILE_NULL,			"Copper Pick",	true	},	// ITEM_COPPER_PICK
-	{	&img_item_gel,			999,	TILE_NULL,			"Gel",			false	},	// ITEM_GEL
-	{	&img_item_torch,		99,		TILE_TORCH,			"Torch",		false	},	// ITEM_TORCH
-	{	&img_item_furnace,		99,		TILE_FURNACE_EDGE,	"Furnace",		false	},	// ITEM_FURNACE
-	{	&img_item_iron_ore,		999,	TILE_IRON_ORE,		"Iron Ore",		false	},	// ITEM_IRON_ORE
-	{	&img_item_iron_bar,		999,	TILE_NULL,			"Iron Bar",		false	},	// ITEM_IRON_BAR
-	{	&img_item_anvil,		99,		TILE_ANVIL_L,		"Anvil",		false	},	// ITEM_ANVIL
-	{	&img_item_chest,		99,		TILE_CHEST_L,		"Chest",		false	},	// ITEM_CHEST
-	{	&img_item_door,			99,		TILE_DOOR_C,		"Door",			false	},	// ITEM_DOOR
+//		Sprite				Max			Tile								Tool type?
+	{	&img_item_null,			0,		TILE_NULL,			"Null",			TOOL_TYPE_NONE	},	// ITEM_NULL
+	{	&img_item_stone,		999,	TILE_STONE,			"Stone",		TOOL_TYPE_NONE	},	// ITEM_STONE
+	{	&img_item_dirt,			999,	TILE_DIRT,			"Dirt",			TOOL_TYPE_NONE	},	// ITEM_DIRT
+	{	&img_item_wood,			999,	TILE_WOOD,			"Wood",			TOOL_TYPE_NONE	},	// ITEM_WOOD
+	{	&img_item_wbench,		99,		TILE_WBENCH_L,		"Workbench",	TOOL_TYPE_NONE	},	// ITEM_WORKBENCH
+	{	&img_item_platform,		999,	TILE_PLATFORM,		"Platform",		TOOL_TYPE_NONE	},	// ITEM_PLATFORM
+	{	&img_item_chair,		99,		TILE_CHAIR_L,		"Chair",		TOOL_TYPE_NONE	},	// ITEM_CHAIR
+	{	&img_item_copper_sword,	1,		TILE_NULL,			"Copper Sword",	TOOL_TYPE_SWORD	},	// ITEM_COPPER_SWORD
+	{	&img_item_copper_pick,	1,		TILE_NULL,			"Copper Pick",	TOOL_TYPE_PICK	},	// ITEM_COPPER_PICK
+	{	&img_item_gel,			999,	TILE_NULL,			"Gel",			TOOL_TYPE_NONE	},	// ITEM_GEL
+	{	&img_item_torch,		99,		TILE_TORCH,			"Torch",		TOOL_TYPE_NONE	},	// ITEM_TORCH
+	{	&img_item_furnace,		99,		TILE_FURNACE_EDGE,	"Furnace",		TOOL_TYPE_NONE	},	// ITEM_FURNACE
+	{	&img_item_iron_ore,		999,	TILE_IRON_ORE,		"Iron Ore",		TOOL_TYPE_NONE	},	// ITEM_IRON_ORE
+	{	&img_item_iron_bar,		999,	TILE_NULL,			"Iron Bar",		TOOL_TYPE_NONE	},	// ITEM_IRON_BAR
+	{	&img_item_anvil,		99,		TILE_ANVIL_L,		"Anvil",		TOOL_TYPE_NONE	},	// ITEM_ANVIL
+	{	&img_item_chest,		99,		TILE_CHEST_L,		"Chest",		TOOL_TYPE_NONE	},	// ITEM_CHEST
+	{	&img_item_door,			99,		TILE_DOOR_C,		"Door",			TOOL_TYPE_NONE	},	// ITEM_DOOR
 };
 
 const struct PickData pickData[NUM_PICKS] = {
 	{.power = 35, .speed = 15, .knockback = 2, .damage = 4}
 };
-const int pickMap[NUM_PICKS][2] = {
-	{ITEM_COPPER_PICK, 0}
-};
 
 const struct SwordData swordData[NUM_SWORDS] = {
 	{.knockback = 5, .damage = 8}
 };
-const int swordMap[NUM_SWORDS][2] = {
+
+const int toolMap[NUM_PICKS + NUM_SWORDS][2] = {
+	{ITEM_COPPER_PICK, 0},
 	{ITEM_COPPER_SWORD, 0}
 };
 

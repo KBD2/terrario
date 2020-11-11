@@ -13,6 +13,7 @@ The inventory menu and API functions.
 #include "menu.h"
 #include "chest.h"
 
+#define NUM_TOOLS NUM_PICKS + NUM_SWORDS
 #define NUM_PICKS 1
 #define NUM_SWORDS 1
 
@@ -39,14 +40,6 @@ enum Items {
 };
 
 typedef struct {
-	bopti_image_t *sprite;
-	int maxStack;
-	short tile;
-	char *name;
-	bool canSwing;
-} ItemData;
-
-typedef struct {
 	enum Items id;
 	int amount;
 } Item;
@@ -56,8 +49,6 @@ struct Chest {
 	int topY;
 	Item items[INVENTORY_SIZE];
 };
-
-extern const ItemData items[];
 
 struct Inventory {
 	Item items[INVENTORY_SIZE];
@@ -78,22 +69,38 @@ struct PickData {
 	int knockback;
 	int damage;
 	int currFramesLeft;
+	struct {
+		int x;
+		int y;
+		int damage;
+		int crackVar;
+	} targeted;
 };
-extern const struct PickData pickData[NUM_PICKS];
-extern const int pickMap[NUM_PICKS][2];
 
 struct SwordData {
 	int knockback;
 	int damage;
 };
+
+extern const int toolMap[NUM_TOOLS][2];
+extern const struct PickData pickData[NUM_PICKS];
 extern const struct SwordData swordData[NUM_SWORDS];
-extern const int swordMap[NUM_SWORDS][2];
 
 enum ToolTypes {
 	TOOL_TYPE_NONE = -1,
 	TOOL_TYPE_SWORD,
 	TOOL_TYPE_PICK
 };
+
+typedef struct {
+	bopti_image_t *sprite;
+	int maxStack;
+	int tile;
+	char *name;
+	enum ToolTypes type;
+} ItemData;
+
+extern const ItemData items[];
 
 struct PlayerTool {
 	enum ToolTypes type;

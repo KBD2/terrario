@@ -30,7 +30,7 @@ typedef struct {
 struct EntityDrops {
 	int num;
 
-	const Drop* dropList;
+	const Drop *dropList;
 };
 
 struct Coords {
@@ -44,8 +44,8 @@ struct Rect {
 };
 
 struct EntityPhysicsProps {
-	unsigned char width;
-	unsigned char height;
+	int width;
+	int height;
 	int x;
 	int y;
 	float xVel;
