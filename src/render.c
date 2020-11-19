@@ -45,7 +45,7 @@ void render()
 	unsigned int camMaxX = ((game.WORLD_WIDTH - VAR_BUF_OFFSET) << 3) - (SCREEN_WIDTH >> 1);
 	unsigned int camMinY = (VAR_BUF_OFFSET << 3) + (SCREEN_HEIGHT >> 1);
 	unsigned int camMaxY = ((game.WORLD_HEIGHT - VAR_BUF_OFFSET) << 3) - (SCREEN_HEIGHT >> 1);
-	extern bopti_image_t img_player, img_cursor, img_hotbar, img_hotbarselect,
+	extern bopti_image_t img_player, img_cursor, img_slots, img_slot_highlight,
 	img_leaves, img_swing_copper_sword, img_swing_copper_pick, img_deathtext,
 	img_bg_underground, img_sunmoon, img_bg_night, img_tile_cracks;
 	bopti_image_t *swingSprite;
@@ -260,8 +260,8 @@ void render()
 
 	if(player.inventory.ticksSinceInteracted < 120)
 	{
-		dimage(0, 0, &img_hotbar);
-		dimage(16 * player.inventory.hotbarSlot, 0, &img_hotbarselect);
+		dsubimage(0, 0, &img_slots, 0, 0, 80, 17, DIMAGE_NOCLIP);
+		dimage(16 * player.inventory.hotbarSlot, 0, &img_slot_highlight);
 		for(int slot = 0; slot < 5; slot++)
 		{
 			item = player.inventory.items[slot];

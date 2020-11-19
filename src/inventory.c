@@ -147,7 +147,7 @@ int inventoryKeyFilter(int key, GUNUSED int duration, GUNUSED int count)
 
 void inventoryMenu(struct Chest* chest)
 {
-	extern bopti_image_t img_inventory, img_cursor, img_inventory_hotbar, img_inventory_tabs;
+	extern bopti_image_t img_slots, img_slot_highlight, img_cursor, img_inventory_tabs;
 	Item *item;
 	int hoverSlot;
 	int cursorX = 64, cursorY = 32;
@@ -170,8 +170,11 @@ void inventoryMenu(struct Chest* chest)
 		}
 
 //		Render all items in the tabbed storage
-		dimage(0, 0, &img_inventory);
-		if(!tab) dimage(0, 0, &img_inventory_hotbar);
+		dimage(0, 0, &img_slots);
+		if(!tab)
+		{
+			for(int slot = 0; slot < 5; slot++) dimage(16 * slot, 0, &img_slot_highlight);
+		}
 		for(int slot = 0; slot < INVENTORY_SIZE; slot++)
 		{
 			item = tab ? &chest->items[slot] : &player.inventory.items[slot];

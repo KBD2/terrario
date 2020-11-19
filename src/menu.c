@@ -391,7 +391,7 @@ void aboutMenu()
 	int scroll = 0;
 	bool ingredients = false;
 	int ingredientsScroll = 0;
-	extern bopti_image_t img_confetti, img_arrowshoriz, img_arrowsall, img_abouttabs, img_hotbarselect, img_slot;
+	extern bopti_image_t img_confetti, img_arrowshoriz, img_arrowsall, img_abouttabs, img_slot_highlight, img_slot;
 	key_event_t key;
 	extern font_t font_smalltext;
 	enum MenuTabs menu = MENU_ABOUT;
@@ -436,10 +436,10 @@ void aboutMenu()
 					dimage(17 * dI, 24, &img_slot);
 					renderItem(17 * dI + 1, 25, (Item *)&recipes[scroll].ingredients[dI]);
 				}
-				if(!ingredients) dimage(0, 0, &img_hotbarselect);
+				if(!ingredients) dimage(0, 0, &img_slot_highlight);
 				else
 				{
-					dimage(17 * ingredientsScroll, 24, &img_hotbarselect);
+					dimage(17 * ingredientsScroll, 24, &img_slot_highlight);
 					dtext(0, 42, C_BLACK, items[recipes[scroll].ingredients[ingredientsScroll].id].name);
 				}
 				break;

@@ -149,14 +149,17 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames)
 	int xMax = (game.WORLD_WIDTH << 3) - self->width;
 	int yMax = (game.WORLD_HEIGHT << 3) - self->height;
 
+#ifndef DEBUGMODE
+	self->y++;
 	self->yVel = min(max(-4, self->yVel + GRAVITY_ACCEL), 4);
+#endif
 	if(abs(self->xVel) < 0.1) self->xVel = 0;
 	if(abs(self->xVel) < 1 && frames % (int)roundf(1.0 / self->xVel) == 0) self->x += 1 * sgn(self->xVel);
 	else self->x += roundf(self->xVel);
 	if(abs(self->yVel) < 1 && frames % (int)roundf(1.0 / self->yVel) == 0) self->y += 1 * sgn(self->yVel);
 	else self->y += roundf(self->yVel);
-	self->y++;
 
+#ifndef DEBUGMODE
 	self->touchingTileTop = false;
 	for(int y = tileCheckBox.TL.y; y <= tileCheckBox.BR.y; y++)
 	{
@@ -217,10 +220,16 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames)
 			}
 		}
 	}
+#endif
 
 //	Friction
+#ifndef DEBUGMODE
 	if(self->touchingTileTop) self->xVel *= 0.7;
 	else self->xVel *= 0.95;
+#else
+	self->xVel *= 0.7;
+	self->yVel *= 0.7;
+#endif
 
 	if(self->x < 0 || self->x > xMax)
 	{
