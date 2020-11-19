@@ -9,3 +9,8 @@ If you want to build this project yourself, you need a few dependencies.
 - The SuperH port of Newlib installed
 
 [Here's a link with more info.](https://www.planet-casio.com/Fr/forums/topic13164-1-fxsdk-un-sdk-alternatif-pour-ecrire-des-add-ins.html)
+
+### Licenses
+The source code in this repository is under the MIT license.
+The image assets in this repository are under the CC BY 4.0 license.
+See LICENSE.txt for more details.
