@@ -117,7 +117,7 @@ void gameLoop(volatile int *flag)
 		}
 		if(renderThisFrame)
 		{
-			render();
+			render(true);
 			dupdate();
 			renderThisFrame = false;
 		}
@@ -325,7 +325,9 @@ int main(void)
 	Bfile_GetMediaFree_OS(u"\\\\fls0", mediaFree);
 	if(mediaFree[1] < 350000) lowSpaceMenu(mediaFree[1]);
 
+#ifndef DEBUGMODE
 	gint_switch(&JumpOptimising);
+#endif
 
 	return 1;
 }

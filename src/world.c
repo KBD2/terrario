@@ -221,6 +221,12 @@ bool place3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle, bo
 {
 	int xTemp;
 
+//	Place the middle
+	for(int dY = 0; dY < height; dY++)
+	{
+		setTile(x + 1, y + dY, middle);
+		setVar(x + 1, y + dY);
+	}
 //	Place the edges
 	if(!checkArea(x, y, 3, height, support)) return false;
 	for(int side = 0; side != 2; side++)
@@ -232,13 +238,6 @@ bool place3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle, bo
 			regionChange(xTemp, y + dY);
 			setVar(xTemp, y + dY);
 		}
-	}
-//	Place the middle
-	x++;
-	for(int dY = 0; dY < height; dY++)
-	{
-		setTile(x, y + dY, middle);
-		setVar(x, y + dY);
 	}
 	return true;
 }

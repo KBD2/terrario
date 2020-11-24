@@ -39,7 +39,7 @@ void renderItem(int x, int y, Item *item)
 	else dimage(x + 3, y + 3, items[item->id].sprite);
 }
 
-void render()
+void render(bool renderHUD)
 {
 	unsigned int camMinX = (VAR_BUF_OFFSET << 3) + (SCREEN_WIDTH >> 1);
 	unsigned int camMaxX = ((game.WORLD_WIDTH - VAR_BUF_OFFSET) << 3) - (SCREEN_WIDTH >> 1);
@@ -248,7 +248,7 @@ void render()
 			dsubimage(entX, entY, swingSprite, entSubrectX, entSubrectY, 16, 16, DIMAGE_NONE);
 		}
 
-		dimage(player.cursor.x - 2, player.cursor.y - 2, &img_cursor);
+		if(renderHUD) dimage(player.cursor.x - 2, player.cursor.y - 2, &img_cursor);
 	}
 
 	if(world.explosion.numParticles > 0)
@@ -269,17 +269,21 @@ void render()
 		}
 	}
 
-	sprintf(buf, "%i HP", player.combat.health);
-	dsize(buf, NULL, &width, NULL);
-	dtext_opt(128 - width, 0, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, buf);
-
-	getTime(&hour, &minute);
-	dprint_opt(128, 6, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "%02d:%02d", hour, minute);
-
-	if(player.combat.health <= 0)
+	if(renderHUD)
 	{
-		dimage(32, 26, &img_deathtext);
+		sprintf(buf, "%i HP", player.combat.health);
+		dsize(buf, NULL, &width, NULL);
+		dtext_opt(128 - width, 0, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, buf);
+
+		getTime(&hour, &minute);
+		dprint_opt(128, 6, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "%02d:%02d", hour, minute);
+
+		if(player.combat.health <= 0)
+		{
+			dimage(32, 26, &img_deathtext);
+		}
 	}
+
 }
 
 void takeVRAMCapture()

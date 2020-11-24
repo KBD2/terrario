@@ -50,8 +50,16 @@ struct Chest {
 	Item items[INVENTORY_SIZE];
 };
 
+enum ArmourSlots {
+	ARMOUR_HELMET,
+	ARMOUR_TORSO,
+	ARMOUR_PANTS
+};
+
 struct Inventory {
 	Item items[INVENTORY_SIZE];
+	Item armour[3];
+	Item accessories[5];
 	int hotbarSlot;
 	int ticksSinceInteracted;
 
@@ -89,7 +97,9 @@ extern const struct SwordData swordData[NUM_SWORDS];
 enum ToolTypes {
 	TOOL_TYPE_NONE = -1,
 	TOOL_TYPE_SWORD,
-	TOOL_TYPE_PICK
+	TOOL_TYPE_PICK,
+	TOOL_TYPE_ACCESSORY,
+	TOOL_TYPE_ARMOUR
 };
 
 typedef struct {

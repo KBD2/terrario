@@ -32,8 +32,10 @@ extern char varBuffer[VAR_BUF_HEIGHT][VAR_BUF_WIDTH];
 
 /* render
 Renders the world using a calculated camera position and a HUD.
+
+renderHUD: Whether to render the HUD.
 */
-void render();
+void render(bool renderHUD);
 
 /* takeVRAMCapture
 Stores the state of the drawing VRAMS to capt.vram.

@@ -108,6 +108,8 @@ void saveGame()
 	struct PlayerSave playerSave;
 	playerSave.health = player.combat.health;
 	memcpy(playerSave.items, player.inventory.items, INVENTORY_SIZE * sizeof(Item));
+	memcpy(playerSave.accessories, player.inventory.accessories, 5 * sizeof(Item));
+	memcpy(playerSave.armour, player.inventory.armour, 3 * sizeof(Item));
 	BFile_Remove(playerPath);
 	BFile_Create(playerPath, BFile_File, &playerSaveSize);
 	descriptor = BFile_Open(playerPath, BFile_WriteOnly);
@@ -233,6 +235,8 @@ void loadSave()
 
 	player.combat.health = playerSave.health;
 	memcpy(player.inventory.items, playerSave.items, INVENTORY_SIZE * sizeof(Item));
+	memcpy(player.inventory.accessories, playerSave.accessories, 5 * sizeof(Item));
+	memcpy(player.inventory.armour, playerSave.armour, 3 * sizeof(Item));
 
 	for(int y = 0; y < save.regionsY; y++)
 	{

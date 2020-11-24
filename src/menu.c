@@ -391,7 +391,7 @@ void aboutMenu()
 	int scroll = 0;
 	bool ingredients = false;
 	int ingredientsScroll = 0;
-	extern bopti_image_t img_confetti, img_arrowshoriz, img_arrowsall, img_abouttabs, img_slot_highlight, img_slot;
+	extern bopti_image_t img_confetti, img_arrowshoriz, img_arrowsall, img_abouttabs, img_slot_highlight, img_slots;
 	key_event_t key;
 	extern font_t font_smalltext;
 	enum MenuTabs menu = MENU_ABOUT;
@@ -425,7 +425,7 @@ void aboutMenu()
 				dimage(112, 54, &img_arrowsall);
 				for(int dR = 0; dR < 8 && scroll + dR < numRecipes; dR++)
 				{
-					dimage(17 * dR, 0, &img_slot);
+					dsubimage(17 * dR, 0, &img_slots, 0, 0, 16, 17, DIMAGE_NONE);
 					renderItem(17 * dR + 1, 1, (Item *)&recipes[scroll + dR].result);
 				}
 				if(recipes[scroll].required == TILE_NULL) workbench = "anywhere";
@@ -433,7 +433,7 @@ void aboutMenu()
 				dprint(0, 18, C_BLACK, "%s at %s", items[recipes[scroll].result.id].name, workbench);
 				for(int dI = 0; dI < recipes[scroll].numIngredients; dI++)
 				{
-					dimage(17 * dI, 24, &img_slot);
+					dsubimage(17 * dI, 24, &img_slots, 0, 0, 16, 17, DIMAGE_NONE);
 					renderItem(17 * dI + 1, 25, (Item *)&recipes[scroll].ingredients[dI]);
 				}
 				if(!ingredients) dimage(0, 0, &img_slot_highlight);
