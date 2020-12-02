@@ -31,12 +31,15 @@ const int swingHandleDeltaPositions[4][2] = {
 
 void renderItem(int x, int y, Item *item)
 {
-	
+	extern bopti_image_t img_items;
+	int subrectX = (item->id & 0xF) * 9 + 1;
+	int subrectY = (item->id >> 4) * 9 + 1;
+
 	if(items[item->id].maxStack > 1) {
 		dprint(x + 1, y + 9, C_BLACK, "%i", item->amount);
-		dimage(x + 3, y, items[item->id].sprite);
+		dsubimage(x + 3, y, &img_items, subrectX, subrectY, 8, 8, DIMAGE_NONE);
 	}
-	else dimage(x + 3, y + 3, items[item->id].sprite);
+	else dsubimage(x + 3, y + 3, &img_items, subrectX, subrectY, 8, 8, DIMAGE_NONE);
 }
 
 void render(bool renderHUD)
@@ -71,9 +74,6 @@ void render(bool renderHUD)
 	int entX, entY;
 	int entSubrectX, entSubrectY;
 	Entity *ent;
-
-	char buf[10];
-	int width;
 
 	Item item;
 
@@ -271,9 +271,7 @@ void render(bool renderHUD)
 
 	if(renderHUD)
 	{
-		sprintf(buf, "%i HP", player.combat.health);
-		dsize(buf, NULL, &width, NULL);
-		dtext_opt(128 - width, 0, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, buf);
+		dprint_opt(128, 0, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "%i HP", player.combat.health);
 
 		getTime(&hour, &minute);
 		dprint_opt(128, 6, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "%02d:%02d", hour, minute);

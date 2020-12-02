@@ -302,6 +302,9 @@ int main(void)
 	timer_start(timer);
 
 	fillVarBuffer(0, 0, VAR_BUF_WIDTH, VAR_BUF_HEIGHT);
+	
+	registerEquipment();
+	registerHeld();
 
 	// Do the game
 	gameLoop(&flag);

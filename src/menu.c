@@ -75,77 +75,11 @@ int mainMenu()
 				if(selected == 1 && !validSave) selected++;
 				break;
 			
-			case KEY_ACON:
-				debugMenu();
-				break;
-			
 			default:
 				break;
 		}
 
 		selected = min(max(selected, 0), 2);
-	}
-}
-
-void debugMenu()
-{
-	int selected = 0;
-	int which = 0;
-	key_event_t key;
-
-	memset(save.tileData, 0, game.WORLD_WIDTH * game.WORLD_HEIGHT);
-
-	while(true)
-	{
-		dclear(C_WHITE);
-		if(which == 0)
-		{
-			dimage(0, 9, tiles[selected].sprite);
-			if(tiles[selected].spriteType == TYPE_SHEET || tiles[selected].spriteType == TYPE_SHEET_VAR)
-			{
-				for(int y = 0; y < 5; y++) dhline(y * 9 + 9, C_WHITE);
-			}
-			for(int variant = 0; variant < 3; variant++)
-			{
-				for(int x = 0; x < 5; x++) dvline(x * 9 + variant * 37, C_WHITE);
-			}
-			dprint(0, 0, C_BLACK, "Tile %s", tiles[selected].name);
-		}
-		else
-		{
-			dprint(0, 0, C_BLACK, "Item %s", items[selected].name);
-			dimage(0, 8, items[selected].sprite);
-		}
-		dupdate();
-		while(true)
-		{
-			key = getkey_opt(GETKEY_NONE, NULL);
-			if(key.type == KEYEV_DOWN) break;
-		}
-		switch(key.key)
-		{
-			case KEY_EXIT:
-				return;
-			
-			case KEY_LEFT:
-				selected--;
-				if(which == 0 && selected < 0) selected = TILES_COUNT - 1;
-				if(which == 1 && selected < 0) selected = ITEMS_COUNT - 1;
-				break;
-			case KEY_RIGHT:
-				selected++;
-				if(which == 0 && selected == TILES_COUNT) selected = 0;
-				if(which == 1 && selected == ITEMS_COUNT) selected = 0;
-				break;
-			
-			case KEY_SHIFT:
-				which = !which;
-				selected = 0;
-				break;
-			
-			default:
-				break;
-		}
 	}
 }
 
@@ -311,6 +245,61 @@ void incompatibleMenu(int code)
 				return;
 			
 			default:
+				break;
+		}
+	}
+}
+
+void itemMenu()
+{
+	key_event_t key;
+	extern bopti_image_t img_slots;
+	Item item = {ITEM_STONE, 1};
+	int slot;
+
+	while(1)
+	{
+		dclear(C_WHITE);
+		dsubimage(0, 0, &img_slots, 0, 0, 16, 17, DIMAGE_NONE);
+		renderItem(1, 1, &item);
+		dtext(0, 17, C_BLACK, items[item.id].name);
+		dupdate();
+
+		key = getkey_opt(GETKEY_REP_ARROWS, NULL);
+		switch(key.key)
+		{
+			case KEY_EXIT:
+				return;
+			
+			case KEY_EXE:
+				while(item.amount > 0)
+				{
+					slot = player.inventory.getFirstFreeSlot(item.id);
+					if(slot > -1) player.inventory.stackItem(&player.inventory.items[slot], &item);
+					else return;
+				}
+				return;
+			
+			case KEY_UP:
+				item.amount++;
+				if(item.amount > items[item.id].maxStack) item.amount = 1;
+				break;
+			
+			case KEY_DOWN:
+				item.amount--;
+				if(item.amount == 0) item.amount = items[item.id].maxStack;
+				break;
+			 
+			 case KEY_LEFT:
+			 	if(item.id == ITEM_STONE) item.id = ITEMS_COUNT - 1;
+				else item.id--;
+				if(item.amount > items[item.id].maxStack) item.amount = items[item.id].maxStack;
+				break;
+			
+			case KEY_RIGHT:
+				if(item.id == ITEMS_COUNT - 1) item.id = ITEM_STONE;
+				else item.id++;
+				if(item.amount > items[item.id].maxStack) item.amount = items[item.id].maxStack;
 				break;
 		}
 	}

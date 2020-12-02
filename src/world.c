@@ -221,6 +221,7 @@ bool place3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle, bo
 {
 	int xTemp;
 
+	if(!checkArea(x, y, 3, height, support)) return false;
 //	Place the middle
 	for(int dY = 0; dY < height; dY++)
 	{
@@ -228,7 +229,6 @@ bool place3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle, bo
 		setVar(x + 1, y + dY);
 	}
 //	Place the edges
-	if(!checkArea(x, y, 3, height, support)) return false;
 	for(int side = 0; side != 2; side++)
 	{
 		for(int dY = 0; dY < height; dY++)
@@ -252,7 +252,7 @@ void break3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle)
 		if(getTile(x - 1, y).id == middle) x -= 2;
 	}
 	else x--;
-	while(getTile(x, y).id != edge) y--;
+	while(getTile(x, y - 1).id == edge) y--;
 
 	for(int dY = 0; dY < height; dY++)
 	{
@@ -385,8 +385,10 @@ void placeTile(int x, int y, Item *item)
 			if(success)
 			{
 				regionChange(x, y);
+#ifndef DEBUGMODE
 				item->amount--;
 				if(item->amount == 0) *item = (Item){ITEM_NULL, 0};
+#endif
 			}
 		}
 	}

@@ -13,9 +13,9 @@ The inventory menu and API functions.
 #include "menu.h"
 #include "chest.h"
 
-#define NUM_TOOLS NUM_PICKS + NUM_SWORDS
-#define NUM_PICKS 1
-#define NUM_SWORDS 1
+#define NUM_PICKS 2
+#define NUM_SWORDS 2
+#define NUM_ARMOUR 6
 
 enum Items {
 	ITEM_NULL,
@@ -35,6 +35,14 @@ enum Items {
 	ITEM_ANVIL,
 	ITEM_CHEST,
 	ITEM_DOOR,
+	ITEM_IRON_HELMET,
+	ITEM_IRON_CHAINMAIL,
+	ITEM_IRON_GREAVES,
+	ITEM_WOOD_HELMET,
+	ITEM_WOOD_BREASTPLATE,
+	ITEM_WOOD_GREAVES,
+	ITEM_IRON_SWORD,
+	ITEM_IRON_PICK,
 
 	ITEMS_COUNT
 };
@@ -72,6 +80,7 @@ struct Inventory {
 };
 
 struct PickData {
+	enum Items item;
 	int power;
 	int speed;
 	int knockback;
@@ -86,24 +95,31 @@ struct PickData {
 };
 
 struct SwordData {
+	enum Items item;
 	int knockback;
 	int damage;
 };
 
-extern const int toolMap[NUM_TOOLS][2];
+struct ArmourData {
+	enum Items item;
+	int defense;
+};
+
 extern const struct PickData pickData[NUM_PICKS];
 extern const struct SwordData swordData[NUM_SWORDS];
+extern const struct ArmourData armourData[NUM_ARMOUR];
 
 enum ToolTypes {
 	TOOL_TYPE_NONE = -1,
 	TOOL_TYPE_SWORD,
 	TOOL_TYPE_PICK,
 	TOOL_TYPE_ACCESSORY,
-	TOOL_TYPE_ARMOUR
+	TOOL_TYPE_HELMET,
+	TOOL_TYPE_TORSO,
+	TOOL_TYPE_PANTS
 };
 
 typedef struct {
-	bopti_image_t *sprite;
 	int maxStack;
 	int tile;
 	char *name;
@@ -179,3 +195,13 @@ The inventory menu.
 chest: Pointer to a chest, can be NULL.
 */
 void inventoryMenu(struct Chest* chest);
+
+/* registerEquipment
+Applies all effects of armour and equipment on the player.
+*/
+void registerEquipment();
+
+/* registerHeld
+Updates tool data for the held tool.
+*/
+void registerHeld();

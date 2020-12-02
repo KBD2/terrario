@@ -20,7 +20,6 @@ enum UpdateReturnCodes keyboardUpdate()
 	key_event_t key;
 	enum Tiles tile;
 	bool playerDead =  player.combat.health <= 0;
-	int currID;
 	struct Chest* chest;
 	struct PickData *heldPickData;
 	
@@ -69,29 +68,8 @@ enum UpdateReturnCodes keyboardUpdate()
 			case KEY_F1: case KEY_F2: case KEY_F3: case KEY_F4: case KEY_F5:
 				player.inventory.ticksSinceInteracted = 0;
 				if(player.swingFrame == 0 && !playerDead) player.inventory.hotbarSlot = keycode_function(key.key) - 1;
-				currID = player.inventory.getSelected()->id;
-				switch(items[currID].type)
-				{
-					case TOOL_TYPE_PICK:
-						player.tool.type = TOOL_TYPE_PICK;
-						for(int i = 0; i < NUM_TOOLS; i++)
-						{
-							if(toolMap[i][0] == currID) player.tool.data.pickData = pickData[toolMap[i][1]];
-						}
-						break;
-					
-					case TOOL_TYPE_SWORD:
-						player.tool.type = TOOL_TYPE_SWORD;
-						for(int i = 0; i < NUM_TOOLS; i++)
-						{
-							if(toolMap[i][0] == currID) player.tool.data.swordData = swordData[toolMap[i][1]];
-						}
-						break;
-					
-					default:
-						player.tool.type = TOOL_TYPE_NONE;
-						break;
-				}
+//				Updates held tool data
+				registerHeld();
 				break;
 
 			case KEY_MENU:
@@ -220,6 +198,8 @@ enum UpdateReturnCodes keyboardUpdate()
 		player.cursor.y = min(max(0, player.cursor.y), SCREEN_HEIGHT - 1);
 	}
 
+	if(keydown_all(KEY_XOT, KEY_EXP, 0)) itemMenu();
+
 	return UPDATE_CONTINUE;
 }
 
@@ -259,7 +239,7 @@ void playerUpdate(int frames)
 		{
 			if(player.pixelsFallen >> 3 > 25)
 			{
-				damage = max(1, 10 * ((player.pixelsFallen >> 3) - 25) - player.combat.defense / 2);
+				damage = max(1, 10 * ((player.pixelsFallen >> 3) - 25) - ceil((float)player.combat.defense / 2));
 				player.combat.health = max(0, player.combat.health - damage);
 				player.combat.currImmuneFrames = player.combat.immuneFrames;
 				player.ticksSinceHit = 0;

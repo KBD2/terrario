@@ -71,3 +71,8 @@ void saveVersionDifferenceMenu(char *saveVersion);
 A menu to inform the player that they cannot use this version of the addin.
 */
 void incompatibleMenu();
+
+/* itemMenu
+A debug menu.
+*/
+void itemMenu();

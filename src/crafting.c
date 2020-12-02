@@ -18,17 +18,26 @@ bool *tilesBuffer = NULL;
 short *craftableRecipes = NULL;
 
 const struct Recipe recipes[] = {
-//		Workbench			Result				N	Ingredient list
-	{	TILE_NULL,			{ITEM_PLATFORM, 2},	1,	(const Item[]){ {ITEM_WOOD, 1}										}	},
-	{	TILE_NULL,			{ITEM_WOOD, 1},		1,	(const Item[]){ {ITEM_PLATFORM, 2}									}	},
-	{	TILE_NULL,			{ITEM_WBENCH, 1},	1,	(const Item[]){ {ITEM_WOOD,	10}										}	},
-	{	TILE_WBENCH_L,		{ITEM_CHAIR, 1},	1,	(const Item[]){ {ITEM_WOOD, 4}										}	},
-	{	TILE_NULL,			{ITEM_TORCH, 3},	2,	(const Item[]){ {ITEM_WOOD, 1},		{ITEM_GEL, 1}					}	},
-	{	TILE_WBENCH_L,		{ITEM_FURNACE, 1},	3,	(const Item[]){ {ITEM_STONE, 20}, 	{ITEM_WOOD, 4}, {ITEM_TORCH, 3}	}	},
-	{	TILE_FURNACE_MID,	{ITEM_IRON_BAR, 1}, 1,	(const Item[]){ {ITEM_IRON_ORE, 3}									}	},
-	{	TILE_WBENCH_L,		{ITEM_ANVIL, 1},	1,	(const Item[]){ {ITEM_IRON_BAR, 5}									}	},
-	{	TILE_WBENCH_L,		{ITEM_CHEST, 1},	2,	(const Item[]){ {ITEM_WOOD, 8},	{ITEM_IRON_BAR, 2}					}	},
-	{	TILE_WBENCH_L,		{ITEM_DOOR, 1},		1,	(const Item[]){ {ITEM_WOOD, 6},										}	},
+//		Workbench			Result						N	Ingredient list
+	{	TILE_NULL,			{ITEM_PLATFORM, 2},			1,	(const Item[]){ {ITEM_WOOD, 1}												}	},
+	{	TILE_NULL,			{ITEM_WOOD, 1},				1,	(const Item[]){ {ITEM_PLATFORM, 2}											}	},
+	{	TILE_NULL,			{ITEM_WBENCH, 1},			1,	(const Item[]){ {ITEM_WOOD,	10}												}	},
+	{	TILE_WBENCH_L,		{ITEM_CHAIR, 1},			1,	(const Item[]){ {ITEM_WOOD, 4}												}	},
+	{	TILE_NULL,			{ITEM_TORCH, 3},			2,	(const Item[]){ {ITEM_WOOD, 1},			{ITEM_GEL, 1}						}	},
+	{	TILE_WBENCH_L,		{ITEM_FURNACE, 1},			3,	(const Item[]){ {ITEM_STONE, 20},		{ITEM_WOOD, 4},		{ITEM_TORCH, 3}	}	},
+	{	TILE_FURNACE_MID,	{ITEM_IRON_BAR, 1}, 		1,	(const Item[]){ {ITEM_IRON_ORE, 3}											}	},
+	{	TILE_WBENCH_L,		{ITEM_ANVIL, 1},			1,	(const Item[]){ {ITEM_IRON_BAR, 5}											}	},
+	{	TILE_WBENCH_L,		{ITEM_CHEST, 1},			2,	(const Item[]){ {ITEM_WOOD, 8},			{ITEM_IRON_BAR, 2}					}	},
+	{	TILE_WBENCH_L,		{ITEM_DOOR, 1},				1,	(const Item[]){ {ITEM_WOOD, 6}												}	},
+// Iron armour cost is about 50% of original
+	{	TILE_ANVIL_L,		{ITEM_IRON_HELMET, 1},		1,	(const Item[]){ {ITEM_IRON_BAR, 8}											}	},//15
+	{	TILE_ANVIL_L,		{ITEM_IRON_CHAINMAIL, 1},	1,	(const Item[]){ {ITEM_IRON_BAR, 16}											}	},//25
+	{	TILE_ANVIL_L,		{ITEM_IRON_GREAVES, 1},		1,	(const Item[]){ {ITEM_IRON_BAR, 10}											}	},//20
+	{	TILE_WBENCH_L,		{ITEM_WOOD_HELMET, 1},		1,	(const Item[]){ {ITEM_WOOD, 20}												}	},
+	{	TILE_WBENCH_L,		{ITEM_WOOD_BREASTPLATE, 1},	1,	(const Item[]){ {ITEM_WOOD, 30}												}	},
+	{	TILE_WBENCH_L,		{ITEM_WOOD_GREAVES, 1},		1,	(const Item[]){ {ITEM_WOOD, 25}												}	},
+	{	TILE_ANVIL_L,		{ITEM_IRON_SWORD, 1},		1,	(const Item[]){ {ITEM_IRON_BAR, 8}											}	},
+	{	TILE_ANVIL_L,		{ITEM_IRON_PICK, 1},		2,	(const Item[]){ {ITEM_IRON_BAR, 12},	{ITEM_WOOD, 3}						}	}
 };
 
 const int numRecipes = sizeof(recipes) / sizeof(struct Recipe);
@@ -176,6 +185,7 @@ void craftingMenu()
 				if(currCraftable == -1) break;
 				if(key.type == KEYEV_HOLD && crafting != recipes[currCraftable].result.id) break;
 				crafting = recipes[currCraftable].result.id;
+#ifndef DEBUGMODE
 				for(int i = 0; i < recipes[currCraftable].numIngredients; i++)
 				{
 					currIngredient = &recipes[currCraftable].ingredients[i];
@@ -195,6 +205,7 @@ void craftingMenu()
 						}
 					}
 				}
+#endif
 				result = recipes[currCraftable].result;
 				while(result.id != ITEM_NULL)
 				{
