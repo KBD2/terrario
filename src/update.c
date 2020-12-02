@@ -58,10 +58,18 @@ enum UpdateReturnCodes keyboardUpdate()
 				break;
 			
 			case KEY_8:
-				if(key.type == KEYEV_DOWN && player.props.touchingTileTop) 
+				if(key.type == KEYEV_DOWN) 
 				{
-					player.props.yVel = -4.5;
-					player.props.dropping = true;
+					if(player.props.touchingTileTop || (player.bonuses.doubleJump && !player.bonuses.hasDoubleJumped))
+					{
+						player.props.yVel = -4.5;
+						player.props.dropping = true;
+						if(!player.props.touchingTileTop && player.bonuses.doubleJump)
+						{
+							player.bonuses.hasDoubleJumped = true;
+							createExplosion(&world.explosion, player.props.x + (player.props.width >> 1), player.props.y + player.props.height);
+						}
+					}
 				}
 				break;
 			
@@ -231,6 +239,8 @@ void playerUpdate(int frames)
 	player.props.y = min(max(minY, player.props.y), maxY);
 	if(player.props.y == maxY) player.props.touchingTileTop = true;
 
+	if(player.props.touchingTileTop && player.bonuses.doubleJump) player.bonuses.hasDoubleJumped = false;
+
 	if(player.props.yVel < 0) player.pixelsFallen = 0;
 	else
 	{
@@ -239,7 +249,7 @@ void playerUpdate(int frames)
 		{
 			if(player.pixelsFallen >> 3 > 25)
 			{
-				damage = max(1, 10 * ((player.pixelsFallen >> 3) - 25) - ceil((float)player.combat.defense / 2));
+				damage = max(1, 10 * ((player.pixelsFallen >> 3) - 25) - ceil((float)(player.combat.defense + player.bonuses.defense) / 2));
 				player.combat.health = max(0, player.combat.health - damage);
 				player.combat.currImmuneFrames = player.combat.immuneFrames;
 				player.ticksSinceHit = 0;

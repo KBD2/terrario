@@ -80,7 +80,13 @@ bool slimeBehaviour(struct EntityBase *self, int frames)
 
 // ZOMBIES
 
-const struct EntityDrops zombieDrops = { 0 };
+const struct EntityDrops zombieDrops = {
+	.num = 1,
+	.dropList = (const Drop[]){
+//		 Item			Min Max Low Hi
+		{ITEM_SHACKLE,	1,	1,	1,	1}
+	}
+};
 
 bool zombieBehaviour(struct EntityBase *self, int frames)
 {
@@ -263,6 +269,7 @@ void attack(Entity *entity, bool isPlayerAttacking)
 {
 	struct EntityPhysicsProps *attackerProps, *defenderProps;
 	struct Combat *attackerCombat, *defenderCombat;
+	float defense = isPlayerAttacking ? entity->combat.defense : player.combat.defense + player.bonuses.defense;
 
 	attackerProps = isPlayerAttacking ? &player.props : &entity->props;
 	attackerCombat = isPlayerAttacking ? &player.combat : &entity->combat;
@@ -270,7 +277,7 @@ void attack(Entity *entity, bool isPlayerAttacking)
 	defenderProps = isPlayerAttacking ? &entity->props : &player.props;
 	defenderCombat = isPlayerAttacking ? &entity->combat : &player.combat;
 
-	defenderCombat->health -= (attackerCombat->attack - ceil((float)defenderCombat->defense / 2));
+	defenderCombat->health -= (attackerCombat->attack - ceil(defense / 2));
 	defenderCombat->health = max(0, defenderCombat->health);
 
 	defenderCombat->currImmuneFrames = defenderCombat->immuneFrames;

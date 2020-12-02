@@ -263,6 +263,11 @@ void itemMenu()
 		dsubimage(0, 0, &img_slots, 0, 0, 16, 17, DIMAGE_NONE);
 		renderItem(1, 1, &item);
 		dtext(0, 17, C_BLACK, items[item.id].name);
+		dtext_opt(127, 0, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "F1: Day");
+		dtext_opt(127, 6, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "F2: Night");
+		dtext_opt(127, 12, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "F3: Heal");
+		dtext_opt(127, 18, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "F4: Butcher");
+		dtext_opt(127, 24, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "F5: Save");
 		dupdate();
 
 		key = getkey_opt(GETKEY_REP_ARROWS, NULL);
@@ -301,6 +306,26 @@ void itemMenu()
 				else item.id++;
 				if(item.amount > items[item.id].maxStack) item.amount = items[item.id].maxStack;
 				break;
+			
+			case KEY_F1:
+				world.timeTicks = timeToTicks(4, 30);
+				return;
+			
+			case KEY_F2:
+				world.timeTicks = timeToTicks(19, 30);
+				return;
+			
+			case KEY_F3:
+				player.combat.health = player.maxHealth;
+				return;
+			
+			case KEY_F4:
+				for(int idx = 0; idx < MAX_ENTITIES; idx++) world.entities[idx].id = -1;
+				return;
+			
+			case KEY_F5:
+				gint_switch(&saveGame);
+				return;
 			
 			default:
 				break;

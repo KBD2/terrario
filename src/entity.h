@@ -108,6 +108,8 @@ typedef struct EntityBase Entity;
 
 struct AccessoryBonuses {
 	int defense;
+	bool doubleJump;
+	bool hasDoubleJumped;
 };
 
 struct Player {
@@ -118,6 +120,7 @@ struct Player {
 	struct Coords cursorTile;
 	struct Inventory inventory;
 	struct PlayerTool tool;
+	struct AccessoryBonuses bonuses;
 
 	int swingFrame;
 	bool swingDir;

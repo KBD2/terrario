@@ -10,31 +10,33 @@
 
 const ItemData items[] = {
 //		Max		Tile				Name				Tool type
-	{	0,		TILE_NULL,			"Null",				TOOL_TYPE_NONE	},	// ITEM_NULL
-	{	999,	TILE_STONE,			"Stone",			TOOL_TYPE_NONE	},	// ITEM_STONE
-	{	999,	TILE_DIRT,			"Dirt",				TOOL_TYPE_NONE	},	// ITEM_DIRT
-	{	999,	TILE_WOOD,			"Wood",				TOOL_TYPE_NONE	},	// ITEM_WOOD
-	{	99,		TILE_WBENCH_L,		"Workbench",		TOOL_TYPE_NONE	},	// ITEM_WORKBENCH
-	{	999,	TILE_PLATFORM,		"Platform",			TOOL_TYPE_NONE	},	// ITEM_PLATFORM
-	{	99,		TILE_CHAIR_L,		"Chair",			TOOL_TYPE_NONE	},	// ITEM_CHAIR
-	{	1,		TILE_NULL,			"Copper Sword",		TOOL_TYPE_SWORD	},	// ITEM_COPPER_SWORD
-	{	1,		TILE_NULL,			"Copper Pick",		TOOL_TYPE_PICK	},	// ITEM_COPPER_PICK
-	{	999,	TILE_NULL,			"Gel",				TOOL_TYPE_NONE	},	// ITEM_GEL
-	{	99,		TILE_TORCH,			"Torch",			TOOL_TYPE_NONE	},	// ITEM_TORCH
-	{	99,		TILE_FURNACE_EDGE,	"Furnace",			TOOL_TYPE_NONE	},	// ITEM_FURNACE
-	{	999,	TILE_IRON_ORE,		"Iron Ore",			TOOL_TYPE_NONE	},	// ITEM_IRON_ORE
-	{	999,	TILE_NULL,			"Iron Bar",			TOOL_TYPE_NONE	},	// ITEM_IRON_BAR
-	{	99,		TILE_ANVIL_L,		"Anvil",			TOOL_TYPE_NONE	},	// ITEM_ANVIL
-	{	99,		TILE_CHEST_L,		"Chest",			TOOL_TYPE_NONE	},	// ITEM_CHEST
-	{	99,		TILE_DOOR_C,		"Door",				TOOL_TYPE_NONE	},	// ITEM_DOOR
-	{	1,		TILE_NULL,			"Iron Helmet",		TOOL_TYPE_HELMET},	// ITEM_IRON_HELMET
-	{	1,		TILE_NULL,			"Iron Chainmail",	TOOL_TYPE_TORSO	},	// ITEM_IRON_CHAINMAIL
-	{	1,		TILE_NULL,			"Iron Greaves",		TOOL_TYPE_PANTS	},	// ITEM_IRON_GREAVES
-	{	1,		TILE_NULL,			"Wood Helmet",		TOOL_TYPE_HELMET},	// ITEM_WOOD_HELMET
-	{	1,		TILE_NULL,			"Wood Breastplate",	TOOL_TYPE_TORSO	},	// ITEM_WOOD_BREASTPLATE
-	{	1,		TILE_NULL,			"Wood Greaves",		TOOL_TYPE_PANTS	},	// ITEM_WOOD_GREAVES
-	{	1,		TILE_NULL,			"Iron Sword",		TOOL_TYPE_SWORD	},	// ITEM_IRON_SWORD
-	{	1,		TILE_NULL,			"Iron Pick",		TOOL_TYPE_PICK	},	// ITEM_IRON_PICK
+	{	0,		TILE_NULL,			"Null",				TOOL_TYPE_NONE		},	// ITEM_NULL
+	{	999,	TILE_STONE,			"Stone",			TOOL_TYPE_NONE		},	// ITEM_STONE
+	{	999,	TILE_DIRT,			"Dirt",				TOOL_TYPE_NONE		},	// ITEM_DIRT
+	{	999,	TILE_WOOD,			"Wood",				TOOL_TYPE_NONE		},	// ITEM_WOOD
+	{	99,		TILE_WBENCH_L,		"Workbench",		TOOL_TYPE_NONE		},	// ITEM_WORKBENCH
+	{	999,	TILE_PLATFORM,		"Platform",			TOOL_TYPE_NONE		},	// ITEM_PLATFORM
+	{	99,		TILE_CHAIR_L,		"Chair",			TOOL_TYPE_NONE		},	// ITEM_CHAIR
+	{	1,		TILE_NULL,			"Copper Sword",		TOOL_TYPE_SWORD		},	// ITEM_COPPER_SWORD
+	{	1,		TILE_NULL,			"Copper Pick",		TOOL_TYPE_PICK		},	// ITEM_COPPER_PICK
+	{	999,	TILE_NULL,			"Gel",				TOOL_TYPE_NONE		},	// ITEM_GEL
+	{	99,		TILE_TORCH,			"Torch",			TOOL_TYPE_NONE		},	// ITEM_TORCH
+	{	99,		TILE_FURNACE_EDGE,	"Furnace",			TOOL_TYPE_NONE		},	// ITEM_FURNACE
+	{	999,	TILE_IRON_ORE,		"Iron Ore",			TOOL_TYPE_NONE		},	// ITEM_IRON_ORE
+	{	999,	TILE_NULL,			"Iron Bar",			TOOL_TYPE_NONE		},	// ITEM_IRON_BAR
+	{	99,		TILE_ANVIL_L,		"Anvil",			TOOL_TYPE_NONE		},	// ITEM_ANVIL
+	{	99,		TILE_CHEST_L,		"Chest",			TOOL_TYPE_NONE		},	// ITEM_CHEST
+	{	99,		TILE_DOOR_C,		"Door",				TOOL_TYPE_NONE		},	// ITEM_DOOR
+	{	1,		TILE_NULL,			"Iron Helmet",		TOOL_TYPE_HELMET	},	// ITEM_IRON_HELMET
+	{	1,		TILE_NULL,			"Iron Chainmail",	TOOL_TYPE_TORSO		},	// ITEM_IRON_CHAINMAIL
+	{	1,		TILE_NULL,			"Iron Greaves",		TOOL_TYPE_PANTS		},	// ITEM_IRON_GREAVES
+	{	1,		TILE_NULL,			"Wood Helmet",		TOOL_TYPE_HELMET	},	// ITEM_WOOD_HELMET
+	{	1,		TILE_NULL,			"Wood Breastplate",	TOOL_TYPE_TORSO		},	// ITEM_WOOD_BREASTPLATE
+	{	1,		TILE_NULL,			"Wood Greaves",		TOOL_TYPE_PANTS		},	// ITEM_WOOD_GREAVES
+	{	1,		TILE_NULL,			"Iron Sword",		TOOL_TYPE_SWORD		},	// ITEM_IRON_SWORD
+	{	1,		TILE_NULL,			"Iron Pick",		TOOL_TYPE_PICK		},	// ITEM_IRON_PICK
+	{	1,		TILE_NULL,			"Shackle",			TOOL_TYPE_ACCESSORY	},	// ITEM_SHACKLE
+	{	1, 		TILE_NULL,			"Cloud in a Bottle",TOOL_TYPE_ACCESSORY	},	// ITEM_CLOUD_BOTTLE
 };
 
 extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick;
@@ -186,10 +188,6 @@ void inventoryMenu(struct Chest* chest)
 		else dsubimage(107, 55, &img_inventory_tabs, 0, 0, 21, 9, DIMAGE_NONE);
 
 //		Render all items in the tabbed storage
-		if(tab == TAB_MAIN)
-		{
-			for(int slot = 0; slot < 5; slot++) dimage(16 * slot, 0, &img_slot_highlight);
-		}
 		if(tab == TAB_EQUIP)
 		{
 			dsubimage(0, 0, &img_slots, 0, 0, 80, 17, DIMAGE_NONE);
@@ -206,11 +204,15 @@ void inventoryMenu(struct Chest* chest)
 				if(item->id == ITEM_NULL) dsubimage(113, slot * 17 + 2, &img_placeholders, slot * 15 + 1, 1, 14, 13, DIMAGE_NOCLIP);
 				else renderItem(113, slot * 17 + 1, item);
 			}
-			dprint_opt(112, 0, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "%i DEF", player.combat.defense);
+			dprint_opt(112, 0, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "%i DEF", player.combat.defense + player.bonuses.defense);
 		}
 		else
 		{
 			dimage(0, 0, &img_slots);
+			if(tab == TAB_MAIN)
+			{
+				for(int slot = 0; slot < 5; slot++) dimage(16 * slot, 0, &img_slot_highlight);
+			}
 			for(int slot = 0; slot < INVENTORY_SIZE; slot++)
 			{
 				if(tab == TAB_CHEST) item = &chest->items[slot];
@@ -359,6 +361,29 @@ void registerEquipment()
 				player.combat.defense += armourData[idx].defense;
 				break;
 			}
+		}
+	}
+
+	player.bonuses = (struct AccessoryBonuses){ 0 };
+
+	for(int slot = 0; slot < 5; slot++)
+	{
+		if(player.inventory.accessories[slot].id == ITEM_NULL) continue;
+		switch(player.inventory.accessories[slot].id)
+		{
+
+//			----- ACCESSORY BONUSES -----
+
+			case ITEM_SHACKLE:
+				player.bonuses.defense++;
+				break;
+			
+			case ITEM_CLOUD_BOTTLE:
+				player.bonuses.doubleJump = true;
+				break;
+
+			default:
+				break;
 		}
 	}
 
