@@ -37,14 +37,18 @@ const ItemData items[] = {
 	{	1,		TILE_NULL,			"Iron Pick",		TOOL_TYPE_PICK	},	// ITEM_IRON_PICK
 };
 
+extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick;
+
 const struct PickData pickData[NUM_PICKS] = {
-	{.item = ITEM_COPPER_PICK,	.power = 35,	.speed = 15,	.knockback = 2,	.damage = 4},
-	{.item = ITEM_IRON_PICK,	.power = 40,	.speed = 13,	.knockback = 2,	.damage = 5}
+	{.item = ITEM_COPPER_PICK,	.power = 35,	.speed = 15,	.knockback = 2,	.damage = 4,	.swingSprite = &img_swing_copper_pick},
+	{.item = ITEM_IRON_PICK,	.power = 40,	.speed = 13,	.knockback = 2,	.damage = 5,	.swingSprite = &img_swing_iron_pick}
 };
 
+extern bopti_image_t img_swing_copper_sword, img_swing_iron_sword;
+
 const struct SwordData swordData[NUM_SWORDS] = {
-	{.item = ITEM_COPPER_SWORD,	.knockback = 5,	.damage = 8},
-	{.item = ITEM_IRON_SWORD,	.knockback = 5,	.damage = 10}
+	{.item = ITEM_COPPER_SWORD,	.knockback = 5,	.damage = 8,	.swingSprite = &img_swing_copper_sword},
+	{.item = ITEM_IRON_SWORD,	.knockback = 5,	.damage = 10,	.swingSprite = &img_swing_iron_sword}
 };
 
 const struct ArmourData armourData[NUM_ARMOUR] = {
@@ -382,6 +386,7 @@ void registerHeld()
 			for(int i = 0; i < NUM_PICKS; i++)
 			{
 				if(pickData[i].item == currID) player.tool.data.pickData = pickData[i];
+				player.combat.attack = player.tool.data.pickData.damage;
 			}
 			break;
 					
@@ -390,6 +395,7 @@ void registerHeld()
 			for(int i = 0; i < NUM_SWORDS; i++)
 			{
 				if(swordData[i].item == currID) player.tool.data.swordData = swordData[i];
+				player.combat.attack = player.tool.data.swordData.damage;
 			}
 			break;
 					

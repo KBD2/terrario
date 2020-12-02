@@ -49,7 +49,7 @@ void render(bool renderHUD)
 	unsigned int camMinY = (VAR_BUF_OFFSET << 3) + (SCREEN_HEIGHT >> 1);
 	unsigned int camMaxY = ((game.WORLD_HEIGHT - VAR_BUF_OFFSET) << 3) - (SCREEN_HEIGHT >> 1);
 	extern bopti_image_t img_player, img_cursor, img_slots, img_slot_highlight,
-	img_leaves, img_swing_copper_sword, img_swing_copper_pick, img_deathtext,
+	img_leaves, img_deathtext,
 	img_bg_underground, img_sunmoon, img_bg_night, img_tile_cracks;
 	bopti_image_t *swingSprite;
 	int camX = min(max(player.props.x + (player.props.width >> 1), camMinX), camMaxX);
@@ -223,20 +223,11 @@ void render(bool renderHUD)
 			entSubrectY = (4 - (player.swingFrame >> 3)) * (player.props.height + 2) + 1;
 			dsubimage(entX, entY, &img_player, entSubrectX, entSubrectY, player.props.width + 4, 15, DIMAGE_NONE);
 
-			switch(player.inventory.getSelected()->id)
-			{
-				case ITEM_COPPER_SWORD:
-					swingSprite = &img_swing_copper_sword;
-					break;
-				
-				case ITEM_COPPER_PICK:
-					swingSprite = &img_swing_copper_pick;
-					break;
-				
-				default:
-					swingSprite = NULL;
-					break;
-			}
+//			Get the appropriate swing sprite
+			if(player.tool.type == TOOL_TYPE_PICK) swingSprite = player.tool.data.pickData.swingSprite;
+			else if(player.tool.type == TOOL_TYPE_SWORD) swingSprite = player.tool.data.swordData.swingSprite;
+			else swingSprite = NULL;
+
 //			Might have to generalise for different sized sprites
 			entX += (player.props.width >> 1) + (player.swingDir ? -12 : 0);
 			entX += swingHandleDeltaPositions[3 - (player.swingFrame >> 3)][0] * (player.swingDir ? -1 : 1);
@@ -351,6 +342,7 @@ void renderAndUpdateExplosion(struct ParticleExplosion *explosion, int offsetX, 
 void middleText(char *text, int progress)
 {
 	extern bopti_image_t img_generate, img_loadbar;
+
 	dclear(C_WHITE);
 	dsubimage(0, 47, &img_generate, 0, 0, 21, 17, DIMAGE_NONE);
 	dsubimage(107, 47, &img_generate, 22, 0, 21, 17, DIMAGE_NONE);

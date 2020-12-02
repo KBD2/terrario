@@ -315,21 +315,6 @@ void doEntityCycle(int frames)
 
 	if(player.swingFrame > 0)
 	{
-		switch(player.inventory.getSelected()->id)
-		{
-			case ITEM_COPPER_SWORD:
-				player.combat.attack = 8;
-				break;
-
-			case ITEM_COPPER_PICK:
-				player.combat.attack = 4;
-				break;
-			
-			default:
-				player.combat.attack = 0;
-				break;
-		}
-
 		weaponProps = (struct EntityPhysicsProps) {
 			.x = player.props.x + (player.swingDir ? -16 : 0),
 			.y = player.props.y - 16,

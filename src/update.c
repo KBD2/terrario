@@ -123,7 +123,7 @@ enum UpdateReturnCodes keyboardUpdate()
 			if(items[player.inventory.getSelected()->id].type != TOOL_TYPE_NONE)
 			{
 				if(player.swingFrame == 0) player.swingFrame = 32;
-				player.swingDir = player.cursorTile.x < player.props.x >> 3;
+				player.swingDir = player.cursor.x < 64;
 				switch(player.tool.type)
 				{
 					case TOOL_TYPE_PICK:
@@ -248,6 +248,7 @@ void playerUpdate(int frames)
 		}
 	}
 
+//	Regen health
 	if(player.combat.health < player.maxHealth)
 	{
 		if(player.ticksSinceHit < 1800) time = player.ticksSinceHit / 360;

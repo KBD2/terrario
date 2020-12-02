@@ -301,6 +301,9 @@ void itemMenu()
 				else item.id++;
 				if(item.amount > items[item.id].maxStack) item.amount = items[item.id].maxStack;
 				break;
+			
+			default:
+				break;
 		}
 	}
 }

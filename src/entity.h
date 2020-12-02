@@ -106,6 +106,10 @@ struct EntityBase {
 
 typedef struct EntityBase Entity;
 
+struct AccessoryBonuses {
+	int defense;
+};
+
 struct Player {
 	struct EntityPhysicsProps props;
 	struct AnimationData anim;

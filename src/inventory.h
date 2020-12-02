@@ -85,6 +85,7 @@ struct PickData {
 	int speed;
 	int knockback;
 	int damage;
+	bopti_image_t *swingSprite;
 	int currFramesLeft;
 	struct {
 		int x;
@@ -98,6 +99,7 @@ struct SwordData {
 	enum Items item;
 	int knockback;
 	int damage;
+	bopti_image_t *swingSprite;
 };
 
 struct ArmourData {
