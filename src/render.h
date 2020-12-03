@@ -67,12 +67,12 @@ explosion: Pointer to the explosion to destruct.
 void destroyExplosion(struct ParticleExplosion *explosion);
 
 /* renderAndUpdateExplosion
-Renders and updates the given explosion by one frame.
+Updates the given explosion by one frame.
 
 explosion: Pointer to the explosion.
 offsetX, offsetY: Delta coordinates to be used with a camera.
 */
-void renderAndUpdateExplosion(struct ParticleExplosion *explosion, int offsetX, int offsetY);
+void updateExplosion(struct ParticleExplosion *explosion);
 
 /* middleText
 Clears the screen and displays some text in the middle.

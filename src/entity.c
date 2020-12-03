@@ -84,7 +84,7 @@ const struct EntityDrops zombieDrops = {
 	.num = 1,
 	.dropList = (const Drop[]){
 //		 Item			Min Max Low Hi
-		{ITEM_SHACKLE,	1,	1,	1,	1}
+		{ITEM_SHACKLE,	1,	1,	1,	50}
 	}
 };
 

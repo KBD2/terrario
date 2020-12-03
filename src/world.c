@@ -385,10 +385,8 @@ void placeTile(int x, int y, Item *item)
 			if(success)
 			{
 				regionChange(x, y);
-#ifndef DEBUGMODE
 				item->amount--;
 				if(item->amount == 0) *item = (Item){ITEM_NULL, 0};
-#endif
 			}
 		}
 	}

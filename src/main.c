@@ -94,6 +94,10 @@ void gameLoop(volatile int *flag)
 		updateRet = keyboardUpdate();
 		if(updateRet == UPDATE_EXIT) break;
 
+		if(frames & 1) updateExplosion(&world.explosion);
+		// Only bother rendering 30 frames (60 updates)
+		if(world.explosion.deltaTicks == 30) world.explosion.numParticles = 0;
+
 		doEntityCycle(frames);
 		doSpawningCycle();
 		if(player.combat.health <= 0)

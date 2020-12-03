@@ -11,6 +11,15 @@
 GYRAM struct Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
 unsigned char *yPositions;
 
+struct ChestLootTable undergroundLoot = {
+	.num = 2,
+	.loot = (const ChestLoot[]){
+//		 Num			   Items						Min	Max	Low	High
+		{1,	(const enum Items[]){ITEM_CLOUD_BOTTLE},	1,	1,	1,	2},
+		{1,	(const enum Items[]){ITEM_IRON_BAR},		5,	14,	1,	2}
+	}
+};
+
 int updateProgress()
 {
 	static int progress = 0;
@@ -320,7 +329,11 @@ void generateWorld()
 						tries++;
 					}
 					while(check.amount == 1 && tries < 50);
-					if(check.amount == 0) placedChest = true;
+					if(check.amount == 0)
+					{
+						placedChest = true;
+						addLoot(world.chests.findChest(tempX, y + 3), TABLE_UNDERGROUND);
+					}
 				}
 			}
 			tempX = randFloat() < 0.5 ? x : x + width - 1;
@@ -379,4 +392,31 @@ void generateWorld()
 	}
 
 	free(yPositions);
+}
+
+void addLoot(struct Chest *chest, enum LootTables table)
+{
+	struct ChestLootTable *lootTable;
+	int amount;
+	const ChestLoot *currLoot;
+	int slot = 0;
+	enum Items item;
+
+	switch(table) {
+		case TABLE_UNDERGROUND:
+			lootTable = &undergroundLoot;
+			break;
+	}
+
+	for(int idx = 0; idx < lootTable->num; idx++)
+	{
+		currLoot = &lootTable->loot[idx];
+		if(rand() % currLoot->ratioHigh >= currLoot->ratioLow - 1)
+		{
+			amount = (rand() % (currLoot->amountMax - currLoot->amountMin + 1)) + currLoot->amountMin;
+			item = currLoot->items[rand() % currLoot->num];
+			chest->items[slot] = (Item){item, amount};
+			slot++;
+		}
+	}
 }

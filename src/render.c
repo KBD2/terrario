@@ -86,6 +86,8 @@ void render(bool renderHUD)
 
 	struct PickData *heldPickData;
 
+	Particle particle;
+
 	player.cursorTile.x = (camX + player.cursor.x - (SCREEN_WIDTH >> 1)) >> 3;
 	player.cursorTile.y = (camY + player.cursor.y - (SCREEN_HEIGHT >> 1)) >> 3;
 
@@ -111,6 +113,7 @@ void render(bool renderHUD)
 		dsubimage(orbX, orbY, &img_sunmoon, 16, 0, 16, 16, DIMAGE_NONE);
 	}
 
+//	Do an initial pass to render treetops
 	for(unsigned int y = tileTopY; y <= min(tileBottomY + 4, game.WORLD_HEIGHT - 1); y++)
 	{
 		for(unsigned int x = max(0, tileLeftX - 2); x <= min(tileRightX + 2, game.WORLD_WIDTH - 1); x++)
@@ -175,6 +178,7 @@ void render(bool renderHUD)
 		}
 	}
 
+//	Render cracks on the tile the player's mining
 	if(player.tool.type == TOOL_TYPE_PICK && player.tool.data.pickData.targeted.damage > 0)
 	{
 		heldPickData = &player.tool.data.pickData;
@@ -190,6 +194,7 @@ void render(bool renderHUD)
 			);
 	}
 
+//	Render entities
 	for(int idx = 0; idx < MAX_ENTITIES; idx++)
 	{
 		if(world.entities[idx].id != -1)
@@ -204,6 +209,7 @@ void render(bool renderHUD)
 		}
 	}
 
+//	Only render player if the player isn't flashing or dead
 	if(!(player.combat.currImmuneFrames & 2) && player.combat.health > 0)
 	{
 		entX = player.props.x - (camX - (SCREEN_WIDTH >> 1)) - 2;
@@ -242,13 +248,14 @@ void render(bool renderHUD)
 		if(renderHUD) dimage(player.cursor.x - 2, player.cursor.y - 2, &img_cursor);
 	}
 
-	if(world.explosion.numParticles > 0)
+//	Render all the particles in the world explosion
+	for(int i = 0; i < world.explosion.numParticles; i++)
 	{
-		renderAndUpdateExplosion(&world.explosion, (camX - (SCREEN_WIDTH >> 1)), (camY - (SCREEN_HEIGHT >> 1)));
-		// Only bother rendering 30 frames (60 updates)
-		if(world.explosion.deltaTicks == 30) world.explosion.numParticles = 0;
+		particle = world.explosion.particles[i];
+		dpixel(particle.x - (camX - (SCREEN_WIDTH >> 1)), particle.y - (camY - (SCREEN_HEIGHT >> 1)), C_LIGHT);
 	}
 
+//	Render the hotbar if the player has recently interacted with their inventory
 	if(player.inventory.ticksSinceInteracted < 120)
 	{
 		dsubimage(0, 0, &img_slots, 0, 0, 80, 17, DIMAGE_NOCLIP);
@@ -260,6 +267,7 @@ void render(bool renderHUD)
 		}
 	}
 
+//	Render the various HUD items
 	if(renderHUD)
 	{
 		dprint_opt(128, 0, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "%i HP", player.combat.health);
@@ -320,15 +328,13 @@ void destroyExplosion(struct ParticleExplosion *explosion)
 	explosion->numParticles = 0;
 }
 
-void renderAndUpdateExplosion(struct ParticleExplosion *explosion, int offsetX, int offsetY)
+void updateExplosion(struct ParticleExplosion *explosion)
 {
 	Particle* particle;
 	
 	for(int i = 0; i < explosion->numParticles; i++)
 	{
 		particle = &explosion->particles[i];
-
-		dpixel(particle->x - offsetX, particle->y - offsetY, C_BLACK);
 
 		particle->x += round(particle->xVel);
 		particle->y += round(particle->yVel);
