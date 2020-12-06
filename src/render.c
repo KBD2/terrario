@@ -15,7 +15,7 @@
 #include "inventory.h"
 #include "menu.h"
 
-struct Coords varBufferPos = {0, 0};
+Coords varBufferPos = {0, 0};
 
 /*
 For right-facing player
@@ -252,7 +252,7 @@ void render(bool renderHUD)
 	for(int i = 0; i < world.explosion.numParticles; i++)
 	{
 		particle = world.explosion.particles[i];
-		dpixel(particle.x - (camX - (SCREEN_WIDTH >> 1)), particle.y - (camY - (SCREEN_HEIGHT >> 1)), C_LIGHT);
+		dpixel(particle.x - (camX - (SCREEN_WIDTH >> 1)), particle.y - (camY - (SCREEN_HEIGHT >> 1)), particle.colour);
 	}
 
 //	Render the hotbar if the player has recently interacted with their inventory
@@ -280,7 +280,6 @@ void render(bool renderHUD)
 			dimage(32, 26, &img_deathtext);
 		}
 	}
-
 }
 
 void takeVRAMCapture()
@@ -313,7 +312,8 @@ void createExplosion(struct ParticleExplosion *explosion, int x, int y)
 			x,
 			y,
 			(float)((rand() % 201) - 80) / 100.0,
-			(float)((rand() % 201) + 100) / -100.0
+			(float)((rand() % 201) + 100) / -100.0,
+			(rand() % 2) ? C_BLACK : C_LIGHT
 		};
 	}
 }

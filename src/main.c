@@ -62,7 +62,7 @@ bool testRAM()
 	return false;
 }
 
-void positionPlayerAtWorldMiddle()
+void setPlayerSpawn()
 {
 	int playerX = (game.WORLD_WIDTH / 2);
 	int playerY = 0;
@@ -76,8 +76,8 @@ void positionPlayerAtWorldMiddle()
 		playerY++;
 	}
 
-	player.props.x = playerX << 3;
-	player.props.y = playerY << 3;
+	player.spawn.x = playerX << 3;
+	player.spawn.y = playerY << 3;
 }
 
 void gameLoop(volatile int *flag)
@@ -104,7 +104,8 @@ void gameLoop(volatile int *flag)
 		{
 			if(respawnCounter == 1)
 			{
-				positionPlayerAtWorldMiddle();
+				player.props.x = player.spawn.x;
+				player.props.y = player.spawn.y;
 				player.combat.health = player.maxHealth;
 				player.props.xVel = 0;
 				player.props.yVel = 0;
@@ -271,6 +272,7 @@ int main(void)
 		player.inventory.items[0] = (Item){ITEM_COPPER_SWORD, 1};
 		player.inventory.items[1] = (Item){ITEM_COPPER_PICK, 1};
 		world.timeTicks = timeToTicks(8, 15);
+		setPlayerSpawn();
 	} 
 	else if(menuSelect == 1) // Load game
 	{
@@ -300,7 +302,8 @@ int main(void)
 
 	dfont(&font_smalltext);
 
-	positionPlayerAtWorldMiddle();
+	player.props.x = player.spawn.x;
+	player.props.y = player.spawn.y;
 
 	timer = timer_setup(TIMER_ANY, (1000 / 60) * 1000, &frameCallback, &flag);
 	timer_start(timer);

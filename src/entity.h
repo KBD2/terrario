@@ -33,14 +33,14 @@ struct EntityDrops {
 	const Drop *dropList;
 };
 
-struct Coords {
+typedef struct {
 	short x;
 	short y;
-};
+} Coords;
 
 struct Rect {
-	struct Coords TL;
-	struct Coords BR;
+	Coords TL;
+	Coords BR;
 };
 
 struct EntityPhysicsProps {
@@ -110,17 +110,19 @@ struct AccessoryBonuses {
 	int defense;
 	bool doubleJump;
 	bool hasDoubleJumped;
+	float speedBonus;
 };
 
 struct Player {
 	struct EntityPhysicsProps props;
 	struct AnimationData anim;
 	struct Combat combat;
-	struct Coords cursor;
-	struct Coords cursorTile;
+	Coords cursor;
+	Coords cursorTile;
 	struct Inventory inventory;
 	struct PlayerTool tool;
 	struct AccessoryBonuses bonuses;
+	Coords spawn;
 
 	int swingFrame;
 	bool swingDir;

@@ -23,6 +23,7 @@ struct PlayerSave {
 	Item accessories[5];
 	Item armour[3];
 	int health;
+	Coords spawn;
 };
 
 extern struct SaveData save;

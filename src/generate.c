@@ -6,17 +6,26 @@
 #include "world.h"
 #include "chest.h"
 
-#define NUM_WORLD_GEN_PARTS 13
+#define NUM_WORLD_GEN_PARTS 14
 
-GYRAM struct Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
+GYRAM Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
 unsigned char *yPositions;
 
 struct ChestLootTable undergroundLoot = {
 	.num = 2,
 	.loot = (const ChestLoot[]){
-//		 Num			   Items						Min	Max	Low	High
-		{1,	(const enum Items[]){ITEM_CLOUD_BOTTLE},	1,	1,	1,	2},
-		{1,	(const enum Items[]){ITEM_IRON_BAR},		5,	14,	1,	2}
+//		 Num			   		 Items									Min	Max	Low	High
+		{2,	(const enum Items[]){ITEM_CLOUD_BOTTLE, ITEM_MAGIC_MIRROR},	1,	1,	1,	2},
+		{1,	(const enum Items[]){ITEM_IRON_BAR},						5,	14,	1,	2}
+	}
+};
+
+struct ChestLootTable surfaceLoot = {
+	.num = 1,
+	.loot = (const ChestLoot[]){
+//		 Num					 Items				Min	Max	Low	High
+		{1,	(const enum Items[]){ITEM_AGLET},		1,	1,	1,	1},
+		{1,	(const enum Items[]){ITEM_IRON_BAR},	3,	10,	1,	2}
 	}
 };
 
@@ -100,14 +109,14 @@ void clump(int x, int y, int num, enum Tiles tile, bool maskEmpty, float skewHor
 {
 	int end = 1;
 	int selected;
-	struct Coords selectedTile;
+	Coords selectedTile;
 	int deltas[4][2] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
 	Tile tileCheck;
 	int checkX, checkY;
 
 	if(maskEmpty && getTile(x, y).id == TILE_NOTHING) return;
 
-	clumpCoords[0] = (struct Coords){x, y};
+	clumpCoords[0] = (Coords){x, y};
 
 	while(num > 0)
 	{
@@ -133,7 +142,7 @@ void clump(int x, int y, int num, enum Tiles tile, bool maskEmpty, float skewHor
 			if(checkX < 0 || checkX >= game.WORLD_WIDTH || checkY < 0 || checkY >= game.WORLD_HEIGHT) continue;
 			tileCheck = getTile(checkX, checkY);
 			if(tileCheck.id == tile || (maskEmpty && tileCheck.id == TILE_NOTHING)) continue;
-			clumpCoords[end] = (struct Coords){checkX, checkY};
+			clumpCoords[end] = (Coords){checkX, checkY};
 			end++;
 			if(end >= WORLD_CLUMP_BUFFER_SIZE) end = 0;
 		}
@@ -173,6 +182,7 @@ void generateWorld()
 	int num, width, tempX, tries;
 	bool placedChest;
 	Item check;
+	int stage;
 
 	yPositions = malloc(game.WORLD_WIDTH * sizeof(unsigned char));
 
@@ -345,6 +355,32 @@ void generateWorld()
 		}
 	}
 
+//	Surface Chests
+	middleText("Surface Chests", updateProgress());
+	for(int x = 0; x < game.WORLD_WIDTH; x++)
+	{
+		stage = 0;
+		for(int y = 0; y < game.WORLD_HEIGHT / 4; y++)
+		{
+			if(getTile(x, y).id != TILE_NOTHING) stage = 1;
+			else if(stage == 1)
+			{
+				if(rand() % 35 == 0)
+				{
+					check = (Item){ITEM_CHEST, 1};
+					while(getTile(x, y + 2).id == TILE_NOTHING) y++;
+					placeTile(x, y, &check);
+					if(check.amount == 0)
+					{
+						addLoot(world.chests.findChest(x, y), TABLE_SURFACE);
+					}
+				}
+				break;
+			}
+			
+		}
+	}
+
 //	Trees
 	middleText("Planting Trees", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
@@ -406,6 +442,13 @@ void addLoot(struct Chest *chest, enum LootTables table)
 		case TABLE_UNDERGROUND:
 			lootTable = &undergroundLoot;
 			break;
+		
+		case TABLE_SURFACE:
+			lootTable = &surfaceLoot;
+			break;
+		
+		default:
+			return;
 	}
 
 	for(int idx = 0; idx < lootTable->num; idx++)

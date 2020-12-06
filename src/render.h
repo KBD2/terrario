@@ -20,6 +20,7 @@ typedef struct {
 	int y;
 	float xVel;
 	float yVel;
+	color_t colour;
 } Particle;
 
 struct ParticleExplosion {

@@ -45,6 +45,8 @@ enum Items {
 	ITEM_IRON_PICK,
 	ITEM_SHACKLE,
 	ITEM_CLOUD_BOTTLE,
+	ITEM_MAGIC_MIRROR,
+	ITEM_AGLET,
 
 	ITEMS_COUNT
 };
@@ -120,17 +122,18 @@ enum ToolTypes {
 	TOOL_TYPE_ACCESSORY,
 	TOOL_TYPE_HELMET,
 	TOOL_TYPE_TORSO,
-	TOOL_TYPE_PANTS
+	TOOL_TYPE_PANTS,
+	TOOL_TYPE_OTHER
 };
 
-typedef struct {
+struct ItemData {
 	int maxStack;
 	int tile;
 	char *name;
 	enum ToolTypes type;
-} ItemData;
+};
 
-extern const ItemData items[];
+extern const struct ItemData items[];
 
 struct PlayerTool {
 	enum ToolTypes type;

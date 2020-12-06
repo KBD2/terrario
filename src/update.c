@@ -22,6 +22,7 @@ enum UpdateReturnCodes keyboardUpdate()
 	bool playerDead =  player.combat.health <= 0;
 	struct Chest* chest;
 	struct PickData *heldPickData;
+	const struct ItemData *itemData;
 	
 	player.inventory.ticksSinceInteracted++;
 
@@ -128,7 +129,9 @@ enum UpdateReturnCodes keyboardUpdate()
 	{
 		if(keydown(KEY_7))
 		{
-			if(items[player.inventory.getSelected()->id].type != TOOL_TYPE_NONE)
+			itemData = &items[player.inventory.getSelected()->id];
+//			Picks and swords
+			if(itemData->type == TOOL_TYPE_PICK || itemData->type == TOOL_TYPE_SWORD)
 			{
 				if(player.swingFrame == 0) player.swingFrame = 32;
 				player.swingDir = player.cursor.x < 64;
@@ -164,6 +167,20 @@ enum UpdateReturnCodes keyboardUpdate()
 						break;
 				}
 			}
+//			Miscellaneous tools
+			else if(itemData->type == TOOL_TYPE_OTHER)
+			{
+				switch(player.inventory.getSelected()->id)
+				{
+					case ITEM_MAGIC_MIRROR:
+						player.props.x = player.spawn.x;
+						player.props.y = player.spawn.y;
+						break;
+					
+					default:
+						break;
+				}
+			}
 			else
 			{
 				player.inventory.ticksSinceInteracted = 0;
@@ -186,8 +203,8 @@ enum UpdateReturnCodes keyboardUpdate()
 		else if(player.tool.type == TOOL_TYPE_PICK) player.tool.data.pickData.currFramesLeft = 0;
 
 //		Movement
-		if(keydown(KEY_4) && player.props.xVel > -1) player.props.xVel -= 0.3;
-		if(keydown(KEY_6) && player.props.xVel < 1) player.props.xVel += 0.3;
+		if(keydown(KEY_4)) player.props.xVel = -1 * player.bonuses.speedBonus;
+		if(keydown(KEY_6)) player.props.xVel = 1 * player.bonuses.speedBonus;
 		if(keydown(KEY_2)) player.props.dropping = true;
 #ifdef DEBUGMODE
 		if(keydown(KEY_4)) player.props.xVel = -1;

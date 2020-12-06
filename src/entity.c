@@ -155,15 +155,26 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames)
 	int xMax = (game.WORLD_WIDTH << 3) - self->width;
 	int yMax = (game.WORLD_HEIGHT << 3) - self->height;
 
+	double integer;
+	double fractional;
+
 #ifndef DEBUGMODE
 	self->y++;
 	self->yVel = min(max(-4, self->yVel + GRAVITY_ACCEL), 4);
 #endif
 	if(abs(self->xVel) < 0.1) self->xVel = 0;
-	if(abs(self->xVel) < 1 && frames % (int)roundf(1.0 / self->xVel) == 0) self->x += 1 * sgn(self->xVel);
-	else self->x += roundf(self->xVel);
-	if(abs(self->yVel) < 1 && frames % (int)roundf(1.0 / self->yVel) == 0) self->y += 1 * sgn(self->yVel);
-	else self->y += roundf(self->yVel);
+
+//	Interpolate X velocity
+	fractional = modf(self->xVel, &integer);
+	if(abs(self->xVel) < 1 && frames % (int)roundf(1.0 / self->xVel) == 0) self->x += sgn(self->xVel);
+	else if(abs(self->xVel) > 1 && frames % (int)roundf(1.0 / fractional) == 0) self->x += integer + sgn(self->xVel);
+	else self->x += integer;
+
+//	Interpolate Y velocity
+	fractional = modf(self->yVel, &integer);
+	if(abs(self->yVel) < 1 && frames % (int)roundf(1.0 / self->yVel) == 0) self->y += sgn(self->yVel);
+	else if(abs(self->yVel) > 1 && frames % (int)roundf(1.0 / fractional) == 0) self->y += integer + sgn(self->yVel);
+	else self->y += integer;
 
 #ifndef DEBUGMODE
 	self->touchingTileTop = false;

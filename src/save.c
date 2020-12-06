@@ -110,6 +110,7 @@ void saveGame()
 	memcpy(playerSave.items, player.inventory.items, INVENTORY_SIZE * sizeof(Item));
 	memcpy(playerSave.accessories, player.inventory.accessories, 5 * sizeof(Item));
 	memcpy(playerSave.armour, player.inventory.armour, 3 * sizeof(Item));
+	playerSave.spawn = player.spawn;
 	BFile_Remove(playerPath);
 	BFile_Create(playerPath, BFile_File, &playerSaveSize);
 	descriptor = BFile_Open(playerPath, BFile_WriteOnly);
@@ -237,6 +238,7 @@ void loadSave()
 	memcpy(player.inventory.items, playerSave.items, INVENTORY_SIZE * sizeof(Item));
 	memcpy(player.inventory.accessories, playerSave.accessories, 5 * sizeof(Item));
 	memcpy(player.inventory.armour, playerSave.armour, 3 * sizeof(Item));
+	player.spawn = playerSave.spawn;
 
 	for(int y = 0; y < save.regionsY; y++)
 	{

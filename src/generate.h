@@ -23,7 +23,8 @@ struct ChestLootTable {
 };
 
 enum LootTables {
-	TABLE_UNDERGROUND
+	TABLE_UNDERGROUND,
+	TABLE_SURFACE
 };
 
 /* generateWorld

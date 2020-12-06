@@ -8,7 +8,7 @@
 #include "world.h"
 #include "entity.h"
 
-const ItemData items[] = {
+const struct ItemData items[] = {
 //		Max		Tile				Name				Tool type
 	{	0,		TILE_NULL,			"Null",				TOOL_TYPE_NONE		},	// ITEM_NULL
 	{	999,	TILE_STONE,			"Stone",			TOOL_TYPE_NONE		},	// ITEM_STONE
@@ -37,6 +37,8 @@ const ItemData items[] = {
 	{	1,		TILE_NULL,			"Iron Pick",		TOOL_TYPE_PICK		},	// ITEM_IRON_PICK
 	{	1,		TILE_NULL,			"Shackle",			TOOL_TYPE_ACCESSORY	},	// ITEM_SHACKLE
 	{	1, 		TILE_NULL,			"Cloud in a Bottle",TOOL_TYPE_ACCESSORY	},	// ITEM_CLOUD_BOTTLE
+	{	1,		TILE_NULL,			"Magic Mirror",		TOOL_TYPE_OTHER		},	// ITEM_MAGIC_MIRROR
+	{	1,		TILE_NULL,			"Aglet",			TOOL_TYPE_ACCESSORY	},	// ITEM_AGLET
 };
 
 extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick;
@@ -365,6 +367,7 @@ void registerEquipment()
 	}
 
 	player.bonuses = (struct AccessoryBonuses){ 0 };
+	player.bonuses.speedBonus = 1;
 
 	for(int slot = 0; slot < 5; slot++)
 	{
@@ -381,6 +384,9 @@ void registerEquipment()
 			case ITEM_CLOUD_BOTTLE:
 				player.bonuses.doubleJump = true;
 				break;
+			
+			case ITEM_AGLET:
+				player.bonuses.speedBonus += 1;
 
 			default:
 				break;
