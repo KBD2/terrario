@@ -6,7 +6,7 @@
 #include "world.h"
 #include "chest.h"
 
-#define NUM_WORLD_GEN_PARTS 14
+#define NUM_WORLD_GEN_PARTS 16
 
 GYRAM Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
 unsigned char *yPositions;
@@ -21,7 +21,7 @@ struct ChestLootTable undergroundLoot = {
 };
 
 struct ChestLootTable surfaceLoot = {
-	.num = 1,
+	.num = 2,
 	.loot = (const ChestLoot[]){
 //		 Num					 Items				Min	Max	Low	High
 		{1,	(const enum Items[]){ITEM_AGLET},		1,	1,	1,	1},
@@ -179,10 +179,12 @@ void generateWorld()
 	Tile tile;
 	int copseHeight;
 	int tunnelYPositions[10];
-	int num, width, tempX, tries;
+	int num, width, tempX, tempY, tries;
 	bool placedChest;
 	Item check;
 	int stage;
+	int left;
+	float mul;
 
 	yPositions = malloc(game.WORLD_WIDTH * sizeof(unsigned char));
 
@@ -222,6 +224,35 @@ void generateWorld()
 		else x++;
 	}
 
+//	Sand
+	middleText("Sand", updateProgress());
+	for(int i = 0; i < 60 * game.WORLDGEN_MULTIPLIER; i++)
+	{
+		x = rand() % game.WORLD_WIDTH;
+		y = randRange(game.WORLD_HEIGHT / 3.5, game.WORLD_HEIGHT / 2);
+		clump(x, y, poisson(50), TILE_SAND, true, 0, 0);
+	}
+	for(int i = 0; i < max(1, poisson(3)); i++)
+	{
+		width = poisson(75) * game.WORLDGEN_MULTIPLIER;
+		mul = -60 / width;
+		x = randRange(0, game.WORLD_WIDTH - width);
+		for(int dX = 0; dX < width; dX++)
+		{
+			left = min(20, mul * abs(dX - width / 2) + 30);
+			y = 0;
+			while(left > 0)
+			{
+				if(getTile(x + dX, y).id != TILE_NOTHING)
+				{
+					setTile(x + dX, y, TILE_SAND);
+					left--;
+				}
+				y++;
+			}
+		}
+	}
+
 //	Rocks in dirt
 	middleText("Rocks In Dirt", updateProgress());
 	for(int i = 0; i < 1000 * game.WORLDGEN_MULTIPLIER; i++)
@@ -251,7 +282,7 @@ void generateWorld()
 	for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
-		y = min((rand() % (int)(game.WORLD_HEIGHT - game.WORLD_HEIGHT / 4)) + game.WORLD_HEIGHT / 4, game.WORLD_HEIGHT - 1);
+		y = min((rand() % (int)(game.WORLD_HEIGHT - game.WORLD_HEIGHT / 3.2)) + game.WORLD_HEIGHT / 4, game.WORLD_HEIGHT - 1);
 		clump(x, y, poisson(25), TILE_NOTHING, true, 0, 0);
 	}
 
@@ -260,7 +291,7 @@ void generateWorld()
 	for(int i = 0; i < 150 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
-		y = min((rand() % (int)(game.WORLD_HEIGHT - game.WORLD_HEIGHT / 3.5)) + game.WORLD_HEIGHT / 3.5, game.WORLD_HEIGHT - 1);
+		y = min((rand() % (int)(game.WORLD_HEIGHT - game.WORLD_HEIGHT / 3.2)) + game.WORLD_HEIGHT / 3.5, game.WORLD_HEIGHT - 1);
 		clump(x, y, poisson(200), TILE_NOTHING, true, 0, 0);
 	}
 
@@ -273,7 +304,6 @@ void generateWorld()
 			tile = getTile(x, y);
 			if(tile.id == TILE_DIRT)
 			{
-				tile.id = TILE_GRASS;
 				if(x == 0 || x == game.WORLD_WIDTH - 1 || y == game.WORLD_HEIGHT) break;
 				if(getTile(x - 1, y).id == TILE_NOTHING || getTile(x + 1, y).id == TILE_NOTHING)
 				{
@@ -302,7 +332,29 @@ void generateWorld()
 	{
 		x = rand() % game.WORLD_WIDTH;
 		y = rand() % game.WORLD_HEIGHT;
-		clump(x, y, poisson(10), TILE_IRON_ORE, true, 0, 0);
+		if(getTile(x, y).id != TILE_SAND)
+		{
+			clump(x, y, poisson(10), TILE_IRON_ORE, true, 0, 0);
+		}
+	}
+
+//	Gravitating Sand
+	middleText("Gravitating Sand", updateProgress());
+	for(int x = 0; x < game.WORLD_WIDTH; x++)
+	{
+		for(int y = game.WORLD_HEIGHT - 1; y > 0; y--)
+		{
+			if(getTile(x, y).id == TILE_SAND && getTile(x, y + 1).id == TILE_NOTHING)
+			{
+				tempY = y;
+				while(tempY < game.WORLD_HEIGHT - 1 && getTile(x, tempY + 1).id == TILE_NOTHING)
+				{
+					tempY++;
+				}
+				setTile(x, tempY, TILE_SAND);
+				setTile(x, y, TILE_NOTHING);
+			}
+		}
 	}
 
 //	Buried Chests

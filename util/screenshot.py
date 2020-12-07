@@ -1,4 +1,4 @@
-# Put this script in a directory with the light.vram and dark.vram files.
+# Put this script in a directory with the capt.vram file.
 # Run it and it'll generate a 512x256 screenshot from them and save to out.png.
 
 from PIL import Image

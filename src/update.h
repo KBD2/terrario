@@ -26,3 +26,8 @@ Updates the player one frame, including physics and animations.
 frames: How many frames have passed since the game was started.
 */
 void playerUpdate(int frames);
+
+/* worldUpdate
+Updates the world tiles in a region around the player.
+*/
+void worldUpdate();

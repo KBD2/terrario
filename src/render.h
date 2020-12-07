@@ -85,8 +85,25 @@ progress: Percent progress.
 */
 void middleText(char *text, int progress);
 
+/* fillVarBuffer
+Fills the variant buffer's given subrectangle.
+
+startX, startY: Coordinates of the top left point of the rectangle to fill.
+width, height: Sizes of the rectangle to fill (must not exceed buffer boundaries).
+*/
 void fillVarBuffer(int startX, int startY, int width, int height);
 
+/* updateVarBuffer
+Shifts around and fills in the variant buffer.
+
+x, y: Tile coordinates to use as deltas.
+*/
 void updateVarBuffer(int x, int y);
 
+/* setVar
+Either randomises the variant or computes the variant of the given tile.
+Does nothing if the tile is out of the variant buffer window.
+
+x, y: World coordinates of the tile.
+*/
 void setVar(int x, int y);

@@ -15,7 +15,7 @@ World API functions.
 #include "chest.h"
 #include "save.h"
 
-#define MAX_FRIENDS 3
+#define MAX_FRIENDS 4
 
 enum SupportTypes {
 	SUPPORT_NONE,
@@ -72,6 +72,7 @@ enum Tiles {
 	TILE_DOOR_O_L_L, TILE_DOOR_O_L_R,
 	TILE_DOOR_O_R_L, TILE_DOOR_O_R_R,
 	TILE_VINE,
+	TILE_SAND,
 
 	TILES_COUNT
 };

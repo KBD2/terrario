@@ -23,6 +23,7 @@ class Tiles(Enum):
     PLATFORM = (191, 141, 111)
     VINE = (23, 177, 76)
     TREE = (151, 107, 75)
+    SAND = (186, 168, 84)
 
 # Gets replaced with the appropriate function in the actual code
 def setTile(x, y, tile):
@@ -160,6 +161,24 @@ def generate():
                 clump(x + 5 * dX, position, 20, Tiles.DIRT, False, 0.5, 0)
             x += 100
         else: x += 1
+
+    print("Sand...")
+    for i in range(60):
+        x = random.randrange(0, WORLD_WIDTH)
+        y = random.randrange(WORLD_HEIGHT // 3.5, WORLD_HEIGHT // 2)
+        clump(x, y, poisson(50), Tiles.SAND, True, 0, 0)
+    for i in range(max(1, poisson(3))):
+        width = poisson(75)
+        mul = -30 / width
+        x = random.randrange(0, WORLD_WIDTH - width)
+        for dX in range(width):
+            left = min(10, mul * abs(dX - width / 2) + 15)
+            y = 0
+            while left > 0 :
+                if getTile(x + dX, y) != Tiles.NOTHING:
+                    setTile(x + dX, y, Tiles.SAND)
+                    left -= 1
+                y += 1
             
     print("Rocks in dirt...")
     for i in range(1000):
@@ -178,14 +197,14 @@ def generate():
     print("Small holes...")
     for i in range(750):
         x = random.randrange(0, WORLD_WIDTH)
-        y = random.randrange(WORLD_HEIGHT // 4, WORLD_HEIGHT)
+        y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
         clump(x, y, poisson(25), Tiles.NOTHING, True, 0, 0)
 
     # A 500-length coord array should be enough for this
     print("Caves...")
     for i in range(150):
         x = random.randrange(0, WORLD_WIDTH)
-        y = random.randrange(WORLD_HEIGHT // 3.5, WORLD_HEIGHT)
+        y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
         clump(x, y, poisson(200), Tiles.NOTHING, True, 0, 0)
     
     print("Generating grass...")
@@ -211,7 +230,18 @@ def generate():
     for i in range(750):
         x = random.randrange(WORLD_WIDTH)
         y = random.randrange(0, WORLD_HEIGHT)
-        clump(x, y, poisson(10), Tiles.IRON, True, 0, 0)
+        if getTile(x, y) != Tiles.SAND:
+            clump(x, y, poisson(10), Tiles.IRON, True, 0, 0)
+
+    print("Gravitating Sand...")
+    for x in range(WORLD_WIDTH):
+        for y in range(WORLD_HEIGHT, 0, -1):
+            if getTile(x, y) == Tiles.SAND and getTile(x, y + 1) == Tiles.NOTHING:
+                tempY = y
+                while tempY < WORLD_HEIGHT - 1 and getTile(x, tempY + 1) == Tiles.NOTHING:
+                    tempY += 1
+                setTile(x, tempY, Tiles.SAND)
+                setTile(x, y, Tiles.NOTHING)
 
     print("Buried Chests...")
     for i in range(30):

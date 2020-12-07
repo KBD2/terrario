@@ -175,6 +175,7 @@ enum UpdateReturnCodes keyboardUpdate()
 					case ITEM_MAGIC_MIRROR:
 						player.props.x = player.spawn.x;
 						player.props.y = player.spawn.y;
+						player.pixelsFallen = 0;
 						break;
 					
 					default:
@@ -323,5 +324,27 @@ void playerUpdate(int frames)
 	if(anim->animationFrame > animFrames[anim->animation][1]) 
 	{
 		anim->animationFrame = animFrames[anim->animation][0];
+	}
+}
+
+void worldUpdate()
+{
+	int tempY;
+
+	for(int y = min(game.WORLD_HEIGHT - 1, (player.props.y >> 3) + 10); y > max(0, (player.props.y >> 3) - 10); y--)
+	{
+		for(int x = max(0, (player.props.x >> 3) - 10); x < min(game.WORLD_WIDTH, (player.props.x >> 3) + 10); x++)
+		{
+			if(tiles[getTile(x, y).id].physics == PHYS_SAND && getTile(x, y + 1).id == TILE_NOTHING)
+			{
+				for(tempY = y; tempY >= 0 && tiles[getTile(x, tempY).id].physics == PHYS_SAND; tempY--)
+				{
+					setTile(x, tempY + 1, getTile(x, tempY).id);
+					setVar(x, tempY + 1);
+				}
+				setTile(x, tempY + 1, TILE_NOTHING);
+				if(tiles[getTile(x, tempY).id].support == SUPPORT_NEED) world.removeTile(x, tempY);
+			}
+		}
 	}
 }

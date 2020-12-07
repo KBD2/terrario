@@ -14,7 +14,8 @@ The entity handling system.
 enum PhysicsTypes {
 	PHYS_NON_SOLID,
 	PHYS_SOLID,
-	PHYS_PLATFORM
+	PHYS_PLATFORM,
+	PHYS_SAND
 };
 
 typedef struct {

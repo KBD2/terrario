@@ -39,6 +39,7 @@ const struct ItemData items[] = {
 	{	1, 		TILE_NULL,			"Cloud in a Bottle",TOOL_TYPE_ACCESSORY	},	// ITEM_CLOUD_BOTTLE
 	{	1,		TILE_NULL,			"Magic Mirror",		TOOL_TYPE_OTHER		},	// ITEM_MAGIC_MIRROR
 	{	1,		TILE_NULL,			"Aglet",			TOOL_TYPE_ACCESSORY	},	// ITEM_AGLET
+	{	999,	TILE_SAND,			"Sand",				TOOL_TYPE_NONE		},	// ITEM_SAND
 };
 
 extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick;
@@ -386,7 +387,7 @@ void registerEquipment()
 				break;
 			
 			case ITEM_AGLET:
-				player.bonuses.speedBonus += 1;
+				player.bonuses.speedBonus += 0.05;
 
 			default:
 				break;
