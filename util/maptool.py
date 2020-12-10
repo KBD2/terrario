@@ -12,6 +12,7 @@ import math
 # Map constants
 WORLD_WIDTH = 1000
 WORLD_HEIGHT = 250
+WORLD_SMOOTH_PASSES = 5
 
 class Tiles(Enum):
     NOTHING = (123, 152, 254)
@@ -24,6 +25,11 @@ class Tiles(Enum):
     VINE = (23, 177, 76)
     TREE = (151, 107, 75)
     SAND = (186, 168, 84)
+
+# Call whenever you want to see the world
+def show():
+    mpplot.imshow(image)
+    mpplot.show()
 
 # Gets replaced with the appropriate function in the actual code
 def setTile(x, y, tile):
@@ -167,7 +173,7 @@ def generate():
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT // 3.5, WORLD_HEIGHT // 2)
         clump(x, y, poisson(50), Tiles.SAND, True, 0, 0)
-    for i in range(max(1, poisson(3))):
+    for i in range(max(2, poisson(3))):
         width = poisson(75)
         mul = -30 / width
         x = random.randrange(0, WORLD_WIDTH - width)
@@ -243,6 +249,42 @@ def generate():
                 setTile(x, tempY, Tiles.SAND)
                 setTile(x, y, Tiles.NOTHING)
 
+    print("Smooth World...")
+    for i in range(WORLD_SMOOTH_PASSES):
+        for y in range(WORLD_HEIGHT):
+            if getTile(0, y) != Tiles.NOTHING:
+                ySave = y
+                break
+        for x in range(WORLD_WIDTH):
+            y = 0
+            while getTile(x, y) == Tiles.NOTHING:
+                y += 1
+            deltaY = ySave - y
+            tile = getTile(x, y)
+            if 1 + int(tile != Tiles.SAND) < deltaY < 6 + 14 * int(tile == Tiles.SAND):
+                for dY in range(min(deltaY - 1, 2)):
+                    setTile(x, y + dY, Tiles.NOTHING)
+                ySave = y + deltaY - 1
+            else:
+                ySave = y
+        # Reverse direction pass
+        for y in range(WORLD_HEIGHT):
+            if getTile(WORLD_WIDTH - 1, y) != Tiles.NOTHING:
+                ySave = y
+                break
+        for x in range(WORLD_WIDTH - 1, 0, -1):
+            y = 0
+            while getTile(x, y) == Tiles.NOTHING:
+                y += 1
+            deltaY = ySave - y
+            tile = getTile(x, y)
+            if 1 + int(tile != Tiles.SAND) < deltaY < 6 + 14 * int(tile == Tiles.SAND):
+                for dY in range(min(deltaY - 1, 2)):
+                    setTile(x, y + dY, Tiles.NOTHING)
+                ySave = y + deltaY - 1
+            else:
+                ySave = y
+
     print("Buried Chests...")
     for i in range(30):
         num = min(max(1, round(poisson(1.25))), 3)
@@ -287,7 +329,6 @@ def generate():
 
 image = Image.new("RGB", (WORLD_WIDTH, WORLD_HEIGHT), (123, 152, 254))
 generate()
-mpplot.imshow(image)
-mpplot.show()
+show()
 if input("Save image? ").lower() in ('y', 'yes'):
     image.resize((2000, 500), Image.NEAREST).save("./map.png")

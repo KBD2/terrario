@@ -6,7 +6,8 @@
 #include "world.h"
 #include "chest.h"
 
-#define NUM_WORLD_GEN_PARTS 16
+#define NUM_WORLD_GEN_PARTS 17
+#define WORLD_SMOOTH_PASSES 5
 
 GYRAM Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
 unsigned char *yPositions;
@@ -185,6 +186,8 @@ void generateWorld()
 	int stage;
 	int left;
 	float mul;
+	int ySave = 0;
+	int deltaY;
 
 	yPositions = malloc(game.WORLD_WIDTH * sizeof(unsigned char));
 
@@ -232,7 +235,7 @@ void generateWorld()
 		y = randRange(game.WORLD_HEIGHT / 3.5, game.WORLD_HEIGHT / 2);
 		clump(x, y, poisson(50), TILE_SAND, true, 0, 0);
 	}
-	for(int i = 0; i < max(1, poisson(3)); i++)
+	for(int i = 0; i < max(2, poisson(3)); i++)
 	{
 		width = poisson(75) * game.WORLDGEN_MULTIPLIER;
 		mul = -60 / width;
@@ -354,6 +357,61 @@ void generateWorld()
 				setTile(x, tempY, TILE_SAND);
 				setTile(x, y, TILE_NOTHING);
 			}
+		}
+	}
+
+//	Smooth World
+	middleText("Smooth World", updateProgress());
+	for(int i = 0; i < WORLD_SMOOTH_PASSES; i++)
+	{
+		for(int y = 0; y < game.WORLD_HEIGHT; y++)
+		{
+			if(getTile(0, y).id != TILE_NOTHING)
+			{
+				ySave = y;
+				break;
+			}
+		}
+		for(int x = 0; x < game.WORLD_WIDTH; x++)
+		{
+			tempY = 0;
+			while(getTile(x, tempY).id == TILE_NOTHING) tempY++;
+			deltaY = ySave - tempY;
+			tile = getTile(x, tempY);
+			if(deltaY > ((tile.id != TILE_SAND) ? 2 : 1) && deltaY < ((tile.id != TILE_SAND) ? 6 : 20))
+			{
+				for(int dY = 0; dY < min(deltaY - 1, 2); dY++)
+				{
+					setTile(x, tempY + dY, TILE_NOTHING);
+				}
+				ySave = tempY + deltaY - 1;
+			}
+			else ySave = tempY;
+		}
+	//	Reverse direction pass
+		for(int y = 0; y < game.WORLD_HEIGHT; y++)
+		{
+			if(getTile(game.WORLD_WIDTH - 1, y).id != TILE_NOTHING)
+			{
+				ySave = y;
+				break;
+			}
+		}
+		for(int x = game.WORLD_WIDTH; x > -1; x--)
+		{
+			tempY = 0;
+			while(getTile(x, tempY).id == TILE_NOTHING) tempY++;
+			deltaY = ySave - tempY;
+			tile = getTile(x, tempY);
+			if(deltaY > ((tile.id != TILE_SAND) ? 2 : 1) && deltaY < ((tile.id != TILE_SAND) ? 6 : 20))
+			{
+				for(int dY = 0; dY < min(deltaY - 1, 2); dY++)
+				{
+					setTile(x, tempY + dY, TILE_NOTHING);
+				}
+				ySave = tempY + deltaY - 1;
+			}
+			else ySave = tempY;
 		}
 	}
 
