@@ -6,7 +6,7 @@
 #include "world.h"
 #include "chest.h"
 
-#define NUM_WORLD_GEN_PARTS 17
+#define NUM_WORLD_GEN_PARTS 18
 #define WORLD_SMOOTH_PASSES 5
 
 GYRAM Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
@@ -178,7 +178,7 @@ void generateWorld()
 {
 	int x, y;
 	Tile tile;
-	int copseHeight;
+	int height, copseHeight;
 	int tunnelYPositions[10];
 	int num, width, tempX, tempY, tries;
 	bool placedChest;
@@ -488,6 +488,24 @@ void generateWorld()
 				break;
 			}
 			
+		}
+	}
+
+//	Cacti
+	middleText("Moss", updateProgress());
+	for(int x = 0; x < game.WORLD_WIDTH; x++)
+	{
+		for(int y = 0; y < game.WORLD_HEIGHT; y++)
+		{
+			if(getTile(x, y).id == TILE_NOTHING) continue;
+			else if(getTile(x, y).id == TILE_SAND)
+			{
+				y--;
+				height = randRange(3, 7);
+				if(checkArea(x - 2, y - height, 5, height + 1, false)) generateCactus(x, y, height);
+				break;
+			}
+			else break;
 		}
 	}
 

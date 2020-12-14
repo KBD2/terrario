@@ -73,6 +73,7 @@ enum Tiles {
 	TILE_DOOR_O_R_L, TILE_DOOR_O_R_R,
 	TILE_VINE,
 	TILE_SAND,
+	TILE_CACTUS, TILE_CACTUS_BRANCH,
 
 	TILES_COUNT
 };
@@ -166,6 +167,21 @@ x, y: Coordinates of a TILE_TRUNK tile.
 */
 void breakTree(int x, int y);
 
+/* generateCactus
+Generates a cactus.
+
+x, y: Coordinates of the base of the cactus.
+height: Height of the cactus.
+*/
+void generateCactus(int x, int y, int height);
+
+/* breakCactus
+Breaks a cactus, starting from the given stem coordinates.
+
+x, y: Coordinates of a cactus tile.
+*/
+void breakCactus(int x, int y);
+
 /* findState
 Returns the appropriate state for the given tile, given its surroundings.
 
@@ -249,3 +265,12 @@ hour: Pointer to an hour variable.
 minute: Pointer to a minute variable.
 */
 void getTime(int *hour, int *minute);
+
+/* checkArea
+Performs a generic check that an object has sufficient space to be placed.
+
+x, y: Coordinates of the top left of the area.
+width, height: Size of the area.
+support: Whether to check if the tiles below the area fully support the area.
+*/
+bool checkArea(int x, int y, int width, int height, bool support);

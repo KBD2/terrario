@@ -377,9 +377,13 @@ void setVar(int x, int y)
 
 		case TILE_WBENCH_R:
 		case TILE_ANVIL_R:
+		case TILE_CACTUS_BRANCH:
 			var = 1;
 		case TILE_WBENCH_L:
 		case TILE_ANVIL_L:
+		case TILE_CACTUS:
+//			Little trick to render branch connectors only if it's the bottom of a branch
+			if(tile.id == TILE_CACTUS && getTile(x - 1, y + 1).id != TILE_CACTUS_BRANCH && getTile(x + 1, y + 1).id != TILE_CACTUS_BRANCH) var = 2;
 			varBuffer[virtY][virtX] = var;
 			break;
 		
@@ -442,12 +446,6 @@ void updateVarBuffer(int x, int y)
 			length = (VAR_BUF_HEIGHT - abs(offsetY)) * VAR_BUF_WIDTH;
 			memmove(dest, source, length);
 
-			fillVarBuffer(
-				0,
-				offsetY > 0 ? VAR_BUF_HEIGHT - offsetY - 1 : 0,
-				VAR_BUF_WIDTH,
-				abs(offsetY)
-			);
 		}
 		if(offsetX != 0)
 		{
@@ -458,6 +456,18 @@ void updateVarBuffer(int x, int y)
 				length = VAR_BUF_WIDTH - abs(offsetX);
 				memmove(dest, source, length);
 			}
+		}
+		if(offsetY != 0)
+		{
+			fillVarBuffer(
+				0,
+				offsetY > 0 ? VAR_BUF_HEIGHT - offsetY - 1 : 0,
+				VAR_BUF_WIDTH,
+				abs(offsetY)
+			);
+		}
+		if(offsetX != 0)
+		{
 			fillVarBuffer(
 				offsetX > 0 ? VAR_BUF_WIDTH - offsetX - 1 : 0,
 				0,

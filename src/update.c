@@ -23,6 +23,7 @@ enum UpdateReturnCodes keyboardUpdate()
 	struct Chest* chest;
 	struct PickData *heldPickData;
 	const struct ItemData *itemData;
+	bool validSupport;
 	
 	player.inventory.ticksSinceInteracted++;
 
@@ -191,8 +192,10 @@ enum UpdateReturnCodes keyboardUpdate()
 				validRight = x > (player.props.x + player.props.width) >> 3;
 				validTop = y < player.props.y >> 3;
 				validBottom = y > (player.props.y + player.props.height) >> 3;
+//				Disable placing if tile above keeps the tile below
+				validSupport = y > 0 && tiles[getTile(x, y - 1).id].support != SUPPORT_KEEP;
 				tile = items[player.inventory.getSelected()->id].tile;
-				if(tile != TILE_NULL && tile != TILE_NOTHING)
+				if(tile != TILE_NULL && tile != TILE_NOTHING && validSupport)
 				{
 					if(validLeft || validRight || validTop || validBottom || tiles[tile].physics == PHYS_NON_SOLID)
 					{

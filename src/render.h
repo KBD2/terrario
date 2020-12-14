@@ -96,7 +96,7 @@ void fillVarBuffer(int startX, int startY, int width, int height);
 /* updateVarBuffer
 Shifts around and fills in the variant buffer.
 
-x, y: Tile coordinates to use as deltas.
+x, y: Tile coordinates of the top left of the screen to use as deltas.
 */
 void updateVarBuffer(int x, int y);
 

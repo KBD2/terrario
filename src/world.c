@@ -32,7 +32,8 @@ img_tile_door_c,
 img_tile_door_o_l_l, img_tile_door_o_l_r,
 img_tile_door_o_r_l, img_tile_door_o_r_r,
 img_tile_vine,
-img_tile_sand;
+img_tile_sand,
+img_tile_cactus;
 
 const TileData tiles[] = {
 //      Ptr to sprite       	Phys?			Render?	Type?			Support?		Friends (-1 to end)									Item			Name			Cmprs?	HP
@@ -66,6 +67,8 @@ const TileData tiles[] = {
 	{	&img_tile_door_o_r_r,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NONE,	{-1},												ITEM_DOOR,		"Door O R R",	false,	0.1	},	// TILE_DOOR_O_R_R
 	{	&img_tile_vine,			PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_TOP,	{-1},												ITEM_NULL,		"Vine",			false,	0.1	},	// TILE_VINE
 	{	&img_tile_sand,			PHYS_SAND,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, -1},									ITEM_SAND,		"Sand",			true,	0.5	},	// TILE_SAND
+	{	&img_tile_cactus,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_CACTUS_BRANCH, -1},							ITEM_NULL,		"Cactus",		false,	3.0	},	// TILE_CACTUS
+	{	&img_tile_cactus,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_CACTUS, -1},									ITEM_NULL,		"Cactus",		false,	3.0	},	// TILE_CACTUS_BRANCH
 };
 
 int timeToTicks(int hour, int minute)
@@ -150,6 +153,48 @@ void breakTree(int x, int y)
 			player.inventory.stackItem(&player.inventory.items[freeSlot], &woodStack);
 		}
 		else break;
+	}
+}
+
+void generateCactus(int x, int y, int height)
+{
+	for(int dY = 0; dY < height; dY++)
+	{
+		setTile(x, y - dY, TILE_CACTUS);
+		setVar(x, y - dY);
+		regionChange(x, y - dY);
+		if(dY > 0 && rand() % 3 && getTile(x + 1, y - dY + 1).id == TILE_NOTHING)
+		{
+			setTile(x - 1, y - dY, TILE_CACTUS_BRANCH);
+			setVar(x - 1, y - dY);
+			regionChange(x - 1, y - dY);
+		}
+		else if(dY > 0 && rand() % 3 && getTile(x - 1, y - dY + 1).id == TILE_NOTHING)
+		{
+			setTile(x + 1, y - dY, TILE_CACTUS_BRANCH);
+			setVar(x - 1, y - dY);
+			regionChange(x + 1, y - dY);
+		}
+	}
+}
+
+void breakCactus(int x, int y)
+{
+	while(getTile(x, y).id == TILE_CACTUS || getTile(x, y).id == TILE_CACTUS_BRANCH)
+	{
+		setTile(x, y, TILE_NOTHING);
+		regionChange(x, y);
+		if(getTile(x - 1, y).id == TILE_CACTUS_BRANCH)
+		{
+			setTile(x - 1, y, TILE_NOTHING);
+			regionChange(x - 1, y);
+		}
+		if(getTile(x + 1, y).id == TILE_CACTUS_BRANCH)
+		{
+			setTile(x + 1, y, TILE_NOTHING);
+			regionChange(x + 1, y);
+		}
+		y--;
 	}
 }
 
@@ -410,6 +455,11 @@ void removeTile(int x, int y)
 	if(tile.id == TILE_TRUNK)
 	{
 		breakTree(x, y);
+		return;
+	}
+	else if(tile.id == TILE_CACTUS || tile.id == TILE_CACTUS_BRANCH)
+	{
+		breakCactus(x, y);
 		return;
 	}
 	if(tiles[getTile(x, y - 1).id].support != SUPPORT_KEEP)
