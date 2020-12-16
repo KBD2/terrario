@@ -58,8 +58,8 @@ const TileData tiles[] = {
 	{	&img_tile_iron_ore,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},						ITEM_IRON_ORE,	"Iron Ore",		false,	1.0	},	// TILE_IRON_ORE
 	{	&img_tile_anvil,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_ANVIL,		"Anvil",		false,	0.1	},	// TILE_ANVIL_L
 	{	&img_tile_anvil,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_ANVIL,		"Anvil R",		false,	0.1	},	// TILE_ANVIL_R
-	{	&img_tile_chest,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_CHEST,		"Chest L",		false,	0.1	},	// TILE_CHEST_L
-	{	&img_tile_chest,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_CHEST,		"Chest R",		false,	0.1	},	// TILE_CHEST_R
+	{	&img_tile_chest,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},												ITEM_CHEST,		"Chest L",		false,	0.1	},	// TILE_CHEST_L
+	{	&img_tile_chest,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},												ITEM_CHEST,		"Chest R",		false,	0.1	},	// TILE_CHEST_R
 	{	&img_tile_door_c,		PHYS_SOLID,		true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_DOOR,		"Door C",		false,	0.1	},	// TILE_DOOR_C
 	{	&img_tile_door_o_l_l,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NONE,	{-1},												ITEM_DOOR,		"Door O L L",	false,	0.1	},	// TILE_DOOR_O_L_L
 	{	&img_tile_door_o_l_r,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_DOOR,		"Door O L R",	false,	0.1	},	// TILE_DOOR_O_L_R
@@ -338,7 +338,7 @@ bool place2Wide(int x, int y, int height, enum Tiles left, enum Tiles right, boo
 void break2Wide(int x, int y, int height, enum Tiles left)
 {
 	if(getTile(x, y).id != left) x--;
-	while(getTile(x, y).id != left) y--;
+	while(getTile(x, y - 1).id == left) y--;
 	for(int dY = 0; dY < height; dY++)
 	{
 		setTile(x, y + dY, TILE_NOTHING);
@@ -462,7 +462,7 @@ void removeTile(int x, int y)
 		breakCactus(x, y);
 		return;
 	}
-	if(tiles[getTile(x, y - 1).id].support != SUPPORT_KEEP)
+	if(getTile(x, y - 1).id == tile.id || tiles[getTile(x, y - 1).id].support != SUPPORT_KEEP)
 	{
 		if(tiles[tile.id].item != ITEM_NULL)
 		{
@@ -482,7 +482,7 @@ void removeTile(int x, int y)
 			case TILE_CHEST_R:
 				x--;
 			case TILE_CHEST_L:
-				while(getTile(x, y).id != TILE_CHEST_L) y--;
+				while(getTile(x, y - 1).id == TILE_CHEST_L) y--;
 				world.chests.removeChest(x, y);
 				break2Wide(x, y, 2, TILE_CHEST_L);
 				break;

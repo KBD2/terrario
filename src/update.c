@@ -253,7 +253,7 @@ void playerUpdate(int frames)
 	int maxY = ((game.WORLD_HEIGHT - VAR_BUF_OFFSET) << 3) - player.props.height;
 
 //	Handle the physics for the player
-	player.physics(&player.props, frames);
+	player.physics(&player.props, frames, false);
 
 //	Cap the player's position at an offset so variant buffer doesn't corrupt YRAM
 	player.props.x = min(max(minX, player.props.x), maxX);

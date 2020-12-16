@@ -74,16 +74,18 @@ struct Combat {
 	enum EntityAlignments alignment;
 
 	int immuneFrames;
-	int currImmuneFrames;
 	
 	int attack;
 	int defense;
 	float knockbackResist;
+
+	int currImmuneFrames;
 };
 
 enum Entities {
 	ENT_SLIME,
 	ENT_ZOMBIE,
+	ENT_VULTURE,
 
 	ENTITIES_COUNT
 };
@@ -94,6 +96,7 @@ struct EntityBase {
 	struct Combat combat;
 	bopti_image_t *sprite;
 	const struct EntityDrops *drops;
+	int spriteOffset;
 
 	bool (*behaviour)(struct EntityBase *self, int frames);
 	void (*init)(struct EntityBase *self);
@@ -131,7 +134,7 @@ struct Player {
 	int ticksSinceHit;
 	int pixelsFallen;
 
-	void (*physics)(struct EntityPhysicsProps *self, int frames);
+	void (*physics)(struct EntityPhysicsProps *self, int frames, bool onlyCollisions);
 };
 
 extern const struct EntityBase entityTemplates[];
@@ -143,8 +146,9 @@ Performs a physics update on the given EntityPhysicsProps struct.
 
 self: Pointer to the EntityPhysicsProps struct.
 frames: Frames passed
+onlyCollisions: Whether to only resolve tile collisions.
 */
-void handlePhysics(struct EntityPhysicsProps *self, int frames);
+void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisions);
 
 /* checkCollision
 Checks two EntityPhysicsProps structs for a collision between the two.

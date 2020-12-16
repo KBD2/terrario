@@ -16,7 +16,8 @@
 
 extern bopti_image_t
 img_ent_slime,
-img_ent_zombie;
+img_ent_zombie,
+img_ent_vulture;
 
 /* ----- ENTITY DATA AND BEHAVIOUR DEFINITIONS ----- */
 
@@ -43,7 +44,7 @@ bool slimeBehaviour(struct EntityBase *self, int frames)
 	int *angry = &self->mem[3];
 	int *xSave = &self->mem[4];
 
-	handlePhysics(&self->props, frames);
+	handlePhysics(&self->props, frames, false);
 
 	if(*angry)
 	{
@@ -93,7 +94,7 @@ bool zombieBehaviour(struct EntityBase *self, int frames)
 	int *animFrame = &self->mem[0];
 	int checkX, checkY;
 
-	handlePhysics(&self->props, frames);
+	handlePhysics(&self->props, frames, false);
 
 	self->anim.direction = player.props.x < self->props.x;
 	(*animFrame)++;
@@ -126,17 +127,92 @@ bool zombieBehaviour(struct EntityBase *self, int frames)
 	return true;
 }
 
+// VULTURES
+
+const struct EntityDrops vultureDrops = {
+	.num = 0,
+	.dropList = (const Drop[]){
+//		 Item			Min Max Low Hi
+	}
+};
+
+void vultureInit(struct EntityBase *self)
+{
+	self->anim.direction = rand() % 2;
+	self->props.dropping = true;
+}
+
+bool vultureBehaviour(struct EntityBase *self, int frames)
+{
+	int offsetX, offsetY;
+	int distanceSquared;
+	int *mode = &self->mem[0];
+	int *direction = &self->mem[1];
+	int *dropTimer = &self->mem[2];
+	int *ySave = &self->mem[3];
+	int *blockTest = &self->mem[4];
+
+	handlePhysics(&self->props, frames, true);
+	if(!*mode)
+	{
+//		Sit around till the player comes too close
+		offsetX = self->props.x + (self->props.width >> 1) - (player.props.x + (player.props.width >> 1));
+		offsetY = self->props.y + (self->props.height >> 1) - (player.props.y + (player.props.height >> 1));
+		distanceSquared = offsetX * offsetX + offsetY * offsetY;
+		if(distanceSquared < 1600) *mode = 1;
+	}
+	else
+	{
+//		Try flying back if it's blocked
+		if(!*direction && self->props.y == *ySave)
+		{
+			if(*blockTest == 5)
+			{
+				*dropTimer = 0;
+				*direction = 1;
+			}
+			else (*blockTest)++;
+		}
+		else *blockTest = 0;
+		*ySave = self->props.y;
+
+		self->props.yVel = 0.6 * (*direction ? -1 : 1);
+		(*dropTimer)++;
+		if(*dropTimer >= 120)
+		{
+			if((!*direction && player.props.y - self->props.y < 0) || (*direction && player.props.y - self->props.y > 48))
+			{
+				*dropTimer = 0;
+				*direction ^= 1;
+			}
+		}
+
+		self->anim.direction = self->props.x + (self->props.width >> 1) > player.props.x + (player.props.width >> 1);
+
+		self->props.xVel += 0.1 * (self->anim.direction ? -1 : 1);
+		self->props.xVel = min(max(-0.6, self->props.xVel), 0.6);
+
+		if(frames % 4 == 0)
+		{
+			self->anim.animationFrame++;
+			if(self->anim.animationFrame == 6) self->anim.animationFrame = 1;
+		}
+	}
+	return true;
+}
+
 /* ---------- */
 
 const struct EntityBase entityTemplates[] = {
-//		ID			Props		Combat									Sprite				Drops			Behaviour			Init
-	{	ENT_SLIME,	{16, 12},	{14, ALIGN_HOSTILE, 40, 0, 6, 0, 0.15},	&img_ent_slime,		&slimeDrops,	&slimeBehaviour,	&slimeInit	},	// ENT_SLIME
-	{	ENT_ZOMBIE,	{17, 23},	{45, ALIGN_HOSTILE, 40, 0, 14, 6, 0.5}, &img_ent_zombie,	&zombieDrops,	&zombieBehaviour,	NULL		},	// ENT_ZOMBIE
+//		ID			Props		Combat									Sprite				Drops			Off	Behaviour			Init
+	{	ENT_SLIME,	{16, 12},	{14, ALIGN_HOSTILE, 40, 6, 0, 0.15},	&img_ent_slime,		&slimeDrops,	0,	&slimeBehaviour,	&slimeInit	},	// ENT_SLIME
+	{	ENT_ZOMBIE,	{17, 23},	{45, ALIGN_HOSTILE, 40, 14, 6, 0.5}, 	&img_ent_zombie,	&zombieDrops,	0,	&zombieBehaviour,	NULL		},	// ENT_ZOMBIE
+	{	ENT_VULTURE,{18, 25},	{15, ALIGN_HOSTILE,	40, 15, 4, 0.25},	&img_ent_vulture,	&vultureDrops,	8,	&vultureBehaviour,	&vultureInit},	// ENT_VULTURE
 };
 
 /* Having a generic physics property struct lets me have one function to handle
 collisions, instead of one for each entity/player struct */
-void handlePhysics(struct EntityPhysicsProps *self, int frames)
+void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisions)
 {
 	struct Rect tileCheckBox = {
 		{
@@ -159,9 +235,13 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames)
 	double fractional;
 
 #ifndef DEBUGMODE
-	self->y++;
-	self->yVel = min(max(-4, self->yVel + GRAVITY_ACCEL), 4);
+	if(!onlyCollisions)
+	{
+		self->y++;
+		self->yVel = min(max(-4, self->yVel + GRAVITY_ACCEL), 4);
+	}
 #endif
+
 	if(abs(self->xVel) < 0.1) self->xVel = 0;
 
 //	Interpolate X velocity
@@ -175,6 +255,7 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames)
 	if(abs(self->yVel) < 1 && frames % (int)roundf(1.0 / self->yVel) == 0) self->y += sgn(self->yVel);
 	else if(abs(self->yVel) > 1 && frames % (int)roundf(1.0 / fractional) == 0) self->y += integer + sgn(self->yVel);
 	else self->y += integer;
+	
 
 #ifndef DEBUGMODE
 	self->touchingTileTop = false;
@@ -239,14 +320,17 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames)
 	}
 #endif
 
-//	Friction
+	if(!onlyCollisions)
+	{
+//		Friction
 #ifndef DEBUGMODE
-	if(self->touchingTileTop) self->xVel *= 0.7;
-	else self->xVel *= 0.95;
+		if(self->touchingTileTop) self->xVel *= 0.7;
+		else self->xVel *= 0.95;
 #else
-	self->xVel *= 0.7;
-	self->yVel *= 0.7;
+		self->xVel *= 0.7;
+		self->yVel *= 0.7;
 #endif
+	}
 
 	if(self->x < 0 || self->x > xMax)
 	{
@@ -438,15 +522,17 @@ void doSpawningCycle()
 			spawnY = playerTileY + (((rand() % 25) - 12));
 			spawnY = min(max(spawnY, 0), game.WORLD_HEIGHT - 1);
 
-			if(tiles[getTile(spawnX, spawnY).id].physics == PHYS_SOLID) continue;
+			if(tiles[getTile(spawnX, spawnY).id].physics != PHYS_NON_SOLID) continue;
 
 			while(spawnY < game.WORLD_HEIGHT)
 			{
 				spawnY++;
-				if(tiles[getTile(spawnX, spawnY).id].physics == PHYS_SOLID)
+				if(tiles[getTile(spawnX, spawnY).id].physics != PHYS_NON_SOLID)
 				{
-					chosen = (world.timeTicks > timeToTicks(19, 30) || world.timeTicks < timeToTicks(4, 30)) ? ENT_ZOMBIE : ENT_SLIME;
-					world.spawnEntity(chosen, spawnX << 3, (spawnY << 3) - entityTemplates[chosen].props.height - 3);
+					if(world.timeTicks > timeToTicks(19, 30) || world.timeTicks < timeToTicks(4, 30)) chosen = ENT_ZOMBIE;
+					else if(getTile(spawnX, spawnY).id == TILE_SAND && rand() % 4 > 0) chosen = ENT_VULTURE;
+					else chosen = ENT_SLIME;
+					world.spawnEntity(chosen, spawnX << 3, (spawnY << 3) - entityTemplates[chosen].props.height);
 					return;
 				}
 			}
