@@ -78,7 +78,7 @@ enum UpdateReturnCodes keyboardUpdate()
 			case KEY_F1: case KEY_F2: case KEY_F3: case KEY_F4: case KEY_F5:
 				player.inventory.ticksSinceInteracted = 0;
 				if(player.swingFrame == 0 && !playerDead) player.inventory.hotbarSlot = keycode_function(key.key) - 1;
-//				Updates held tool data
+//				Updates held item data
 				registerHeld();
 				break;
 

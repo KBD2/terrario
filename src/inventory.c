@@ -435,4 +435,31 @@ void registerHeld()
 			player.tool.type = TOOL_TYPE_NONE;
 			break;
 	}
+	switch(currID)
+	{
+		case ITEM_WBENCH:
+		case ITEM_ANVIL:
+			player.ghost = (struct GhostObject){2, 1};
+			break;
+
+		case ITEM_CHAIR:
+			player.ghost = (struct GhostObject){1, 2};
+			break;
+		
+		case ITEM_FURNACE:
+			player.ghost = (struct GhostObject){3, 2};
+			break;
+		
+		case ITEM_CHEST:
+			player.ghost = (struct GhostObject){2, 2};
+			break;
+		
+		case ITEM_DOOR:
+			player.ghost = (struct GhostObject){1, 3};
+			break;
+		
+		default:
+			player.ghost = (struct GhostObject){0, 0};
+			break;
+	}
 }

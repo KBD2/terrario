@@ -49,8 +49,8 @@ void render(bool renderHUD)
 	unsigned int camMinY = (VAR_BUF_OFFSET << 3) + (SCREEN_HEIGHT >> 1);
 	unsigned int camMaxY = ((game.WORLD_HEIGHT - VAR_BUF_OFFSET) << 3) - (SCREEN_HEIGHT >> 1);
 	extern bopti_image_t img_player, img_cursor, img_slots, img_slot_highlight,
-	img_leaves, img_deathtext,
-	img_bg_underground, img_sunmoon, img_bg_night, img_tile_cracks;
+	img_leaves, img_deathtext, img_bg_underground, img_sunmoon, img_bg_night,
+	img_tile_cracks, img_tile_ghost;
 	bopti_image_t *swingSprite;
 	int camX = min(max(player.props.x + (player.props.width >> 1), camMinX), camMaxX);
 	int camY = min(max(player.props.y + (player.props.height >> 1), camMinY), camMaxY);
@@ -175,6 +175,30 @@ void render(bool renderHUD)
 					dsubimage(currTileX, currTileY, currTile->sprite, 0, 0, 8, 8, flags);
 				}
 			}
+		}
+	}
+
+//	Render ghost object if player has an object selected
+	for(int dY = 0; dY < player.ghost.height; dY++)
+	{
+		for(int dX = 0; dX < player.ghost.width; dX++)
+		{
+			tile = getTile(player.cursorTile.x + dX, player.cursorTile.y + dY);
+			if(tile.id != TILE_NOTHING && tile.id != TILE_PLANT) continue;
+			state = 0;
+			if(player.ghost.width > 1)
+			{
+				if(dX < player.ghost.width - 1) state |= 0b0100;
+				if(dX > 0) state |= 0b0001;
+			}
+			if(player.ghost.height > 1)
+			{
+				if(dY < player.ghost.height - 1) state |= 0b1000;
+				if(dY > 0) state |= 0b0010;
+			}
+			subrectX = ((state & 3) << 3) + (state & 3) + 1;
+			subrectY = ((state >> 2) << 3) + (state >> 2) + 1;
+			dsubimage(((player.cursorTile.x + dX) << 3) - camOffsetX, ((player.cursorTile.y + dY) << 3) - camOffsetY, &img_tile_ghost, subrectX, subrectY, 8, 8, DIMAGE_NONE);
 		}
 	}
 

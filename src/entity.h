@@ -133,6 +133,10 @@ struct Player {
 	int maxHealth;
 	int ticksSinceHit;
 	int pixelsFallen;
+	struct GhostObject{
+		short width;
+		short height;
+	} ghost;
 
 	void (*physics)(struct EntityPhysicsProps *self, int frames, bool onlyCollisions);
 };
