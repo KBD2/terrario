@@ -1,5 +1,5 @@
 # Put this script in a directory with the capt.vram file.
-# Run it and it'll generate a 512x256 screenshot from them and save to out.png.
+# Run it and it'll generate a 512x256 screenshot from it and save to out.png.
 
 from PIL import Image
 
