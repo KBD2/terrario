@@ -64,8 +64,9 @@ enum UpdateReturnCodes keyboardUpdate()
 				{
 					if(player.props.touchingTileTop || (player.bonuses.doubleJump && !player.bonuses.hasDoubleJumped))
 					{
-						player.props.yVel = -4.5;
 						player.props.dropping = true;
+						player.jumpTimer = 0;
+						player.jumpReleased = false;
 						if(!player.props.touchingTileTop && player.bonuses.doubleJump)
 						{
 							player.bonuses.hasDoubleJumped = true;
@@ -128,6 +129,12 @@ enum UpdateReturnCodes keyboardUpdate()
 
 	if(!playerDead)
 	{
+		if(keydown(KEY_8) && !player.jumpReleased && player.jumpTimer < 10)
+		{
+			player.props.yVel = -3.5;
+			player.jumpTimer++;
+		}
+		else player.jumpReleased = true;
 		if(keydown(KEY_7))
 		{
 			itemData = &items[player.inventory.getSelected()->id];
@@ -135,7 +142,6 @@ enum UpdateReturnCodes keyboardUpdate()
 			if(itemData->type == TOOL_TYPE_PICK || itemData->type == TOOL_TYPE_SWORD)
 			{
 				if(player.swingFrame == 0) player.swingFrame = 32;
-				player.swingDir = player.cursor.x < 64;
 				switch(player.tool.type)
 				{
 					case TOOL_TYPE_PICK:

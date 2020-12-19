@@ -247,7 +247,7 @@ void render(bool renderHUD)
 		else
 		{
 //			Render top half of swing and bottom half of whatever animation would be playing otherwise
-			entSubrectX = player.swingDir ? 16 : 0;
+			entSubrectX = player.anim.direction ? 16 : 0;
 			dsubimage(entX, entY + 15, &img_player, entSubrectX, entSubrectY + 15, player.props.width + 4, player.props.height - 14, DIMAGE_NONE);
 
 			entSubrectY = (4 - (player.swingFrame >> 3)) * (player.props.height + 2) + 1;
@@ -259,12 +259,12 @@ void render(bool renderHUD)
 			else swingSprite = NULL;
 
 //			Might have to generalise for different sized sprites
-			entX += (player.props.width >> 1) + (player.swingDir ? -12 : 0);
-			entX += swingHandleDeltaPositions[3 - (player.swingFrame >> 3)][0] * (player.swingDir ? -1 : 1);
+			entX += (player.props.width >> 1) + (player.anim.direction ? -12 : 0);
+			entX += swingHandleDeltaPositions[3 - (player.swingFrame >> 3)][0] * (player.anim.direction ? -1 : 1);
 			entY += swingHandleDeltaPositions[3 - (player.swingFrame >> 3)][1];
 
 			entSubrectX = (3 - (player.swingFrame >> 3)) * 17 + 1;
-			entSubrectY = player.swingDir ? 17 : 0;
+			entSubrectY = player.anim.direction ? 17 : 0;
 
 			dsubimage(entX, entY, swingSprite, entSubrectX, entSubrectY, 16, 16, DIMAGE_NONE);
 		}

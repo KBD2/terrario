@@ -392,7 +392,7 @@ void doEntityDrop(const struct EntityDrops *drops)
 	for(int drop = 0; drop < drops->num; drop++)
 		{
 			currDrop = &drops->dropList[drop];
-			if(rand() % currDrop->ratioHigh >= currDrop->ratioLow - 1)
+			if(rand() % currDrop->ratioHigh <= currDrop->ratioLow - 1)
 			{
 				amount = (rand() % (currDrop->amountMax - currDrop->amountMin + 1)) + currDrop->amountMin;
 				hold = (Item){currDrop->item, amount};
@@ -418,7 +418,7 @@ void doEntityCycle(int frames)
 	if(player.swingFrame > 0)
 	{
 		weaponProps = (struct EntityPhysicsProps) {
-			.x = player.props.x + (player.swingDir ? -16 : 0),
+			.x = player.props.x + (player.anim.direction ? -16 : 0),
 			.y = player.props.y - 16,
 			.width = 16 + player.props.width,
 			.height = player.props.height + 16

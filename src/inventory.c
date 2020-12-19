@@ -173,6 +173,7 @@ void inventoryMenu(struct Chest* chest)
 	int width, height;
 	int tab = (chest == NULL) ? TAB_MAIN : TAB_CHEST;
 
+	getkey_repeat(16, 16);
 	getkey_repeat_filter(&inventoryKeyFilter);
 
 	while(true)
@@ -275,22 +276,23 @@ void inventoryMenu(struct Chest* chest)
 						}
 						else break;
 					}
+					getkey_repeat(400, 40);
 					getkey_repeat_filter(NULL);
 					return;
 				}
 				break;
 
 			case KEY_LEFT:
-				cursorX -= 2;
+				cursorX -= 1;
 				break;
 			case KEY_RIGHT:
-				cursorX += 2;
+				cursorX += 1;
 				break;
 			case KEY_UP:
-				cursorY -= 2;
+				cursorY -= 1;
 				break;
 			case KEY_DOWN:
-				cursorY += 2;
+				cursorY += 1;
 				break;
 
 			case KEY_F1:

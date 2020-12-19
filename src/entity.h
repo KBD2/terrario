@@ -128,8 +128,9 @@ struct Player {
 	struct AccessoryBonuses bonuses;
 	Coords spawn;
 
+	int jumpTimer;
+	bool jumpReleased;
 	int swingFrame;
-	bool swingDir;
 	int maxHealth;
 	int ticksSinceHit;
 	int pixelsFallen;
