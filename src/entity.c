@@ -44,7 +44,7 @@ bool slimeBehaviour(struct EntityBase *self, int frames)
 	int *angry = &self->mem[3];
 	int *xSave = &self->mem[4];
 
-	handlePhysics(&self->props, frames, false);
+	handlePhysics(&self->props, frames, false, WATER_FLOAT);
 
 	if(*angry)
 	{
@@ -94,7 +94,7 @@ bool zombieBehaviour(struct EntityBase *self, int frames)
 	int *animFrame = &self->mem[0];
 	int checkX, checkY;
 
-	handlePhysics(&self->props, frames, false);
+	handlePhysics(&self->props, frames, false, WATER_FRICTION);
 
 	self->anim.direction = player.props.x < self->props.x;
 	(*animFrame)++;
@@ -152,7 +152,7 @@ bool vultureBehaviour(struct EntityBase *self, int frames)
 	int *ySave = &self->mem[3];
 	int *blockTest = &self->mem[4];
 
-	handlePhysics(&self->props, frames, true);
+	handlePhysics(&self->props, frames, true, WATER_FRICTION);
 	if(!*mode)
 	{
 //		Sit around till the player comes too close
@@ -212,7 +212,7 @@ const struct EntityBase entityTemplates[] = {
 
 /* Having a generic physics property struct lets me have one function to handle
 collisions, instead of one for each entity/player struct */
-void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisions)
+void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisions, enum WaterPhysics water)
 {
 	struct Rect tileCheckBox = {
 		{
@@ -233,6 +233,8 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 
 	double integer;
 	double fractional;
+
+	bool waterFrictionApplied = false;
 
 #ifndef DEBUGMODE
 	if(!onlyCollisions)
@@ -316,6 +318,23 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 					}
 				}
 			}
+			else if(getTile(x, y).id == TILE_WATER)
+			{
+				switch(water)
+				{
+					case WATER_FRICTION:
+						if(!waterFrictionApplied)
+						{
+							waterFrictionApplied = true;
+							self->xVel *= 0.95;
+							self->yVel *= 0.95;
+						}
+						break;
+					case WATER_FLOAT:
+						self->yVel -= 0.1;
+						break;
+				}
+			}
 		}
 	}
 #endif
@@ -325,7 +344,7 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 //		Friction
 #ifndef DEBUGMODE
 		if(self->touchingTileTop) self->xVel *= 0.7;
-		else self->xVel *= 0.95;
+		else if(water != WATER_FLOAT) self->xVel *= 0.95;
 #else
 		self->xVel *= 0.7;
 		self->yVel *= 0.7;

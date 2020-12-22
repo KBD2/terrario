@@ -224,6 +224,12 @@ enum UpdateReturnCodes keyboardUpdate()
 
 	if(!playerDead)
 	{
+		if(keydown(KEY_DOT))
+		{
+			x = player.cursorTile.x;
+			y = player.cursorTile.y;
+			setTile(x, y, TILE_WATER);
+		}
 		if(keydown(KEY_8) && !player.jumpReleased && player.jumpTimer < 10)
 		{
 			player.props.yVel = -3.5;
@@ -283,7 +289,7 @@ void playerUpdate(int frames)
 	int maxY = ((game.WORLD_HEIGHT - VAR_BUF_OFFSET) << 3) - player.props.height;
 
 //	Handle the physics for the player
-	player.physics(&player.props, frames, false);
+	player.physics(&player.props, frames, false, WATER_FRICTION);
 
 //	Cap the player's position at an offset so variant buffer doesn't corrupt YRAM
 	player.props.x = min(max(minX, player.props.x), maxX);
@@ -390,7 +396,7 @@ void worldUpdate()
 					placeX = x;
 					placeY = y + 1;
 				}
-				else if(steps & 1)
+				else if(rand() % 2)
 				{
 					if(tiles[getTile(x - 1, y + 1).id].canFlood)
 					{
@@ -424,6 +430,7 @@ void worldUpdate()
 					setTile(placeX, placeY, TILE_WATER);
 					regionChange(x, y);
 					regionChange(placeX, placeY);
+					setVar(placeX, placeY);
 				}
 			}
 		}

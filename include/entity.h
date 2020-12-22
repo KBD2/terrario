@@ -90,6 +90,11 @@ enum Entities {
 	ENTITIES_COUNT
 };
 
+enum WaterPhysics {
+	WATER_FRICTION,
+	WATER_FLOAT
+};
+
 struct EntityBase {
 	int id;
 	struct EntityPhysicsProps props;
@@ -139,7 +144,7 @@ struct Player {
 		short height;
 	} ghost;
 
-	void (*physics)(struct EntityPhysicsProps *self, int frames, bool onlyCollisions);
+	void (*physics)(struct EntityPhysicsProps *self, int frames, bool onlyCollisions, enum WaterPhysics water);
 };
 
 extern const struct EntityBase entityTemplates[];
@@ -152,8 +157,9 @@ Performs a physics update on the given EntityPhysicsProps struct.
 self: Pointer to the EntityPhysicsProps struct.
 frames: Frames passed
 onlyCollisions: Whether to only resolve tile collisions.
+water: What to do if the entity is touching water.
 */
-void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisions);
+void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisions, enum WaterPhysics water);
 
 /* checkCollision
 Checks two EntityPhysicsProps structs for a collision between the two.
