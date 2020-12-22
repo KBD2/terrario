@@ -37,7 +37,8 @@ const struct Recipe recipes[] = {
 	{	TILE_WBENCH_L,		{ITEM_WOOD_BREASTPLATE, 1},	1,	(const Item[]){ {ITEM_WOOD, 30}												}	},
 	{	TILE_WBENCH_L,		{ITEM_WOOD_GREAVES, 1},		1,	(const Item[]){ {ITEM_WOOD, 25}												}	},
 	{	TILE_ANVIL_L,		{ITEM_IRON_SWORD, 1},		1,	(const Item[]){ {ITEM_IRON_BAR, 8}											}	},
-	{	TILE_ANVIL_L,		{ITEM_IRON_PICK, 1},		2,	(const Item[]){ {ITEM_IRON_BAR, 12},	{ITEM_WOOD, 3}						}	}
+	{	TILE_ANVIL_L,		{ITEM_IRON_PICK, 1},		2,	(const Item[]){ {ITEM_IRON_BAR, 12},	{ITEM_WOOD, 3}						}	},
+	{	TILE_ANVIL_L,		{ITEM_EMPTY_BUCKET, 1},		1,	(const Item[]){ {ITEM_IRON_BAR, 3}											}	}
 };
 
 const int numRecipes = sizeof(recipes) / sizeof(struct Recipe);

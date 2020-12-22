@@ -88,7 +88,7 @@ void gameLoop(volatile int *flag)
 		if(updateRet == UPDATE_EXIT) break;
 
 		if(frames & 1) updateExplosion(&world.explosion);
-		if(frames % 4 == 0) worldUpdate();
+		if(frames % 8 == 0) worldUpdate();
 		// Only bother rendering 30 frames (60 updates)
 		if(world.explosion.deltaTicks == 30) world.explosion.numParticles = 0;
 

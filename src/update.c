@@ -12,18 +12,113 @@
 #include "crafting.h"
 #include "render.h"
 
+void useHeld()
+{
+	struct PickData *heldPickData;
+	const struct ItemData *itemData;
+	bool validSupport;
+	Item *item;
+	int slot;
+	int x, y;
+	bool validLeft, validRight, validTop, validBottom;
+	enum Tiles tile;
+
+	itemData = &items[player.inventory.getSelected()->id];
+//	Picks and swords
+	if(itemData->type == TOOL_TYPE_PICK || itemData->type == TOOL_TYPE_SWORD)
+	{
+		if(player.swingFrame == 0) player.swingFrame = 32;
+		switch(player.tool.type)
+		{
+			case TOOL_TYPE_PICK:
+				heldPickData = &player.tool.data.pickData;
+				if(heldPickData->currFramesLeft == 0)
+				{
+					x = player.cursorTile.x;
+					y = player.cursorTile.y;
+					player.inventory.ticksSinceInteracted = 0;
+					if(x != heldPickData->targeted.x || y != heldPickData->targeted.y)
+					{
+//							You can safely assume this will be called at least once.
+						heldPickData->targeted.x = x;
+						heldPickData->targeted.y = y;
+						heldPickData->targeted.damage = 0;
+						heldPickData->targeted.crackVar = rand() % 6;
+					}
+					heldPickData->targeted.damage += (float)heldPickData->power / tiles[getTile(x, y).id].hitpoints;
+					if(heldPickData->targeted.damage >= 100)
+					{
+						world.removeTile(x, y);
+						heldPickData->targeted.damage = 0;
+					}
+					else setVar(x, y);
+					heldPickData->currFramesLeft = heldPickData->speed;
+				}
+				else heldPickData->currFramesLeft--;
+
+			default:
+				break;
+		}
+	}
+//		Miscellaneous tools
+	else if(itemData->type == TOOL_TYPE_OTHER)
+	{
+		switch(player.inventory.getSelected()->id)
+		{
+			case ITEM_MAGIC_MIRROR:
+				player.props.x = player.spawn.x;
+				player.props.y = player.spawn.y;
+				player.pixelsFallen = 0;
+				break;
+				
+			default:
+				break;
+		}
+	}
+	else
+	{
+		player.inventory.ticksSinceInteracted = 0;
+		x = player.cursorTile.x;
+		y = player.cursorTile.y;
+		validLeft = x < player.props.x >> 3;
+		validRight = x > (player.props.x + player.props.width) >> 3;
+		validTop = y < player.props.y >> 3;
+		validBottom = y > (player.props.y + player.props.height) >> 3;
+//			Disable placing if tile above keeps the tile below
+		validSupport = y > 0 && tiles[getTile(x, y - 1).id].support != SUPPORT_KEEP;
+		item = player.inventory.getSelected();
+		tile = items[item->id].tile;
+		if(tile != TILE_NULL && tile != TILE_NOTHING && validSupport)
+		{
+			if(validLeft || validRight || validTop || validBottom || tiles[tile].physics == PHYS_NON_SOLID)
+			{
+				if(item->id == ITEM_WATER_BUCKET)
+				{
+					slot = player.inventory.getFirstFreeSlot(ITEM_EMPTY_BUCKET);
+					player.inventory.stackItem(&player.inventory.items[slot], &(Item){ITEM_EMPTY_BUCKET, 1});
+				}
+				world.placeTile(x, y, item);
+			}
+		}
+		else if(item->id == ITEM_EMPTY_BUCKET && getTile(x, y).id == TILE_WATER)
+		{
+			slot = player.inventory.getFirstFreeSlot(ITEM_WATER_BUCKET);
+			player.inventory.stackItem(&player.inventory.items[slot], &(Item){ITEM_WATER_BUCKET, 1});
+			player.inventory.removeItem(item);
+			setTile(x, y, TILE_NOTHING);
+			regionChange(x, y);
+		}
+	}
+}
+
 // Update player and do keyboard stuff
 enum UpdateReturnCodes keyboardUpdate()
 {
-	bool validLeft, validRight, validTop, validBottom;
 	int x, y;
 	key_event_t key;
 	enum Tiles tile;
 	bool playerDead =  player.combat.health <= 0;
 	struct Chest* chest;
-	struct PickData *heldPickData;
-	const struct ItemData *itemData;
-	bool validSupport;
 	
 	player.inventory.ticksSinceInteracted++;
 
@@ -137,78 +232,7 @@ enum UpdateReturnCodes keyboardUpdate()
 		else player.jumpReleased = true;
 		if(keydown(KEY_7))
 		{
-			itemData = &items[player.inventory.getSelected()->id];
-//			Picks and swords
-			if(itemData->type == TOOL_TYPE_PICK || itemData->type == TOOL_TYPE_SWORD)
-			{
-				if(player.swingFrame == 0) player.swingFrame = 32;
-				switch(player.tool.type)
-				{
-					case TOOL_TYPE_PICK:
-						heldPickData = &player.tool.data.pickData;
-						if(heldPickData->currFramesLeft == 0)
-						{
-							x = player.cursorTile.x;
-							y = player.cursorTile.y;
-							player.inventory.ticksSinceInteracted = 0;
-							if(x != heldPickData->targeted.x || y != heldPickData->targeted.y)
-							{
-//								You can safely assume this will be called at least once.
-								heldPickData->targeted.x = x;
-								heldPickData->targeted.y = y;
-								heldPickData->targeted.damage = 0;
-								heldPickData->targeted.crackVar = rand() % 6;
-							}
-							heldPickData->targeted.damage += (float)heldPickData->power / tiles[getTile(x, y).id].hitpoints;
-							if(heldPickData->targeted.damage >= 100)
-							{
-								world.removeTile(x, y);
-								heldPickData->targeted.damage = 0;
-							}
-							else setVar(x, y);
-							heldPickData->currFramesLeft = heldPickData->speed;
-						}
-						else heldPickData->currFramesLeft--;
-
-					default:
-						break;
-				}
-			}
-//			Miscellaneous tools
-			else if(itemData->type == TOOL_TYPE_OTHER)
-			{
-				switch(player.inventory.getSelected()->id)
-				{
-					case ITEM_MAGIC_MIRROR:
-						player.props.x = player.spawn.x;
-						player.props.y = player.spawn.y;
-						player.pixelsFallen = 0;
-						break;
-					
-					default:
-						break;
-				}
-			}
-			else
-			{
-				player.inventory.ticksSinceInteracted = 0;
-				x = player.cursorTile.x;
-				y = player.cursorTile.y;
-				validLeft = x < player.props.x >> 3;
-				validRight = x > (player.props.x + player.props.width) >> 3;
-				validTop = y < player.props.y >> 3;
-				validBottom = y > (player.props.y + player.props.height) >> 3;
-//				Disable placing if tile above keeps the tile below
-				validSupport = y > 0 && tiles[getTile(x, y - 1).id].support != SUPPORT_KEEP;
-				tile = items[player.inventory.getSelected()->id].tile;
-				if(tile != TILE_NULL && tile != TILE_NOTHING && validSupport)
-				{
-					if(validLeft || validRight || validTop || validBottom || tiles[tile].physics == PHYS_NON_SOLID)
-					{
-						world.placeTile(x, y, player.inventory.getSelected());
-					}
-				}
-			}
+			useHeld();
 		}
 		else if(player.tool.type == TOOL_TYPE_PICK) player.tool.data.pickData.currFramesLeft = 0;
 
@@ -339,12 +363,16 @@ void playerUpdate(int frames)
 void worldUpdate()
 {
 	int tempY;
+	enum Tiles tile;
+	static int steps = 0;
+	int placeX, placeY;
 
 	for(int y = min(game.WORLD_HEIGHT - 1, (player.props.y >> 3) + 10); y > max(0, (player.props.y >> 3) - 10); y--)
 	{
-		for(int x = max(0, (player.props.x >> 3) - 10); x < min(game.WORLD_WIDTH, (player.props.x >> 3) + 10); x++)
+		for(int x = max(1, (player.props.x >> 3) - 10); x < min(game.WORLD_WIDTH - 1, (player.props.x >> 3) + 10); x++)
 		{
-			if(tiles[getTile(x, y).id].physics == PHYS_SAND && getTile(x, y + 1).id == TILE_NOTHING)
+			tile = getTile(x, y).id;
+			if(tiles[tile].physics == PHYS_SAND && getTile(x, y + 1).id == TILE_NOTHING)
 			{
 				for(tempY = y; tempY >= 0 && tiles[getTile(x, tempY).id].physics == PHYS_SAND; tempY--)
 				{
@@ -354,6 +382,52 @@ void worldUpdate()
 				setTile(x, tempY + 1, TILE_NOTHING);
 				if(tiles[getTile(x, tempY).id].support == SUPPORT_NEED) world.removeTile(x, tempY);
 			}
+			else if(tile == TILE_WATER)
+			{
+				placeX = -1;
+				if(tiles[getTile(x, y + 1).id].canFlood)
+				{
+					placeX = x;
+					placeY = y + 1;
+				}
+				else if(steps & 1)
+				{
+					if(tiles[getTile(x - 1, y + 1).id].canFlood)
+					{
+						placeX = x - 1;
+						placeY = y + 1;
+					}
+					else if(tiles[getTile(x - 1, y).id].canFlood)
+					{
+						placeX = x - 1;
+						placeY = y;
+					}
+				}
+				else
+				{
+					if(tiles[getTile(x + 1, y + 1).id].canFlood)
+					{
+						placeX = x + 1;
+						placeY = y + 1;
+					}
+					else if(tiles[getTile(x + 1, y).id].canFlood)
+					{
+						placeX = x + 1;
+						placeY = y;
+					}
+				}
+				if(placeX > 0)
+				{
+					
+					setTile(x, y, TILE_NOTHING);
+					if(getTile(placeX, placeY).id != TILE_NOTHING) removeTile(placeX, placeY);
+					setTile(placeX, placeY, TILE_WATER);
+					regionChange(x, y);
+					regionChange(placeX, placeY);
+				}
+			}
 		}
 	}
+
+	steps++;
 }

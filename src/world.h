@@ -40,6 +40,7 @@ typedef struct {
 	char *name;
 	bool compress;
 	float hitpoints;
+	bool canFlood;
 } TileData;
 
 extern const TileData tiles[];
@@ -74,6 +75,7 @@ enum Tiles {
 	TILE_VINE,
 	TILE_SAND,
 	TILE_CACTUS, TILE_CACTUS_BRANCH,
+	TILE_WATER,
 
 	TILES_COUNT
 };
