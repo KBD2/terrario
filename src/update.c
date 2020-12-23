@@ -370,7 +370,6 @@ void worldUpdate()
 {
 	int tempY;
 	enum Tiles tile;
-	static int steps = 0;
 	int placeX, placeY;
 
 	for(int y = min(game.WORLD_HEIGHT - 1, (player.props.y >> 3) + 10); y > max(0, (player.props.y >> 3) - 10); y--)
@@ -424,7 +423,6 @@ void worldUpdate()
 				}
 				if(placeX > 0)
 				{
-					
 					setTile(x, y, TILE_NOTHING);
 					if(getTile(placeX, placeY).id != TILE_NOTHING) removeTile(placeX, placeY);
 					setTile(placeX, placeY, TILE_WATER);
@@ -435,6 +433,4 @@ void worldUpdate()
 			}
 		}
 	}
-
-	steps++;
 }

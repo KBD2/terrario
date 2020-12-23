@@ -6,7 +6,7 @@
 #include "world.h"
 #include "chest.h"
 
-#define NUM_WORLD_GEN_PARTS 18
+#define NUM_WORLD_GEN_PARTS 19
 #define WORLD_SMOOTH_PASSES 5
 
 GYRAM Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
@@ -188,6 +188,8 @@ void generateWorld()
 	float mul;
 	int ySave = 0;
 	int deltaY;
+	int depth, y1, y2;
+	float multiplier;
 
 	yPositions = malloc(game.WORLD_WIDTH * sizeof(unsigned char));
 
@@ -273,7 +275,7 @@ void generateWorld()
 	for(int i = 0; i < 3000 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
-		y = min((rand() % (int)(game.WORLD_HEIGHT - game.WORLD_HEIGHT / 2.8)) + game.WORLD_HEIGHT / 2.8, game.WORLD_HEIGHT - 1);
+		y = randRange(game.WORLD_HEIGHT / 3.2, game.WORLD_HEIGHT);
 		if(getTile(x, y).id == TILE_STONE)
 		{
 			clump(x, y, poisson(10), TILE_DIRT, true, 0, 0);
@@ -282,11 +284,17 @@ void generateWorld()
 
 //	Small holes
 	middleText("Small Holes", updateProgress());
+	for(int i = 0; i < 250 * game.WORLDGEN_MULTIPLIER; i++)
+	{
+		x = rand() % game.WORLD_WIDTH;
+		y = randRange(game.WORLD_HEIGHT / 3.2, game.WORLD_HEIGHT);
+		clump(x, y, poisson(50), TILE_WATER, false, 0, 0);
+	}
 	for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
-		y = min((rand() % (int)(game.WORLD_HEIGHT - game.WORLD_HEIGHT / 3.2)) + game.WORLD_HEIGHT / 4, game.WORLD_HEIGHT - 1);
-		clump(x, y, poisson(25), TILE_NOTHING, true, 0, 0);
+		y = randRange(game.WORLD_HEIGHT / 3.2, game.WORLD_HEIGHT);
+		clump(x, y, poisson(50), TILE_NOTHING, true, 0, 0);
 	}
 
 //	Caves
@@ -294,7 +302,7 @@ void generateWorld()
 	for(int i = 0; i < 150 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
-		y = min((rand() % (int)(game.WORLD_HEIGHT - game.WORLD_HEIGHT / 3.2)) + game.WORLD_HEIGHT / 3.5, game.WORLD_HEIGHT - 1);
+		y = randRange(game.WORLD_HEIGHT / 3.2, game.WORLD_HEIGHT);
 		clump(x, y, poisson(200), TILE_NOTHING, true, 0, 0);
 	}
 
@@ -341,6 +349,40 @@ void generateWorld()
 		}
 	}
 
+//	Lakes
+	middleText("Lakes", updateProgress());
+	for(int i = 0; i < min(2, poisson(3)); i++)
+	{
+		x = randRange(75, game.WORLD_WIDTH - 75);
+		width = poisson(30);
+		depth = poisson(10);
+		multiplier = (float)-depth / pow((float)width / 2, 2);
+		y1 = game.WORLD_HEIGHT / 5;
+		while(getTile(x, y1).id == TILE_NOTHING)
+		{
+			y1++;
+			if(getTile(x, y1 + 6).id == TILE_NOTHING) y1 += 6;
+		}
+		y2 = game.WORLD_HEIGHT / 5;
+		while(getTile(x + width, y2).id == TILE_NOTHING)
+		{
+			y2++;
+			if(getTile(x + width, y2 + 6).id == TILE_NOTHING) y2 += 6;
+		}
+		y = max(y1, y2);
+		for(int dX = 0; dX < width; dX++)
+		{
+			for(int dY = 0; dY < y; dY++)
+			{
+				if(getTile(x + dX, dY).id != TILE_NOTHING) setTile(x + dX, dY, TILE_NOTHING);
+			}
+			for(int dY = 0; dY < multiplier * pow(dX - width / 2, 2) + depth; dY++)
+			{
+				setTile(x + dX, y + dY, TILE_WATER);
+			}
+		}
+	}
+
 //	Gravitating Sand
 	middleText("Gravitating Sand", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
@@ -378,7 +420,12 @@ void generateWorld()
 			while(getTile(x, tempY).id == TILE_NOTHING) tempY++;
 			deltaY = ySave - tempY;
 			tile = getTile(x, tempY);
-			if(deltaY > ((tile.id != TILE_SAND) ? 2 : 1) && deltaY < ((tile.id != TILE_SAND) ? 6 : 20))
+			if(tile.id == TILE_WATER && deltaY > 0)
+			{
+				for(int dY = 0; dY < deltaY; dY++) setTile(x, tempY + dY, TILE_NOTHING);
+				ySave = tempY + deltaY - 1;
+			}
+			else if(deltaY > ((tile.id != TILE_SAND) ? 2 : 1) && getTile(x, tempY + 6).id != TILE_NOTHING)
 			{
 				for(int dY = 0; dY < min(deltaY - 1, 2); dY++)
 				{
@@ -403,7 +450,12 @@ void generateWorld()
 			while(getTile(x, tempY).id == TILE_NOTHING) tempY++;
 			deltaY = ySave - tempY;
 			tile = getTile(x, tempY);
-			if(deltaY > ((tile.id != TILE_SAND) ? 2 : 1) && deltaY < ((tile.id != TILE_SAND) ? 6 : 20))
+			if(tile.id == TILE_WATER && deltaY > 0)
+			{
+				for(int dY = 0; dY < deltaY; dY++) setTile(x, tempY + dY, TILE_NOTHING);
+				ySave = tempY + deltaY - 1;
+			}
+			else if(deltaY > ((tile.id != TILE_SAND) ? 2 : 1) && getTile(x, tempY + 6).id != TILE_NOTHING)
 			{
 				for(int dY = 0; dY < min(deltaY - 1, 2); dY++)
 				{

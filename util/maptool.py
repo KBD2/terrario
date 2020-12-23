@@ -25,6 +25,7 @@ class Tiles(Enum):
     VINE = (23, 177, 76)
     TREE = (151, 107, 75)
     SAND = (186, 168, 84)
+    WATER = (9, 61, 191)
 
 # Call whenever you want to see the world
 def show():
@@ -201,10 +202,14 @@ def generate():
             clump(x, y, poisson(10), Tiles.DIRT, True, 0, 0)
 
     print("Small holes...")
+    for i in range(250):
+        x = random.randrange(0, WORLD_WIDTH)
+        y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
+        clump(x, y, poisson(50), Tiles.WATER, False, 0, 0)
     for i in range(750):
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
-        clump(x, y, poisson(25), Tiles.NOTHING, True, 0, 0)
+        clump(x, y, poisson(50), Tiles.NOTHING, True, 0, 0)
 
     # A 500-length coord array should be enough for this
     print("Caves...")
@@ -239,6 +244,30 @@ def generate():
         if getTile(x, y) != Tiles.SAND:
             clump(x, y, poisson(10), Tiles.IRON, True, 0, 0)
 
+    print("Lakes...")
+    for i in range(min(2, poisson(3))):
+        x = random.randrange(75, WORLD_WIDTH - 75)
+        width = poisson(30)
+        depth = poisson(10)
+        multiplier = -depth / (width / 2) ** 2
+        y1 = WORLD_HEIGHT // 5
+        while getTile(x, y1) == Tiles.NOTHING:
+            y1 += 1
+            if getTile(x, y1 + 6) == Tiles.NOTHING:
+                y1 += 6
+        y2 = WORLD_HEIGHT // 5
+        while getTile(x + width, y2) == Tiles.NOTHING:
+            y2 += 1
+            if getTile(x + width, y2 + 6) == Tiles.NOTHING:
+                y2 += 6
+        y = max(y1, y2)
+        for dX in range(width):
+            for dY in range(y):
+                if getTile(x + dX, dY) != Tiles.NOTHING:
+                    setTile(x + dX, dY, Tiles.NOTHING)
+            for dY in range(int(multiplier * (dX - width / 2) ** 2 + depth)):
+                setTile(x + dX, y + dY, Tiles.WATER)
+            
     print("Gravitating Sand...")
     for x in range(WORLD_WIDTH):
         for y in range(WORLD_HEIGHT, 0, -1):
@@ -261,7 +290,11 @@ def generate():
                 y += 1
             deltaY = ySave - y
             tile = getTile(x, y)
-            if 1 + int(tile != Tiles.SAND) < deltaY < 6 + 14 * int(tile == Tiles.SAND):
+            if tile == Tiles.WATER and deltaY > 0:
+                for dY in range(deltaY):
+                    setTile(x, y + dY, Tiles.NOTHING)
+                ySave = y + deltaY - 1
+            elif deltaY > (2 if tile != Tiles.SAND else 1) and getTile(x, y + 6) != Tiles.NOTHING:
                 for dY in range(min(deltaY - 1, 2)):
                     setTile(x, y + dY, Tiles.NOTHING)
                 ySave = y + deltaY - 1
@@ -278,7 +311,11 @@ def generate():
                 y += 1
             deltaY = ySave - y
             tile = getTile(x, y)
-            if 1 + int(tile != Tiles.SAND) < deltaY < 6 + 14 * int(tile == Tiles.SAND):
+            if tile == Tiles.WATER and deltaY > 0:
+                for dY in range(deltaY):
+                    setTile(x, y + dY, Tiles.NOTHING)
+                ySave = y + deltaY - 1
+            elif deltaY > (2 if tile != Tiles.SAND else 1) and getTile(x, y + 6) != Tiles.NOTHING:
                 for dY in range(min(deltaY - 1, 2)):
                     setTile(x, y + dY, Tiles.NOTHING)
                 ySave = y + deltaY - 1
