@@ -280,47 +280,27 @@ def generate():
 
     print("Smooth World...")
     for i in range(WORLD_SMOOTH_PASSES):
-        for y in range(WORLD_HEIGHT):
-            if getTile(0, y) != Tiles.NOTHING:
-                ySave = y
-                break
-        for x in range(WORLD_WIDTH):
-            y = 0
-            while getTile(x, y) == Tiles.NOTHING:
-                y += 1
-            deltaY = ySave - y
-            tile = getTile(x, y)
-            if tile == Tiles.WATER and deltaY > 0:
-                for dY in range(deltaY):
-                    setTile(x, y + dY, Tiles.NOTHING)
-                ySave = y + deltaY - 1
-            elif deltaY > (2 if tile != Tiles.SAND else 1) and getTile(x, y + 6) != Tiles.NOTHING:
-                for dY in range(min(deltaY - 1, 2)):
-                    setTile(x, y + dY, Tiles.NOTHING)
-                ySave = y + deltaY - 1
-            else:
-                ySave = y
-        # Reverse direction pass
-        for y in range(WORLD_HEIGHT):
-            if getTile(WORLD_WIDTH - 1, y) != Tiles.NOTHING:
-                ySave = y
-                break
-        for x in range(WORLD_WIDTH - 1, 0, -1):
-            y = 0
-            while getTile(x, y) == Tiles.NOTHING:
-                y += 1
-            deltaY = ySave - y
-            tile = getTile(x, y)
-            if tile == Tiles.WATER and deltaY > 0:
-                for dY in range(deltaY):
-                    setTile(x, y + dY, Tiles.NOTHING)
-                ySave = y + deltaY - 1
-            elif deltaY > (2 if tile != Tiles.SAND else 1) and getTile(x, y + 6) != Tiles.NOTHING:
-                for dY in range(min(deltaY - 1, 2)):
-                    setTile(x, y + dY, Tiles.NOTHING)
-                ySave = y + deltaY - 1
-            else:
-                ySave = y
+        for passDir in range(2):
+            for y in range(WORLD_HEIGHT):
+                if getTile((WORLD_WIDTH - 1) if passDir else 0, y) != Tiles.NOTHING:
+                    ySave = y
+                    break
+            for x in range((WORLD_WIDTH - 1) if passDir else 0, 0 if passDir else WORLD_WIDTH, -1 if passDir else 1):
+                y = 0
+                while getTile(x, y) == Tiles.NOTHING:
+                    y += 1
+                deltaY = ySave - y
+                tile = getTile(x, y)
+                if tile == Tiles.WATER and deltaY > 0:
+                    for dY in range(deltaY):
+                        setTile(x, y + dY, Tiles.NOTHING)
+                    ySave = y + deltaY - 1
+                elif deltaY > (2 if tile != Tiles.SAND else 1) and getTile(x, y + 6) != Tiles.NOTHING:
+                    for dY in range(min(deltaY - 1, 2)):
+                        setTile(x, y + dY, Tiles.NOTHING)
+                    ySave = y + deltaY - 1
+                else:   
+                    ySave = y
 
     print("Buried Chests...")
     for i in range(30):

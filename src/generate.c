@@ -406,64 +406,37 @@ void generateWorld()
 	middleText("Smooth World", updateProgress());
 	for(int i = 0; i < WORLD_SMOOTH_PASSES; i++)
 	{
-		for(int y = 0; y < game.WORLD_HEIGHT; y++)
+		for(int pass = 0; pass < 2; pass++)
 		{
-			if(getTile(0, y).id != TILE_NOTHING)
+			for(int y = 0; y < game.WORLD_HEIGHT; y++)
 			{
-				ySave = y;
-				break;
-			}
-		}
-		for(int x = 0; x < game.WORLD_WIDTH; x++)
-		{
-			tempY = 0;
-			while(getTile(x, tempY).id == TILE_NOTHING) tempY++;
-			deltaY = ySave - tempY;
-			tile = getTile(x, tempY);
-			if(tile.id == TILE_WATER && deltaY > 0)
-			{
-				for(int dY = 0; dY < deltaY; dY++) setTile(x, tempY + dY, TILE_NOTHING);
-				ySave = tempY + deltaY - 1;
-			}
-			else if(deltaY > ((tile.id != TILE_SAND) ? 2 : 1) && getTile(x, tempY + 6).id != TILE_NOTHING)
-			{
-				for(int dY = 0; dY < min(deltaY - 1, 2); dY++)
+				if(getTile(pass ? game.WORLD_WIDTH - 1 : 0, y).id != TILE_NOTHING)
 				{
-					setTile(x, tempY + dY, TILE_NOTHING);
+					ySave = y;
+					break;
 				}
-				ySave = tempY + deltaY - 1;
 			}
-			else ySave = tempY;
-		}
-	//	Reverse direction pass
-		for(int y = 0; y < game.WORLD_HEIGHT; y++)
-		{
-			if(getTile(game.WORLD_WIDTH - 1, y).id != TILE_NOTHING)
+			for(int x = pass ? game.WORLD_WIDTH - 1 : 0; pass ? (x > -1) : (x < game.WORLD_WIDTH); x += pass ? -1 : 1)
 			{
-				ySave = y;
-				break;
-			}
-		}
-		for(int x = game.WORLD_WIDTH; x > -1; x--)
-		{
-			tempY = 0;
-			while(getTile(x, tempY).id == TILE_NOTHING) tempY++;
-			deltaY = ySave - tempY;
-			tile = getTile(x, tempY);
-			if(tile.id == TILE_WATER && deltaY > 0)
-			{
-				for(int dY = 0; dY < deltaY; dY++) setTile(x, tempY + dY, TILE_NOTHING);
-				ySave = tempY + deltaY - 1;
-			}
-			else if(deltaY > ((tile.id != TILE_SAND) ? 2 : 1) && getTile(x, tempY + 6).id != TILE_NOTHING)
-			{
-				for(int dY = 0; dY < min(deltaY - 1, 2); dY++)
+				tempY = 0;
+				while(getTile(x, tempY).id == TILE_NOTHING) tempY++;
+				deltaY = ySave - tempY;
+				tile = getTile(x, tempY);
+				if(tile.id == TILE_WATER && deltaY > 0)
 				{
-					setTile(x, tempY + dY, TILE_NOTHING);
+					for(int dY = 0; dY < deltaY; dY++) setTile(x, tempY + dY, TILE_NOTHING);
+					ySave = tempY + deltaY - 1;
 				}
-				ySave = tempY + deltaY - 1;
+				else if(deltaY > ((tile.id != TILE_SAND) ? 2 : 1) && getTile(x, tempY + 6).id != TILE_NOTHING)
+				{
+					for(int dY = 0; dY < min(deltaY - 1, 2); dY++)
+					{
+						setTile(x, tempY + dY, TILE_NOTHING);
+					}
+					ySave = tempY + deltaY - 1;
+				}
+				else ySave = tempY;
 			}
-			else ySave = tempY;
 		}
 	}
 
