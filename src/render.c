@@ -75,6 +75,7 @@ void render(bool renderHUD)
 	int entSubrectX, entSubrectY;
 	Entity *ent;
 
+	int hotbarY;
 	Item item;
 
 	int orbX, orbY;
@@ -106,7 +107,7 @@ void render(bool renderHUD)
 		orbX = 56 * cos(dayPolarAngle + PI / 2.0) + 56;
 		orbY = 64 * sin(dayPolarAngle + PI / 2.0) + 64;
 		dsubimage(orbX, orbY, &img_sunmoon, 0, 0, 16, 16, DIMAGE_NONE);
-		
+
 //		Moon
 		orbX = 56 * cos(dayPolarAngle - PI / 2.0) + 56;
 		orbY = 64 * sin(dayPolarAngle - PI / 2.0) + 64;
@@ -282,12 +283,14 @@ void render(bool renderHUD)
 //	Render the hotbar if the player has recently interacted with their inventory
 	if(player.inventory.ticksSinceInteracted < 120)
 	{
-		dsubimage(0, 0, &img_slots, 0, 0, 80, 17, DIMAGE_NOCLIP);
-		dimage(16 * player.inventory.hotbarSlot, 0, &img_slot_highlight);
+		if(player.cursor.x < 82 && player.cursor.y < 19) hotbarY = 47;
+		else hotbarY = 0;
+		dsubimage(0, hotbarY, &img_slots, 0, 0, 80, 17, DIMAGE_NOCLIP);
+		dimage(16 * player.inventory.hotbarSlot, hotbarY, &img_slot_highlight);
 		for(int slot = 0; slot < 5; slot++)
 		{
 			item = player.inventory.items[slot];
-			if(item.id != ITEM_NULL) renderItem(16 * slot + 1, 1, &item);
+			if(item.id != ITEM_NULL) renderItem(16 * slot + 1, hotbarY + 1, &item);
 		}
 	}
 
