@@ -425,7 +425,7 @@ void generateWorld()
 				if(tile.id == TILE_WATER && deltaY > 0)
 				{
 					for(int dY = 0; dY < deltaY; dY++) setTile(x, tempY + dY, TILE_NOTHING);
-					ySave = tempY + deltaY - 1;
+					ySave = tempY + deltaY;
 				}
 				else if(deltaY > ((tile.id != TILE_SAND) ? 2 : 1) && getTile(x, tempY + 6).id != TILE_NOTHING)
 				{
@@ -433,7 +433,7 @@ void generateWorld()
 					{
 						setTile(x, tempY + dY, TILE_NOTHING);
 					}
-					ySave = tempY + deltaY - 1;
+					ySave = tempY + deltaY;
 				}
 				else ySave = tempY;
 			}

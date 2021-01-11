@@ -326,8 +326,8 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 						if(!waterFrictionApplied)
 						{
 							waterFrictionApplied = true;
-							self->xVel *= 0.95;
-							self->yVel *= 0.95;
+							self->xVel *= 0.85;
+							self->yVel *= 0.85;
 						}
 						break;
 					case WATER_FLOAT:
