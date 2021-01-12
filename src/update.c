@@ -389,6 +389,7 @@ void worldUpdate()
 		for(int x = max(1, (player.props.x >> 3) - 10); x < min(game.WORLD_WIDTH - 1, (player.props.x >> 3) + 10); x++)
 		{
 			tile = getTile(x, y).id;
+//			Drop sand tiles
 			if(tiles[tile].physics == PHYS_SAND && getTile(x, y + 1).id == TILE_NOTHING)
 			{
 				for(tempY = y; tempY >= 0 && tiles[getTile(x, tempY).id].physics == PHYS_SAND; tempY--)
@@ -399,6 +400,7 @@ void worldUpdate()
 				setTile(x, tempY + 1, TILE_NOTHING);
 				if(tiles[getTile(x, tempY).id].support == SUPPORT_NEED) world.removeTile(x, tempY);
 			}
+//			Water tile physics
 			else if(tile == TILE_WATER)
 			{
 				placeX = -1;
@@ -442,6 +444,16 @@ void worldUpdate()
 					regionChange(placeX, placeY);
 					setVar(placeX, placeY);
 				}
+			}
+//			Grass spread
+			else if(tile == TILE_DIRT)
+			{
+				if(findState(x, y) != 0xf
+				&& (getTile(x - 1, y).id == TILE_GRASS 
+					|| getTile(x + 1, y).id == TILE_GRASS
+					|| getTile(x, y + 1).id == TILE_GRASS
+					|| getTile(x, y - 1).id == TILE_GRASS)
+				&& rand() % 275 == 0) setTile(x, y, TILE_GRASS);
 			}
 		}
 	}
