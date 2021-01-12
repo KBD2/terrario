@@ -119,6 +119,7 @@ enum UpdateReturnCodes keyboardUpdate()
 	enum Tiles tile;
 	bool playerDead =  player.combat.health <= 0;
 	struct Chest* chest;
+	int ret;
 	
 	player.inventory.ticksSinceInteracted++;
 
@@ -179,7 +180,18 @@ enum UpdateReturnCodes keyboardUpdate()
 				break;
 
 			case KEY_MENU:
-				if(exitMenu()) return UPDATE_EXIT;
+				ret = exitMenu();
+				switch(ret)
+				{
+					case 0:
+						break;
+
+					case 1:
+						return UPDATE_EXIT;
+					
+					case 2:
+						return UPDATE_EXIT_NOSAVE;
+				}
 				break;
 			
 			case KEY_9:

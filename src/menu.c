@@ -83,20 +83,21 @@ int mainMenu()
 	}
 }
 
-bool exitMenu()
+int exitMenu()
 {
 	int width;
 	extern bopti_image_t img_quit;
 	key_event_t key;
 
 	while(keydown(KEY_MENU)) clearevents();
-	drect_border(19, 9, 107, 52, C_WHITE, 1, C_BLACK);
+	drect_border(20, 9, 106, 54, C_WHITE, 1, C_BLACK);
 	dsize("Quit?", NULL, &width, NULL);
-	dtext(64 - width / 2, 12, C_BLACK, "Quit?");
-	dtext(22, 45, C_BLACK, "MENU: Yes");
+	dtext(64 - width / 2, 11, C_BLACK, "Quit?");
+	dtext(22, 42, C_BLACK, "MENU: Yes");
 	dsize("EXIT: No", NULL, &width, NULL);
-	dtext(105 - width, 45, C_BLACK, "EXIT: No");
-	dimage(47, 19, &img_quit);
+	dtext(105 - width, 42, C_BLACK, "EXIT: No");
+	dtext_opt(64, 48, C_BLACK, C_WHITE, DTEXT_MIDDLE, DTEXT_TOP, "AC/ON: Don't save");
+	dimage(47, 17, &img_quit);
 	dupdate();
 
 	while(1)
@@ -105,13 +106,13 @@ bool exitMenu()
 		switch(key.key)
 		{
 			case KEY_MENU:
-				return true;
+				return 1;
 			
 			case KEY_EXIT:
-				return false;
+				return 0;
 			
 			case KEY_ACON:
-				RebootOS(); // Don't save/optimize
+				return 2;
 			
 			default:
 				break;
@@ -372,14 +373,16 @@ void aboutMenu()
 	memcpy(timestamp.minute, (char *)0x00300048, 2);
 	const char *month = months[atoi(timestamp.month) - 1];
 	sprintf(buffer, "%s %s %s %s:%s", timestamp.day, month, timestamp.year, timestamp.hour, timestamp.minute);
-	const char *aboutText[] = {
+	const char *thanksText[] = {
 		"Special thanks to:",
 		"Lephenixnoir - Gint",
 		"Memallox - Newlib",
 		"Dark Storm",
-		"Yatis",
-		"",
+		"Yatis"
+	};
+	const char *versionText[] = {
 		VERSION,
+		"gint " GINT_VERSION,
 		buffer
 	};
 	const char *controlsText[] = {
@@ -410,7 +413,8 @@ void aboutMenu()
 		"[SHIFT]: Inventory",
 		"[ALPHA]: Exit"
 	};
-	const int aboutLines = sizeof(aboutText) / sizeof(char*);
+	const int thanksLines = sizeof(thanksText) / sizeof(char*);
+	const int versionLines = sizeof(versionText) / sizeof(char*);
 	const int controlLines = sizeof(controlsText) / sizeof(char*);
 	int scroll = 0;
 	bool ingredients = false;
@@ -430,10 +434,15 @@ void aboutMenu()
 		{
 			case MENU_ABOUT:
 				dimage(89, 36, &img_confetti);
-				for(int line = 0; line < aboutLines; line++)
+				for(int line = 0; line < thanksLines; line++)
 				{
-					dtext_opt(64, 7 * line, C_BLACK, C_WHITE, DTEXT_MIDDLE, DTEXT_TOP, aboutText[line]);
+					dtext_opt(64, 7 * line + 1, C_BLACK, C_WHITE, DTEXT_MIDDLE, DTEXT_TOP, thanksText[line]);
 				}
+				for(int line = 0; line < versionLines; line++)
+				{
+					dtext_opt(64, 7 * line + 37, C_BLACK, C_WHITE, DTEXT_MIDDLE, DTEXT_TOP, versionText[line]);
+				}
+				dline(48, 35, 80, 35, C_LIGHT);
 				break;
 			
 			case MENU_CONTROLS:

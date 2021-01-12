@@ -8,6 +8,7 @@ Player and keyboard updates.
 
 enum UpdateReturnCodes {
 	UPDATE_EXIT, 	// Exit the game
+	UPDATE_EXIT_NOSAVE,	// Exit but don't save the game
 	UPDATE_CONTINUE	// Continue as normal
 };
 

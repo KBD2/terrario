@@ -47,10 +47,8 @@ void debugMenu();
 
 /* exitMenu
 An exit dialog box.
-
-Returns true if the player wishes to exit, false otherwise.
 */
-bool exitMenu();
+int exitMenu();
 
 /* lowSpaceMenu
 A menu to inform the player that they should optimise their storage.

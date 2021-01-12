@@ -73,7 +73,7 @@ void setPlayerSpawn()
 	player.spawn.y = (playerY << 3) - player.props.height;
 }
 
-void gameLoop(volatile int *flag)
+bool gameLoop(volatile int *flag)
 {
 	int respawnCounter = 0;
 	int frames = 0;
@@ -85,7 +85,8 @@ void gameLoop(volatile int *flag)
 		if(!respawnCounter) playerUpdate(frames);
 
 		updateRet = keyboardUpdate();
-		if(updateRet == UPDATE_EXIT) break;
+		if(updateRet == UPDATE_EXIT) return true;
+		else if(updateRet == UPDATE_EXIT_NOSAVE) return false;
 
 		if(frames & 1) updateExplosion(&world.explosion);
 		if(frames % 8 == 0) worldUpdate();
@@ -142,6 +143,7 @@ int main(void)
 	int timer;
 	volatile int flag = 0;
 	int mediaFree[2];
+	bool doSave;
 
 	switch(gint[HWCALC])
 	{
@@ -308,30 +310,36 @@ int main(void)
 	registerHeld();
 
 	// Do the game
-	gameLoop(&flag);
+	doSave = gameLoop(&flag);
 
 	timer_stop(timer);
-	dgray(DGRAY_OFF);
-	dclear(C_WHITE);
-	dfont(NULL);
-	dsize("Saving World...", NULL, &w, &h);
-	dtext(64 - w / 2, 32 - h / 2, C_BLACK, "Saving World...");
-	dupdate();
+	if(doSave)
+	{
+		dgray(DGRAY_OFF);
+		dclear(C_WHITE);
+		dfont(NULL);
+		dsize("Saving World...", NULL, &w, &h);
+		dtext(64 - w / 2, 32 - h / 2, C_BLACK, "Saving World...");
+		dupdate();
+	}
 
 	free(world.entities);
 	destroyExplosion(&world.explosion);
 	craftingCleanup();
 
-	gint_switch(&saveGame);
+	if(doSave) gint_switch(&saveGame);
 	free(world.chests.chests);
 	if(save.error != -99) saveFailMenu();
 	
-	Bfile_GetMediaFree_OS(u"\\\\fls0", mediaFree);
-	if(mediaFree[1] < 350000) lowSpaceMenu(mediaFree[1]);
+	if(doSave)
+	{
+		Bfile_GetMediaFree_OS(u"\\\\fls0", mediaFree);
+		if(mediaFree[1] < 350000) lowSpaceMenu(mediaFree[1]);
 
 #ifndef DEBUGMODE
-	gint_switch(&JumpOptimising);
+		gint_switch(&JumpOptimising);
 #endif
+	}
 
 	return 1;
 }
