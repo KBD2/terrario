@@ -220,7 +220,7 @@ def generate():
     
     print("Generating grass...")
     for x in range(WORLD_WIDTH):
-        for y in range(WORLD_HEIGHT):
+        for y in range(int(WORLD_HEIGHT // 2.8)):
             if getTile(x, y) == Tiles.DIRT:
                 setTile(x, y, Tiles.GRASS)
                 if getTile(x - 1, y) == Tiles.NOTHING or getTile(x + 1, y) == Tiles.NOTHING:
@@ -245,22 +245,22 @@ def generate():
             clump(x, y, poisson(10), Tiles.IRON, True, 0, 0)
 
     print("Lakes...")
-    for i in range(min(2, poisson(3))):
+    for i in range(max(2, poisson(3))):
         x = random.randrange(75, WORLD_WIDTH - 75)
-        width = poisson(30)
-        depth = poisson(10)
+        width = max(15, poisson(15))
+        depth = max(5, poisson(10))
         multiplier = -depth / (width / 2) ** 2
-        y1 = WORLD_HEIGHT // 5
-        while getTile(x, y1) == Tiles.NOTHING:
-            y1 += 1
-            if getTile(x, y1 + 6) == Tiles.NOTHING:
-                y1 += 6
-        y2 = WORLD_HEIGHT // 5
-        while getTile(x + width, y2) == Tiles.NOTHING:
-            y2 += 1
-            if getTile(x + width, y2 + 6) == Tiles.NOTHING:
-                y2 += 6
-        y = max(y1, y2)
+        leftY = WORLD_HEIGHT // 5
+        while getTile(x, leftY) == Tiles.NOTHING:
+            leftY += 1
+            if getTile(x, leftY + 6) == Tiles.NOTHING:
+                leftY += 6
+        rightY = WORLD_HEIGHT // 5
+        while getTile(x + width, rightY) == Tiles.NOTHING:
+            rightY += 1
+            if getTile(x + width, rightY + 6) == Tiles.NOTHING:
+                rightY += 6
+        y = max(leftY, rightY)
         for dX in range(width):
             for dY in range(y):
                 if getTile(x + dX, dY) != Tiles.NOTHING:
@@ -318,6 +318,17 @@ def generate():
                 setTile(platformX + dX, y, Tiles.PLATFORM)
             y += 7
             x += random.randrange(-(width - 3), width - 3)
+
+    print("Spreading grass...")
+    for x in range(WORLD_WIDTH):
+        for y in range(int(WORLD_HEIGHT // 2.8)):
+            if getTile(x, y) == Tiles.DIRT:
+                setTile(x, y, Tiles.GRASS)
+                if getTile(x - 1, y) == Tiles.NOTHING or getTile(x + 1, y) == Tiles.NOTHING:
+                    setTile(x, y + 1, Tiles.GRASS)
+                break
+            elif getTile(x, y) != Tiles.NOTHING:
+                break
 
     print("Planting Trees...")
     x = 0

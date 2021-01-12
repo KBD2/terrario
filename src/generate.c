@@ -6,7 +6,7 @@
 #include "world.h"
 #include "chest.h"
 
-#define NUM_WORLD_GEN_PARTS 19
+#define NUM_WORLD_GEN_PARTS 20
 #define WORLD_SMOOTH_PASSES 5
 
 GYRAM Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
@@ -188,7 +188,7 @@ void generateWorld()
 	float mul;
 	int ySave = 0;
 	int deltaY;
-	int depth, y1, y2;
+	int depth, leftY, rightY;
 	float multiplier;
 
 	yPositions = malloc(game.WORLD_WIDTH * sizeof(unsigned char));
@@ -310,11 +310,12 @@ void generateWorld()
 	middleText("Grass", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
-		for(int y = 0; y < game.WORLD_HEIGHT; y++)
+		for(int y = 0; y < game.WORLD_HEIGHT / 2.8; y++)
 		{
 			tile = getTile(x, y);
 			if(tile.id == TILE_DIRT)
 			{
+				setTile(x, y, TILE_GRASS);
 				if(x == 0 || x == game.WORLD_WIDTH - 1 || y == game.WORLD_HEIGHT) break;
 				if(getTile(x - 1, y).id == TILE_NOTHING || getTile(x + 1, y).id == TILE_NOTHING)
 				{
@@ -330,7 +331,7 @@ void generateWorld()
 	{
 		for(int y = 0; y < game.WORLD_HEIGHT / 2.8; y++)
 		{
-			if(getTile(x, y).id == TILE_DIRT && findState(x, y) != 15)
+			if(getTile(x, y).id == TILE_DIRT && findState(x, y) != 0xf)
 			{
 				setTile(x, y, TILE_GRASS);
 			}
@@ -351,25 +352,25 @@ void generateWorld()
 
 //	Lakes
 	middleText("Lakes", updateProgress());
-	for(int i = 0; i < min(2, poisson(3)); i++)
+	for(int i = 0; i < max(2, poisson(3)); i++)
 	{
 		x = randRange(75, game.WORLD_WIDTH - 75);
-		width = poisson(30);
-		depth = poisson(10);
+		width = max(15, poisson(15));
+		depth = max(5, poisson(10));
 		multiplier = (float)-depth / pow((float)width / 2, 2);
-		y1 = game.WORLD_HEIGHT / 5;
-		while(getTile(x, y1).id == TILE_NOTHING)
+		leftY = game.WORLD_HEIGHT / 5;
+		while(getTile(x, leftY).id == TILE_NOTHING)
 		{
-			y1++;
-			if(getTile(x, y1 + 6).id == TILE_NOTHING) y1 += 6;
+			leftY++;
+			if(getTile(x, leftY + 6).id == TILE_NOTHING) leftY += 6;
 		}
-		y2 = game.WORLD_HEIGHT / 5;
-		while(getTile(x + width, y2).id == TILE_NOTHING)
+		rightY = game.WORLD_HEIGHT / 5;
+		while(getTile(x + width, rightY).id == TILE_NOTHING)
 		{
-			y2++;
-			if(getTile(x + width, y2 + 6).id == TILE_NOTHING) y2 += 6;
+			rightY++;
+			if(getTile(x + width, rightY + 6).id == TILE_NOTHING) rightY += 6;
 		}
-		y = max(y1, y2);
+		y = max(leftY, rightY);
 		for(int dX = 0; dX < width; dX++)
 		{
 			for(int dY = 0; dY < y; dY++)
@@ -513,6 +514,27 @@ void generateWorld()
 				break;
 			}
 			
+		}
+	}
+
+//	Spreading grass
+	middleText("Spreading Grass", updateProgress());
+	for(int x = 0; x < game.WORLD_WIDTH; x++)
+	{
+		for(int y = 0; y < game.WORLD_HEIGHT / 2.8; y++)
+		{
+			tile = getTile(x, y);
+			if(tile.id == TILE_DIRT)
+			{
+				setTile(x, y, TILE_GRASS);
+				if(x == 0 || x == game.WORLD_WIDTH - 1 || y == game.WORLD_HEIGHT) break;
+				if(getTile(x - 1, y).id == TILE_NOTHING || getTile(x + 1, y).id == TILE_NOTHING)
+				{
+					setTile(x, y + 1, TILE_GRASS);
+				}
+				break;
+			}
+			else if(tile.id != TILE_NOTHING) break;
 		}
 	}
 

@@ -375,7 +375,7 @@ void aboutMenu()
 	sprintf(buffer, "%s %s %s %s:%s", timestamp.day, month, timestamp.year, timestamp.hour, timestamp.minute);
 	const char *thanksText[] = {
 		"Special thanks to:",
-		"Lephenixnoir - Gint",
+		"Lephenixnoir - gint",
 		"Memallox - Newlib",
 		"Dark Storm",
 		"Yatis"
