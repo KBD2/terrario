@@ -66,7 +66,7 @@ src       := $(wildcard src/*.[csS] \
                         src/*/*.[csS] \
                         src/*/*/*.[csS] \
                         src/*/*/*/*.[csS])
-assets-fx := $(wildcard assets-fx/*/*)
+assets-fx := $(wildcard assets-fx/*/*.png assets-fx/*/*/*.png)
 assets-cg := $(wildcard assets-cg/*/*)
 
 # Object files
@@ -136,7 +136,7 @@ build-cg/%.S.o: %.S
 # Images
 build-fx/assets/img/%.o: assets-fx/img/%
 	@ mkdir -p $(dir $@)
-	fxconv --bopti-image $< -o $@ $(FXCONVFX) name:img_$(basename $*) $(IMG.$*)
+	fxconv --bopti-image $< -o $@ $(FXCONVFX) name:$(subst /,_,img_$(basename $*)) $(IMG.$*)
 build-cg/assets/img/%.o: assets-cg/img/%
 	@ mkdir -p $(dir $@)
 	fxconv --bopti-image $< -o $@ $(FXCONVCG) name:img_$(basename $*) $(IMG.$*)

@@ -114,7 +114,7 @@ void craftingMenu()
 {
 	int selected = 0;
 	int currCraftable;
-	extern bopti_image_t img_slots, img_slot_highlight;
+	extern bopti_image_t img_ui_slots, img_ui_slot_highlight;
 	key_event_t key;
 	int recipesMax = 0;
 	const Item *currIngredient;
@@ -149,7 +149,7 @@ void craftingMenu()
 				break;
 			}
 			if(recipe - selected < -4 || recipe - selected > 4) continue;
-			dsubimage((recipe - selected + 3) * 17 + 5, 0, &img_slots, 0, 0, 16, 17, DIMAGE_NOCLIP);
+			dsubimage((recipe - selected + 3) * 17 + 5, 0, &img_ui_slots, 0, 0, 16, 17, DIMAGE_NOCLIP);
 			renderItem((recipe - selected + 3) * 17 + 6, 1, (Item *)&recipes[currCraftable].result);
 		}
 		currCraftable = craftableRecipes[selected];
@@ -159,14 +159,14 @@ void craftingMenu()
 			for(int i = 0; i < recipes[currCraftable].numIngredients; i++)
 			{
 				currIngredient = &recipes[currCraftable].ingredients[i];
-				dsubimage(i * 16 + 1, 23, &img_slots, 0, 0, 16, 17, DIMAGE_NOCLIP);
+				dsubimage(i * 16 + 1, 23, &img_ui_slots, 0, 0, 16, 17, DIMAGE_NOCLIP);
 				renderItem(i * 16 + 2, 24, (Item *)currIngredient);
-				dsubimage(i * 16 + 1, 46, &img_slots, 0, 0, 16, 17, DIMAGE_NOCLIP);
+				dsubimage(i * 16 + 1, 46, &img_ui_slots, 0, 0, 16, 17, DIMAGE_NOCLIP);
 				renderItem(i * 16 + 2, 47, &(Item){currIngredient->id, player.inventory.tallyItem(currIngredient->id)});
 			}
 		}
 
-		dimage(56, 0, &img_slot_highlight);
+		dimage(56, 0, &img_ui_slot_highlight);
 		dtext(1, 41, C_BLACK, "You have:");
 		dupdate();
 

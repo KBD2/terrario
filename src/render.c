@@ -48,9 +48,9 @@ void render(bool renderHUD)
 	unsigned int camMaxX = ((game.WORLD_WIDTH - VAR_BUF_OFFSET) << 3) - (SCREEN_WIDTH >> 1);
 	unsigned int camMinY = (VAR_BUF_OFFSET << 3) + (SCREEN_HEIGHT >> 1);
 	unsigned int camMaxY = ((game.WORLD_HEIGHT - VAR_BUF_OFFSET) << 3) - (SCREEN_HEIGHT >> 1);
-	extern bopti_image_t img_player, img_cursor, img_slots, img_slot_highlight,
-	img_leaves, img_deathtext, img_bg_underground, img_sunmoon, img_bg_night,
-	img_tile_cracks, img_tile_ghost, img_bubble;
+	extern bopti_image_t img_player, img_ui_cursor, img_ui_slots, img_ui_slot_highlight,
+	img_leaves, img_ui_deathtext, img_bg_underground, img_sunmoon, img_bg_night,
+	img_tiles_cracks, img_tiles_ghost, img_ui_bubble;
 	bopti_image_t *swingSprite;
 	int camX = min(max(player.props.x + (player.props.width >> 1), camMinX), camMaxX);
 	int camY = min(max(player.props.y + (player.props.height >> 1), camMinY), camMaxY);
@@ -201,7 +201,7 @@ void render(bool renderHUD)
 			}
 			subrectX = ((state & 3) << 3) + (state & 3) + 1;
 			subrectY = ((state >> 2) << 3) + (state >> 2) + 1;
-			dsubimage(((player.cursorTile.x + dX) << 3) - camOffsetX, ((player.cursorTile.y + dY) << 3) - camOffsetY, &img_tile_ghost, subrectX, subrectY, 8, 8, DIMAGE_NONE);
+			dsubimage(((player.cursorTile.x + dX) << 3) - camOffsetX, ((player.cursorTile.y + dY) << 3) - camOffsetY, &img_tiles_ghost, subrectX, subrectY, 8, 8, DIMAGE_NONE);
 		}
 	}
 
@@ -214,7 +214,7 @@ void render(bool renderHUD)
 		dsubimage(
 			(heldPickData->targeted.x << 3) - camOffsetX, 
 			(heldPickData->targeted.y << 3) - camOffsetY, 
-			&img_tile_cracks, 
+			&img_tiles_cracks, 
 			subrectX, subrectY, 
 			8, 8, 
 			DIMAGE_NONE
@@ -272,7 +272,7 @@ void render(bool renderHUD)
 			dsubimage(entX, entY, swingSprite, entSubrectX, entSubrectY, 16, 16, DIMAGE_NONE);
 		}
 
-		if(renderHUD) dimage(player.cursor.x - 2, player.cursor.y - 2, &img_cursor);
+		if(renderHUD) dimage(player.cursor.x - 2, player.cursor.y - 2, &img_ui_cursor);
 	}
 
 //	Render all the particles in the world explosion
@@ -287,8 +287,8 @@ void render(bool renderHUD)
 	{
 		if(player.cursor.x < 82 && player.cursor.y < 19) hotbarY = 47;
 		else hotbarY = 0;
-		dsubimage(0, hotbarY, &img_slots, 0, 0, 80, 17, DIMAGE_NOCLIP);
-		dimage(16 * player.inventory.hotbarSlot, hotbarY, &img_slot_highlight);
+		dsubimage(0, hotbarY, &img_ui_slots, 0, 0, 80, 17, DIMAGE_NOCLIP);
+		dimage(16 * player.inventory.hotbarSlot, hotbarY, &img_ui_slot_highlight);
 		for(int slot = 0; slot < 5; slot++)
 		{
 			item = player.inventory.items[slot];
@@ -303,7 +303,7 @@ void render(bool renderHUD)
 		{
 			x = player.props.x - (camX - (SCREEN_WIDTH >> 1)) - 7 + bubble * 5;
 			y = player.props.y - (camY - (SCREEN_HEIGHT >> 1)) - 6;
-			dimage(x, y, &img_bubble);
+			dimage(x, y, &img_ui_bubble);
 		}
 	}
 
@@ -317,7 +317,7 @@ void render(bool renderHUD)
 
 		if(player.combat.health <= 0)
 		{
-			dimage(32, 26, &img_deathtext);
+			dimage(32, 26, &img_ui_deathtext);
 		}
 	}
 }
@@ -387,15 +387,15 @@ void updateExplosion(struct ParticleExplosion *explosion)
 
 void middleText(char *text, int progress)
 {
-	extern bopti_image_t img_generate, img_loadbar;
+	extern bopti_image_t img_generate, img_ui_loadbar;
 
 	dclear(C_WHITE);
 	dsubimage(0, 47, &img_generate, 0, 0, 21, 17, DIMAGE_NONE);
 	dsubimage(107, 47, &img_generate, 22, 0, 21, 17, DIMAGE_NONE);
 	dsubimage(50, 0, &img_generate, 44, 0, 26, 17, DIMAGE_NONE);
 	dtext_opt(64, 32, C_BLACK, C_WHITE, DTEXT_CENTER, DTEXT_CENTER, text);
-	dsubimage(11, 40, &img_loadbar, 0, 0, 4, 8, DIMAGE_NONE);
-	dsubimage(113, 40, &img_loadbar, 5, 0, 4, 8, DIMAGE_NONE);
+	dsubimage(11, 40, &img_ui_loadbar, 0, 0, 4, 8, DIMAGE_NONE);
+	dsubimage(113, 40, &img_ui_loadbar, 5, 0, 4, 8, DIMAGE_NONE);
 	drect(14, 42, 14 + progress, 45, C_BLACK);
 	dupdate();
 }

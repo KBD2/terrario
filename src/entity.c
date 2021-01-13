@@ -15,9 +15,9 @@
 #include "menu.h"
 
 extern bopti_image_t
-img_ent_slime,
-img_ent_zombie,
-img_ent_vulture;
+img_ents_slime,
+img_ents_zombie,
+img_ents_vulture;
 
 bool checkPlayerSubmerged()
 {
@@ -214,9 +214,9 @@ bool vultureBehaviour(struct EntityBase *self, int frames)
 
 const struct EntityBase entityTemplates[] = {
 //		ID			Props		Combat									Sprite				Drops			Off	Behaviour			Init
-	{	ENT_SLIME,	{16, 12},	{14, ALIGN_HOSTILE, 40, 6, 0, 0.15},	&img_ent_slime,		&slimeDrops,	0,	&slimeBehaviour,	&slimeInit	},	// ENT_SLIME
-	{	ENT_ZOMBIE,	{17, 23},	{45, ALIGN_HOSTILE, 40, 14, 6, 0.5}, 	&img_ent_zombie,	&zombieDrops,	0,	&zombieBehaviour,	NULL		},	// ENT_ZOMBIE
-	{	ENT_VULTURE,{18, 25},	{15, ALIGN_HOSTILE,	40, 15, 4, 0.25},	&img_ent_vulture,	&vultureDrops,	8,	&vultureBehaviour,	&vultureInit},	// ENT_VULTURE
+	{	ENT_SLIME,	{16, 12},	{14, ALIGN_HOSTILE, 40, 6, 0, 0.15},	&img_ents_slime,		&slimeDrops,	0,	&slimeBehaviour,	&slimeInit	},	// ENT_SLIME
+	{	ENT_ZOMBIE,	{17, 23},	{45, ALIGN_HOSTILE, 40, 14, 6, 0.5}, 	&img_ents_zombie,	&zombieDrops,	0,	&zombieBehaviour,	NULL		},	// ENT_ZOMBIE
+	{	ENT_VULTURE,{18, 25},	{15, ALIGN_HOSTILE,	40, 15, 4, 0.25},	&img_ents_vulture,	&vultureDrops,	8,	&vultureBehaviour,	&vultureInit},	// ENT_VULTURE
 };
 
 /* Having a generic physics property struct lets me have one function to handle

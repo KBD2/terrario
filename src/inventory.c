@@ -165,7 +165,7 @@ and just disable interaction with all other 'slots'.
 */
 void inventoryMenu(struct Chest* chest)
 {
-	extern bopti_image_t img_slots, img_slot_highlight, img_cursor, img_inventory_tabs, img_placeholders;
+	extern bopti_image_t img_ui_slots, img_ui_slot_highlight, img_ui_cursor, img_ui_inventory_tabs, img_ui_placeholders;
 	Item *item;
 	int hoverSlot;
 	int cursorX = 64, cursorY = 32;
@@ -183,41 +183,41 @@ void inventoryMenu(struct Chest* chest)
 		render(false);
 		if(chest != NULL)
 		{
-			if(tab == TAB_CHEST) dsubimage(67, 55, &img_inventory_tabs, 20, 18, 19, 9, DIMAGE_NONE);
-			else dsubimage(67, 55, &img_inventory_tabs, 0, 18, 19, 9, DIMAGE_NONE);
+			if(tab == TAB_CHEST) dsubimage(67, 55, &img_ui_inventory_tabs, 20, 18, 19, 9, DIMAGE_NONE);
+			else dsubimage(67, 55, &img_ui_inventory_tabs, 0, 18, 19, 9, DIMAGE_NONE);
 		}
 
-		if(tab == TAB_MAIN) dsubimage(86, 55, &img_inventory_tabs, 20, 9, 21, 9, DIMAGE_NONE);
-		else dsubimage(86, 55, &img_inventory_tabs, 0, 9, 21, 9, DIMAGE_NONE);
+		if(tab == TAB_MAIN) dsubimage(86, 55, &img_ui_inventory_tabs, 20, 9, 21, 9, DIMAGE_NONE);
+		else dsubimage(86, 55, &img_ui_inventory_tabs, 0, 9, 21, 9, DIMAGE_NONE);
 
-		if(tab == TAB_EQUIP) dsubimage(107, 55, &img_inventory_tabs, 20, 0, 21, 9, DIMAGE_NONE);
-		else dsubimage(107, 55, &img_inventory_tabs, 0, 0, 21, 9, DIMAGE_NONE);
+		if(tab == TAB_EQUIP) dsubimage(107, 55, &img_ui_inventory_tabs, 20, 0, 21, 9, DIMAGE_NONE);
+		else dsubimage(107, 55, &img_ui_inventory_tabs, 0, 0, 21, 9, DIMAGE_NONE);
 
 //		Render all items in the tabbed storage
 		if(tab == TAB_EQUIP)
 		{
-			dsubimage(0, 0, &img_slots, 0, 0, 80, 17, DIMAGE_NONE);
-			dsubimage(112, 0, &img_slots, 0, 0, 16, 51, DIMAGE_NONE);
+			dsubimage(0, 0, &img_ui_slots, 0, 0, 80, 17, DIMAGE_NONE);
+			dsubimage(112, 0, &img_ui_slots, 0, 0, 16, 51, DIMAGE_NONE);
 			for(int slot = 0; slot < 5; slot++)
 			{
 				item = &player.inventory.accessories[slot];
-				if(item->id == ITEM_NULL) dsubimage(slot * 16 + 1, 2, &img_placeholders, 46, 1, 14, 13, DIMAGE_NOCLIP);
+				if(item->id == ITEM_NULL) dsubimage(slot * 16 + 1, 2, &img_ui_placeholders, 46, 1, 14, 13, DIMAGE_NOCLIP);
 				else renderItem(slot * 16 + 1, 1, item);
 			}
 			for(int slot = 0; slot < 3; slot++)
 			{
 				item = &player.inventory.armour[slot];
-				if(item->id == ITEM_NULL) dsubimage(113, slot * 17 + 2, &img_placeholders, slot * 15 + 1, 1, 14, 13, DIMAGE_NOCLIP);
+				if(item->id == ITEM_NULL) dsubimage(113, slot * 17 + 2, &img_ui_placeholders, slot * 15 + 1, 1, 14, 13, DIMAGE_NOCLIP);
 				else renderItem(113, slot * 17 + 1, item);
 			}
 			dprint_opt(112, 0, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "%i DEF", player.combat.defense + player.bonuses.defense);
 		}
 		else
 		{
-			dimage(0, 0, &img_slots);
+			dimage(0, 0, &img_ui_slots);
 			if(tab == TAB_MAIN)
 			{
-				for(int slot = 0; slot < 5; slot++) dimage(16 * slot, 0, &img_slot_highlight);
+				for(int slot = 0; slot < 5; slot++) dimage(16 * slot, 0, &img_ui_slot_highlight);
 			}
 			for(int slot = 0; slot < INVENTORY_SIZE; slot++)
 			{
@@ -235,7 +235,7 @@ void inventoryMenu(struct Chest* chest)
 			renderItem(cursorX - 7, min(35, cursorY - 7), &held);
 		}
 
-		dimage(cursorX - 2, cursorY - 2, &img_cursor);
+		dimage(cursorX - 2, cursorY - 2, &img_ui_cursor);
 		hoverSlot = (cursorY / 17) * 8 + (cursorX / 16);
 		switch(tab)
 		{

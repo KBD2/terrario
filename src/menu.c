@@ -32,7 +32,7 @@ struct {
 int mainMenu()
 {
 	extern bopti_image_t img_mainmenu;
-	extern bopti_image_t img_mainmenuselect;
+	extern bopti_image_t img_ui_mainmenuselect;
 	int selectPositions[] = {13, 30, 47};
 	bool validSave = getSave();
 	int selected = validSave ? 1 : 0;
@@ -42,7 +42,7 @@ int mainMenu()
 	{
 		dclear(C_WHITE);
 		dimage(0, 0, &img_mainmenu);
-		dimage(65, selectPositions[selected], &img_mainmenuselect);
+		dimage(65, selectPositions[selected], &img_ui_mainmenuselect);
 		#ifdef DEBUGMODE
 		dtext_opt(0, 0, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, "DEBUG BUILD");
 		#endif
@@ -86,7 +86,7 @@ int mainMenu()
 int exitMenu()
 {
 	int width;
-	extern bopti_image_t img_quit;
+	extern bopti_image_t img_ui_quit;
 	key_event_t key;
 
 	while(keydown(KEY_MENU)) clearevents();
@@ -97,7 +97,7 @@ int exitMenu()
 	dsize("EXIT: No", NULL, &width, NULL);
 	dtext(105 - width, 42, C_BLACK, "EXIT: No");
 	dtext_opt(64, 48, C_BLACK, C_WHITE, DTEXT_MIDDLE, DTEXT_TOP, "AC/ON: Don't save");
-	dimage(47, 17, &img_quit);
+	dimage(47, 17, &img_ui_quit);
 	dupdate();
 
 	while(1)
@@ -254,14 +254,14 @@ void incompatibleMenu(int code)
 void itemMenu()
 {
 	key_event_t key;
-	extern bopti_image_t img_slots;
+	extern bopti_image_t img_ui_slots;
 	Item item = {ITEM_STONE, 1};
 	int slot;
 
 	while(1)
 	{
 		dclear(C_WHITE);
-		dsubimage(0, 0, &img_slots, 0, 0, 16, 17, DIMAGE_NONE);
+		dsubimage(0, 0, &img_ui_slots, 0, 0, 16, 17, DIMAGE_NONE);
 		renderItem(1, 1, &item);
 		dtext(0, 17, C_BLACK, items[item.id].name);
 		dtext_opt(127, 0, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "F1: Day");
@@ -419,7 +419,7 @@ void aboutMenu()
 	int scroll = 0;
 	bool ingredients = false;
 	int ingredientsScroll = 0;
-	extern bopti_image_t img_confetti, img_arrowshoriz, img_arrowsall, img_abouttabs, img_slot_highlight, img_slots;
+	extern bopti_image_t img_confetti, img_ui_arrowshoriz, img_ui_arrowsall, img_ui_abouttabs, img_ui_slot_highlight, img_ui_slots;
 	key_event_t key;
 	extern font_t font_smalltext;
 	enum MenuTabs menu = MENU_ABOUT;
@@ -446,7 +446,7 @@ void aboutMenu()
 				break;
 			
 			case MENU_CONTROLS:
-				dimage(122, 55, &img_arrowshoriz);
+				dimage(122, 55, &img_ui_arrowshoriz);
 				for(int line = 0; line < 8; line++)
 				{
 					if(line + scroll == controlLines) break;
@@ -455,10 +455,10 @@ void aboutMenu()
 				break;
 			
 			case MENU_CRAFTING:
-				dimage(112, 54, &img_arrowsall);
+				dimage(112, 54, &img_ui_arrowsall);
 				for(int dR = 0; dR < 8 && scroll + dR < numRecipes; dR++)
 				{
-					dsubimage(17 * dR, 0, &img_slots, 0, 0, 16, 17, DIMAGE_NONE);
+					dsubimage(17 * dR, 0, &img_ui_slots, 0, 0, 16, 17, DIMAGE_NONE);
 					renderItem(17 * dR + 1, 1, (Item *)&recipes[scroll + dR].result);
 				}
 				if(recipes[scroll].required == TILE_NULL) workbench = "anywhere";
@@ -466,18 +466,18 @@ void aboutMenu()
 				dprint(0, 18, C_BLACK, "%s at %s", items[recipes[scroll].result.id].name, workbench);
 				for(int dI = 0; dI < recipes[scroll].numIngredients; dI++)
 				{
-					dsubimage(17 * dI, 24, &img_slots, 0, 0, 16, 17, DIMAGE_NONE);
+					dsubimage(17 * dI, 24, &img_ui_slots, 0, 0, 16, 17, DIMAGE_NONE);
 					renderItem(17 * dI + 1, 25, (Item *)&recipes[scroll].ingredients[dI]);
 				}
-				if(!ingredients) dimage(0, 0, &img_slot_highlight);
+				if(!ingredients) dimage(0, 0, &img_ui_slot_highlight);
 				else
 				{
-					dimage(17 * ingredientsScroll, 24, &img_slot_highlight);
+					dimage(17 * ingredientsScroll, 24, &img_ui_slot_highlight);
 					dtext(0, 42, C_BLACK, items[recipes[scroll].ingredients[ingredientsScroll].id].name);
 				}
 				break;
 		}
-		dimage(0, 57, &img_abouttabs);
+		dimage(0, 57, &img_ui_abouttabs);
 		dupdate();
 
 		key = getkey_opt(GETKEY_REP_ARROWS, NULL);

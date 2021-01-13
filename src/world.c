@@ -12,65 +12,65 @@
 #define PI 3.14159265358979323846
 
 extern bopti_image_t 
-img_tile_nothing,
-img_tile_stone,
-img_tile_dirt,
-img_tile_grass,
-img_tile_wood,
-img_tile_trunk,
-img_tile_root_l, img_tile_root_r,
-img_tile_plant,
-img_tile_wbench,
-img_tile_platform,
-img_tile_chair,
-img_tile_torch,
-img_tile_furnace_edge, img_tile_furnace_mid,
-img_tile_iron_ore,
-img_tile_anvil,
-img_tile_chest,
-img_tile_door_c,
-img_tile_door_o_l_l, img_tile_door_o_l_r,
-img_tile_door_o_r_l, img_tile_door_o_r_r,
-img_tile_vine,
-img_tile_sand,
-img_tile_cactus,
-img_tile_water;
+img_tiles_nothing,
+img_tiles_stone,
+img_tiles_dirt,
+img_tiles_grass,
+img_tiles_wood,
+img_tiles_trunk,
+img_tiles_root_l, img_tiles_root_r,
+img_tiles_plant,
+img_tiles_wbench,
+img_tiles_platform,
+img_tiles_chair,
+img_tiles_torch,
+img_tiles_furnace_edge, img_tiles_furnace_mid,
+img_tiles_iron_ore,
+img_tiles_anvil,
+img_tiles_chest,
+img_tiles_door_c,
+img_tiles_door_o_l_l, img_tiles_door_o_l_r,
+img_tiles_door_o_r_l, img_tiles_door_o_r_r,
+img_tiles_vine,
+img_tiles_sand,
+img_tiles_cactus,
+img_tiles_water;
 
 const TileData tiles[] = {
 //      Ptr to sprite       	Phys?			Render?	Type?			Support?		Friends (-1 to end)									Item			Name			Cmprs?	HP		Floodable?
-	{	&img_tile_nothing,		PHYS_NON_SOLID,	false,	TYPE_TILE,		SUPPORT_NONE,	{-1},												ITEM_NULL,		"Nothing",		true,	999,	true	},	// TILE_NOTHING
-	{   &img_tile_stone,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_IRON_ORE, -1},						ITEM_STONE,		"Stone",		true,	1.0,	false	},	// TILE_STONE
-	{   &img_tile_dirt ,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_STONE, TILE_GRASS, TILE_IRON_ORE, TILE_SAND},	ITEM_DIRT,		"Dirt",			true,	0.5,	false	},	// TILE_DIRT
-	{	&img_tile_grass,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, -1},									ITEM_NULL,		"Grass",		false,	0.1,	false	},	// TILE_GRASS
-	{	&img_tile_wood,			PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1},												ITEM_WOOD,		"Wood",			false,	1.0,	false	},	// TILE_WOOD
-	{	&img_tile_trunk,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_ROOT_L, TILE_ROOT_R, TILE_LEAVES, -1},		ITEM_WOOD,		"Tree Trunk",	false,	5.0,	false	},	// TILE_TRUNK
-	{	&img_tile_root_l,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},												ITEM_WOOD,		"Tree Root",	false,	5.0,	false	},	// TILE_ROOT_L
-	{	&img_tile_root_r,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},												ITEM_WOOD,		"Tree Root",	false,	5.0,	false	},	// TILE_ROOT_R
-	{	&img_tile_nothing,		PHYS_NON_SOLID,	false,	TYPE_TILE,		SUPPORT_NONE,	{-1},												ITEM_WOOD,		"TreeTop",		false,	5.0,	false	},	// TILE_LEAVES
-	{	&img_tile_plant,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_NULL,		"Plant"	,		false,	0.1,	true	},	// TILE_PLANT
-	{	&img_tile_wbench,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_WBENCH,	"Workbench",	false,	0.1,	true	},	// TILE_WBENCH_L
-	{	&img_tile_wbench,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_WBENCH,	"Workbench R",	false,	0.1,	true	},	// TILE_WBENCH_R
-	{	&img_tile_platform,		PHYS_PLATFORM,	true,	TYPE_SHEET,		SUPPORT_NONE,	{-1},												ITEM_PLATFORM,	"Platform",		false,	0.1,	true	},	// TILE_PLATFORM
-	{	&img_tile_chair,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_CHAIR,		"Chair L",		false,	0.1,	true	},	// TILE_CHAIR_L
-	{	&img_tile_chair,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_CHAIR,		"Chair R",		false,	0.1,	true	},	// TILE_CHAIR_R
-	{	&img_tile_torch,		PHYS_NON_SOLID,	true,	TYPE_SHEET,		SUPPORT_NONE,	{TILE_NOTHING, -1},									ITEM_TORCH,		"Torch",		false,	0.1,	true	},	// TILE_TORCH
-	{	&img_tile_furnace_edge,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_FURNACE,	"Furnace",		false,	0.1,	true	},	// TILE_FURNACE_EDGE
-	{	&img_tile_furnace_mid,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_FURNACE,	"Furnace",		false,	0.1,	true	},	// TILE_FURNACE_MID
-	{	&img_tile_iron_ore,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},						ITEM_IRON_ORE,	"Iron Ore",		false,	1.0,	false	},	// TILE_IRON_ORE
-	{	&img_tile_anvil,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_ANVIL,		"Anvil",		false,	0.1,	true	},	// TILE_ANVIL_L
-	{	&img_tile_anvil,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_ANVIL,		"Anvil R",		false,	0.1,	true	},	// TILE_ANVIL_R
-	{	&img_tile_chest,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},												ITEM_CHEST,		"Chest L",		false,	0.1,	true	},	// TILE_CHEST_L
-	{	&img_tile_chest,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},												ITEM_CHEST,		"Chest R",		false,	0.1,	true	},	// TILE_CHEST_R
-	{	&img_tile_door_c,		PHYS_SOLID,		true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_DOOR,		"Door C",		false,	0.1,	false	},	// TILE_DOOR_C
-	{	&img_tile_door_o_l_l,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NONE,	{-1},												ITEM_DOOR,		"Door O L L",	false,	0.1,	true	},	// TILE_DOOR_O_L_L
-	{	&img_tile_door_o_l_r,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_DOOR,		"Door O L R",	false,	0.1,	true	},	// TILE_DOOR_O_L_R
-	{	&img_tile_door_o_r_l,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_DOOR,		"Door O R L",	false,	0.1,	true	},	// TILE_DOOR_O_R_L
-	{	&img_tile_door_o_r_r,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NONE,	{-1},												ITEM_DOOR,		"Door O R R",	false,	0.1,	true	},	// TILE_DOOR_O_R_R
-	{	&img_tile_vine,			PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_TOP,	{-1},												ITEM_NULL,		"Vine",			false,	0.1,	true	},	// TILE_VINE
-	{	&img_tile_sand,			PHYS_SAND,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, -1},									ITEM_SAND,		"Sand",			true,	0.5,	false	},	// TILE_SAND
-	{	&img_tile_cactus,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_CACTUS_BRANCH, -1},							ITEM_NULL,		"Cactus",		false,	3.0,	true	},	// TILE_CACTUS
-	{	&img_tile_cactus,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_CACTUS, -1},									ITEM_NULL,		"Cactus",		false,	3.0,	true	},	// TILE_CACTUS_BRANCH
-	{	&img_tile_water,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1},												ITEM_NULL,		"Water",		true,	999,	false	},	// TILE_WATER
+	{	&img_tiles_nothing,		PHYS_NON_SOLID,	false,	TYPE_TILE,		SUPPORT_NONE,	{-1},												ITEM_NULL,		"Nothing",		true,	999,	true	},	// TILE_NOTHING
+	{   &img_tiles_stone,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_IRON_ORE, -1},						ITEM_STONE,		"Stone",		true,	1.0,	false	},	// TILE_STONE
+	{   &img_tiles_dirt ,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_STONE, TILE_GRASS, TILE_IRON_ORE, TILE_SAND},	ITEM_DIRT,		"Dirt",			true,	0.5,	false	},	// TILE_DIRT
+	{	&img_tiles_grass,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, -1},									ITEM_NULL,		"Grass",		false,	0.1,	false	},	// TILE_GRASS
+	{	&img_tiles_wood,			PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1},												ITEM_WOOD,		"Wood",			false,	1.0,	false	},	// TILE_WOOD
+	{	&img_tiles_trunk,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_ROOT_L, TILE_ROOT_R, TILE_LEAVES, -1},		ITEM_WOOD,		"Tree Trunk",	false,	5.0,	false	},	// TILE_TRUNK
+	{	&img_tiles_root_l,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},												ITEM_WOOD,		"Tree Root",	false,	5.0,	false	},	// TILE_ROOT_L
+	{	&img_tiles_root_r,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},												ITEM_WOOD,		"Tree Root",	false,	5.0,	false	},	// TILE_ROOT_R
+	{	&img_tiles_nothing,		PHYS_NON_SOLID,	false,	TYPE_TILE,		SUPPORT_NONE,	{-1},												ITEM_WOOD,		"TreeTop",		false,	5.0,	false	},	// TILE_LEAVES
+	{	&img_tiles_plant,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_NULL,		"Plant"	,		false,	0.1,	true	},	// TILE_PLANT
+	{	&img_tiles_wbench,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_WBENCH,	"Workbench",	false,	0.1,	true	},	// TILE_WBENCH_L
+	{	&img_tiles_wbench,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_WBENCH,	"Workbench R",	false,	0.1,	true	},	// TILE_WBENCH_R
+	{	&img_tiles_platform,		PHYS_PLATFORM,	true,	TYPE_SHEET,		SUPPORT_NONE,	{-1},												ITEM_PLATFORM,	"Platform",		false,	0.1,	true	},	// TILE_PLATFORM
+	{	&img_tiles_chair,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_CHAIR,		"Chair L",		false,	0.1,	true	},	// TILE_CHAIR_L
+	{	&img_tiles_chair,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_CHAIR,		"Chair R",		false,	0.1,	true	},	// TILE_CHAIR_R
+	{	&img_tiles_torch,		PHYS_NON_SOLID,	true,	TYPE_SHEET,		SUPPORT_NONE,	{TILE_NOTHING, -1},									ITEM_TORCH,		"Torch",		false,	0.1,	true	},	// TILE_TORCH
+	{	&img_tiles_furnace_edge,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_FURNACE,	"Furnace",		false,	0.1,	true	},	// TILE_FURNACE_EDGE
+	{	&img_tiles_furnace_mid,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_FURNACE,	"Furnace",		false,	0.1,	true	},	// TILE_FURNACE_MID
+	{	&img_tiles_iron_ore,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},						ITEM_IRON_ORE,	"Iron Ore",		false,	1.0,	false	},	// TILE_IRON_ORE
+	{	&img_tiles_anvil,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_ANVIL,		"Anvil",		false,	0.1,	true	},	// TILE_ANVIL_L
+	{	&img_tiles_anvil,		PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_ANVIL,		"Anvil R",		false,	0.1,	true	},	// TILE_ANVIL_R
+	{	&img_tiles_chest,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},												ITEM_CHEST,		"Chest L",		false,	0.1,	true	},	// TILE_CHEST_L
+	{	&img_tiles_chest,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},												ITEM_CHEST,		"Chest R",		false,	0.1,	true	},	// TILE_CHEST_R
+	{	&img_tiles_door_c,		PHYS_SOLID,		true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_DOOR,		"Door C",		false,	0.1,	false	},	// TILE_DOOR_C
+	{	&img_tiles_door_o_l_l,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NONE,	{-1},												ITEM_DOOR,		"Door O L L",	false,	0.1,	true	},	// TILE_DOOR_O_L_L
+	{	&img_tiles_door_o_l_r,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_DOOR,		"Door O L R",	false,	0.1,	true	},	// TILE_DOOR_O_L_R
+	{	&img_tiles_door_o_r_l,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_DOOR,		"Door O R L",	false,	0.1,	true	},	// TILE_DOOR_O_R_L
+	{	&img_tiles_door_o_r_r,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NONE,	{-1},												ITEM_DOOR,		"Door O R R",	false,	0.1,	true	},	// TILE_DOOR_O_R_R
+	{	&img_tiles_vine,			PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_TOP,	{-1},												ITEM_NULL,		"Vine",			false,	0.1,	true	},	// TILE_VINE
+	{	&img_tiles_sand,			PHYS_SAND,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, -1},									ITEM_SAND,		"Sand",			true,	0.5,	false	},	// TILE_SAND
+	{	&img_tiles_cactus,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_CACTUS_BRANCH, -1},							ITEM_NULL,		"Cactus",		false,	3.0,	true	},	// TILE_CACTUS
+	{	&img_tiles_cactus,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_CACTUS, -1},									ITEM_NULL,		"Cactus",		false,	3.0,	true	},	// TILE_CACTUS_BRANCH
+	{	&img_tiles_water,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1},												ITEM_NULL,		"Water",		true,	999,	false	},	// TILE_WATER
 };
 
 int timeToTicks(int hour, int minute)
