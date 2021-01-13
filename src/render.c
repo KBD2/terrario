@@ -50,7 +50,7 @@ void render(bool renderHUD)
 	unsigned int camMaxY = ((game.WORLD_HEIGHT - VAR_BUF_OFFSET) << 3) - (SCREEN_HEIGHT >> 1);
 	extern bopti_image_t img_player, img_cursor, img_slots, img_slot_highlight,
 	img_leaves, img_deathtext, img_bg_underground, img_sunmoon, img_bg_night,
-	img_tile_cracks, img_tile_ghost;
+	img_tile_cracks, img_tile_ghost, img_bubble;
 	bopti_image_t *swingSprite;
 	int camX = min(max(player.props.x + (player.props.width >> 1), camMinX), camMaxX);
 	int camY = min(max(player.props.y + (player.props.height >> 1), camMinY), camMaxY);
@@ -74,6 +74,8 @@ void render(bool renderHUD)
 	int entX, entY;
 	int entSubrectX, entSubrectY;
 	Entity *ent;
+
+	int x, y;
 
 	int hotbarY;
 	Item item;
@@ -291,6 +293,17 @@ void render(bool renderHUD)
 		{
 			item = player.inventory.items[slot];
 			if(item.id != ITEM_NULL) renderItem(16 * slot + 1, hotbarY + 1, &item);
+		}
+	}
+
+//	Render breath meter
+	if(player.breath > 0 && player.breath < 200)
+	{
+		for(int bubble = 0; bubble < player.breath / 40 + 1; bubble++)
+		{
+			x = player.props.x - (camX - (SCREEN_WIDTH >> 1)) - 7 + bubble * 5;
+			y = player.props.y - (camY - (SCREEN_HEIGHT >> 1)) - 6;
+			dimage(x, y, &img_bubble);
 		}
 	}
 

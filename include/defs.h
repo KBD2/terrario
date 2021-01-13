@@ -56,7 +56,7 @@ extern struct GameCompatibilityPresets game;
 
 #define INVENTORY_SIZE 24
 
-// Arbitrary size, not using GYRAM for anything else
+// Arbitrary size, not using GYRAM for much else
 #define MAX_REGIONS 1000
 
 // 12 minutes

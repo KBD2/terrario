@@ -19,6 +19,15 @@ img_ent_slime,
 img_ent_zombie,
 img_ent_vulture;
 
+bool checkPlayerSubmerged()
+{
+//	Do it lazily and only check a single tile
+	int checkPixelY = player.props.y + 3;
+	int checkTileY = checkPixelY >> 3;
+
+	return getTile(player.props.x >> 3, checkTileY).id == TILE_WATER;
+}
+
 /* ----- ENTITY DATA AND BEHAVIOUR DEFINITIONS ----- */
 
 // SLIMES

@@ -301,7 +301,7 @@ void playerUpdate(int frames)
 	int maxY = ((game.WORLD_HEIGHT - VAR_BUF_OFFSET) << 3) - player.props.height;
 
 //	Handle the physics for the player
-	player.physics(&player.props, frames, false, WATER_FRICTION);
+	handlePhysics(&player.props, frames, false, WATER_FRICTION);
 
 //	Cap the player's position at an offset so variant buffer doesn't corrupt YRAM
 	player.props.x = min(max(minX, player.props.x), maxX);
@@ -310,6 +310,7 @@ void playerUpdate(int frames)
 
 	if(player.props.touchingTileTop && player.bonuses.doubleJump) player.bonuses.hasDoubleJumped = false;
 
+//	Fall damage
 	if(player.props.yVel < 0) player.pixelsFallen = 0;
 	else
 	{
@@ -326,6 +327,21 @@ void playerUpdate(int frames)
 			player.pixelsFallen = 0;
 		}
 	}
+
+//	Breath/drowning
+	if(checkPlayerSubmerged())
+	{
+		if(frames % 7 == 0)
+		{
+			if(player.breath > 0) player.breath--;
+			else
+			{
+				player.combat.health = max(0, player.combat.health - 2);
+				player.ticksSinceHit = 0;
+			}
+		}
+	}
+	else if(player.breath < 200) player.breath++;
 
 //	Regen health
 	if(player.combat.health < player.maxHealth)

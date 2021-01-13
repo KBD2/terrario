@@ -115,41 +115,48 @@ struct EntityBase {
 
 typedef struct EntityBase Entity;
 
-struct AccessoryBonuses {
-	int defense;
-	bool doubleJump;
-	bool hasDoubleJumped;
-	float speedBonus;
-};
-
 struct Player {
 	struct EntityPhysicsProps props;
 	struct AnimationData anim;
 	struct Combat combat;
+
 	Coords cursor;
 	Coords cursorTile;
+	struct GhostObject {
+		short width;
+		short height;
+	} ghost;
+
 	struct Inventory inventory;
 	struct PlayerTool tool;
-	struct AccessoryBonuses bonuses;
+	struct AccessoryBonuses {
+		int defense;
+		bool doubleJump;
+		bool hasDoubleJumped;
+		float speedBonus;
+	} bonuses;
+	
 	Coords spawn;
 
 	int jumpTimer;
 	bool jumpReleased;
 	int swingFrame;
+
 	int maxHealth;
 	int ticksSinceHit;
 	int pixelsFallen;
-	struct GhostObject{
-		short width;
-		short height;
-	} ghost;
-
-	void (*physics)(struct EntityPhysicsProps *self, int frames, bool onlyCollisions, enum WaterPhysics water);
+	int breath;
 };
 
 extern const struct EntityBase entityTemplates[];
 
 extern struct Player player;
+
+/* checkPlayerSubmerged
+Finds whether the pixel above the player's eye is inside a water tile.
+*/
+bool checkPlayerSubmerged();
+
 
 /* handlePhysics
 Performs a physics update on the given EntityPhysicsProps struct.

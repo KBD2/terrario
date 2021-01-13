@@ -107,6 +107,7 @@ bool gameLoop(volatile int *flag)
 				player.props.dropping = false;
 				respawnCounter = 0;
 				player.combat.currImmuneFrames = player.combat.immuneFrames;
+				player.breath = 200;
 			}
 			else if(respawnCounter > 0) respawnCounter--;
 			else
@@ -227,8 +228,7 @@ int main(void)
 
 		.tool = { TOOL_TYPE_NONE },
 		.maxHealth = 100,
-
-		.physics = &handlePhysics
+		.breath = 200
 	};
 
 	for(int slot = 0; slot < INVENTORY_SIZE; slot++) player.inventory.items[slot] = (Item){ITEM_NULL, 0};
