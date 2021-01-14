@@ -147,6 +147,17 @@ def generateTree(x, y, baseHeight):
     if getTile(x + 1, y + 1) == Tiles.GRASS and random.randrange(0, 3) <= 1: 
         setTile(x + 1, y, Tiles.TREE)
 
+def parabola(x, y, width, depth, material):
+    multiplier = -depth / (width / 2) ** 2
+    for dX in range(width):
+            if x + dX < 0: continue
+            elif x + dX >= WORLD_WIDTH: return
+            for dY in range(y):
+                if getTile(x + dX, dY) != Tiles.NOTHING:
+                    setTile(x + dX, dY, Tiles.NOTHING)
+            for dY in range(int(multiplier * (dX - width / 2) ** 2 + depth)):
+                setTile(x + dX, y + dY, material)
+
 def generate():
     
     print("Generating dirt...")
@@ -249,7 +260,6 @@ def generate():
         x = random.randrange(75, WORLD_WIDTH - 75)
         width = max(15, poisson(15))
         depth = max(5, poisson(10))
-        multiplier = -depth / (width / 2) ** 2
         leftY = WORLD_HEIGHT // 5
         while getTile(x, leftY) == Tiles.NOTHING:
             leftY += 1
@@ -261,12 +271,23 @@ def generate():
             if getTile(x + width, rightY + 6) == Tiles.NOTHING:
                 rightY += 6
         y = max(leftY, rightY)
-        for dX in range(width):
-            for dY in range(y):
-                if getTile(x + dX, dY) != Tiles.NOTHING:
-                    setTile(x + dX, dY, Tiles.NOTHING)
-            for dY in range(int(multiplier * (dX - width / 2) ** 2 + depth)):
-                setTile(x + dX, y + dY, Tiles.WATER)
+        parabola(x, y, width, depth, Tiles.WATER)
+
+    print("Beaches...")
+    leftY = 0
+    while getTile(60, leftY) == Tiles.NOTHING:
+        leftY += 1
+    rightY = 0
+    while getTile(WORLD_WIDTH - 60, rightY) == Tiles.NOTHING:
+        rightY += 1
+    # Left beach
+    parabola(-62, leftY, 124, 32, Tiles.DIRT)
+    parabola(-60, leftY, 120, 30, Tiles.SAND)
+    parabola(-50, leftY + 2, 100, 20, Tiles.WATER)
+    # Right beach
+    parabola(WORLD_WIDTH - 62, rightY, 124, 32, Tiles.DIRT)
+    parabola(WORLD_WIDTH - 60, rightY, 120, 30, Tiles.SAND)
+    parabola(WORLD_WIDTH - 50, rightY + 2, 100, 20, Tiles.WATER)
             
     print("Gravitating Sand...")
     for x in range(WORLD_WIDTH):

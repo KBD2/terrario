@@ -301,7 +301,7 @@ void render(bool renderHUD)
 	{
 		for(int bubble = 0; bubble < player.breath / 40 + 1; bubble++)
 		{
-			x = player.props.x - (camX - (SCREEN_WIDTH >> 1)) - 7 + bubble * 5;
+			x = player.props.x - (camX - (SCREEN_WIDTH >> 1)) - 9 + bubble * 6;
 			y = player.props.y - (camY - (SCREEN_HEIGHT >> 1)) - 6;
 			dimage(x, y, &img_ui_bubble);
 		}

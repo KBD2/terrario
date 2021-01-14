@@ -399,6 +399,7 @@ void worldUpdate()
 	int tempY;
 	enum Tiles tile;
 	int placeX, placeY;
+	enum SupportTypes support;
 
 	for(int y = min(game.WORLD_HEIGHT - 1, (player.props.y >> 3) + 10); y > max(0, (player.props.y >> 3) - 10); y--)
 	{
@@ -414,7 +415,8 @@ void worldUpdate()
 					setVar(x, tempY + 1);
 				}
 				setTile(x, tempY + 1, TILE_NOTHING);
-				if(tiles[getTile(x, tempY).id].support == SUPPORT_NEED) world.removeTile(x, tempY);
+				support = tiles[getTile(x, tempY).id].support;
+				if(support == SUPPORT_NEED || support == SUPPORT_KEEP) world.removeTile(x, tempY);
 			}
 //			Water tile physics
 			else if(tile == TILE_WATER)

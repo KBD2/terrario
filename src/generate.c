@@ -6,7 +6,7 @@
 #include "world.h"
 #include "chest.h"
 
-#define NUM_WORLD_GEN_PARTS 20
+#define NUM_WORLD_GEN_PARTS 21
 #define WORLD_SMOOTH_PASSES 5
 
 GYRAM Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
@@ -174,6 +174,24 @@ void box(int x, int y, int width, int height, enum Tiles tile, float coverage, e
 	}
 }
 
+void parabola(int x, int y, int width, int depth, enum Tiles material)
+{
+	float multiplier = (float)-depth / pow((float)width / 2, 2);
+	for(int dX = 0; dX < width; dX++)
+	{
+		if(x + dX < 0) continue;
+		else if(x + dX >= game.WORLD_WIDTH) return;
+		for(int dY = 0; dY < y; dY++)
+		{
+			if(getTile(x + dX, dY).id != TILE_NOTHING) setTile(x + dX, dY, TILE_NOTHING);
+		}
+		for(int dY = 0; dY < multiplier * pow(dX - width / 2, 2) + depth; dY++)
+		{
+			setTile(x + dX, y + dY, material);
+		}
+	}
+}
+
 void generateWorld()
 {
 	int x, y;
@@ -189,7 +207,6 @@ void generateWorld()
 	int ySave = 0;
 	int deltaY;
 	int depth, leftY, rightY;
-	float multiplier;
 
 	yPositions = malloc(game.WORLD_WIDTH * sizeof(unsigned char));
 
@@ -200,10 +217,8 @@ void generateWorld()
 	}
 
 	middleText("Terrain", updateProgress());
-
 //	Dirt
 	perlin(10, 30, game.WORLD_HEIGHT / 5, TILE_DIRT, 3);
-
 //	Stone
 	perlin(6, 20, game.WORLD_HEIGHT / 2.8, TILE_STONE, 1);
 
@@ -357,7 +372,6 @@ void generateWorld()
 		x = randRange(75, game.WORLD_WIDTH - 75);
 		width = max(15, poisson(15));
 		depth = max(5, poisson(10));
-		multiplier = (float)-depth / pow((float)width / 2, 2);
 		leftY = game.WORLD_HEIGHT / 5;
 		while(getTile(x, leftY).id == TILE_NOTHING)
 		{
@@ -371,18 +385,23 @@ void generateWorld()
 			if(getTile(x + width, rightY + 6).id == TILE_NOTHING) rightY += 6;
 		}
 		y = max(leftY, rightY);
-		for(int dX = 0; dX < width; dX++)
-		{
-			for(int dY = 0; dY < y; dY++)
-			{
-				if(getTile(x + dX, dY).id != TILE_NOTHING) setTile(x + dX, dY, TILE_NOTHING);
-			}
-			for(int dY = 0; dY < multiplier * pow(dX - width / 2, 2) + depth; dY++)
-			{
-				setTile(x + dX, y + dY, TILE_WATER);
-			}
-		}
+		parabola(x, y, width, depth, TILE_WATER);
 	}
+
+//	Beaches
+	middleText("Beaches", updateProgress());
+	leftY = 0;
+	while(getTile(60 * game.WORLDGEN_MULTIPLIER, leftY).id == TILE_NOTHING) leftY++;
+	rightY = 0;
+	while(getTile(game.WORLD_WIDTH - 60 * game.WORLDGEN_MULTIPLIER, rightY).id == TILE_NOTHING) rightY++;
+//	Left beach
+	parabola(-62 * game.WORLDGEN_MULTIPLIER, leftY, 124 * game.WORLDGEN_MULTIPLIER, 32, TILE_DIRT);
+	parabola(-60 * game.WORLDGEN_MULTIPLIER, leftY, 120 * game.WORLDGEN_MULTIPLIER, 30, TILE_SAND);
+    parabola(-50 * game.WORLDGEN_MULTIPLIER, leftY + 2, 100 * game.WORLDGEN_MULTIPLIER, 20, TILE_WATER);
+//	Right beach
+	parabola(game.WORLD_WIDTH - 62 * game.WORLDGEN_MULTIPLIER, leftY, 124 * game.WORLDGEN_MULTIPLIER, 32, TILE_DIRT);
+	parabola(game.WORLD_WIDTH - 60 * game.WORLDGEN_MULTIPLIER, leftY, 120 * game.WORLDGEN_MULTIPLIER, 30, TILE_SAND);
+    parabola(game.WORLD_WIDTH - 50 * game.WORLDGEN_MULTIPLIER, leftY + 2, 100 * game.WORLDGEN_MULTIPLIER, 20, TILE_WATER);
 
 //	Gravitating Sand
 	middleText("Gravitating Sand", updateProgress());
