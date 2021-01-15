@@ -10,6 +10,7 @@
 #include <gint/std/stdlib.h>
 #include <gint/clock.h>
 #include <gint/std/stdio.h>
+#include <math.h>
 
 #include "menu.h"
 #include "syscalls.h"
@@ -31,55 +32,101 @@ struct {
 
 int mainMenu()
 {
-	extern bopti_image_t img_mainmenu;
-	extern bopti_image_t img_ui_mainmenuselect;
+	extern bopti_image_t img_mainmenu, img_ui_mainmenuselect, img_ents_slime, img_sunmoon;
 	int selectPositions[] = {13, 30, 47};
 	bool validSave = getSave();
 	int selected = validSave ? 1 : 0;
 	key_event_t key;
+	volatile int flag = 0;
+	int timer;
+	unsigned int frames = 0;
+	int bunnyBlink = 0;
+
+	int orbX, orbY;
+	float dayPolarAngle;
+
+	timer = timer_setup(TIMER_ANY, (1000 / 30) * 1000, &frameCallback, &flag);
+	timer_start(timer);
 
 	while(1)
 	{
 		dclear(C_WHITE);
+
+		dayPolarAngle = (((float)PI * 2.0) / (float)1200) * (float)frames;
+//		Sun
+		orbX = 56 * cos(dayPolarAngle + PI / 2.0) + 56;
+		orbY = 64 * sin(dayPolarAngle + PI / 2.0) + 64;
+		dsubimage(orbX, orbY, &img_sunmoon, 0, 0, 16, 16, DIMAGE_NONE);
+//		Moon
+		orbX = 56 * cos(dayPolarAngle - PI / 2.0) + 56;
+		orbY = 64 * sin(dayPolarAngle - PI / 2.0) + 64;
+		dsubimage(orbX, orbY, &img_sunmoon, 16, 0, 16, 16, DIMAGE_NONE);
+
 		dimage(0, 0, &img_mainmenu);
 		dimage(65, selectPositions[selected], &img_ui_mainmenuselect);
+		dsubimage(43, 52, &img_ents_slime, 0, (frames & 16) ? 14 : 1, 16, 12, DIMAGE_NONE);
+		if(bunnyBlink == 0)
+		{
+			if(rand() % 30 == 0) bunnyBlink = 3;
+		}
+		else
+		{
+			dline(91, 57, 91, 58, C_WHITE);
+			bunnyBlink--;
+		}
 		#ifdef DEBUGMODE
 		dtext_opt(0, 0, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, "DEBUG BUILD");
 		#endif
 		dupdate();
 
-		key = getkey_opt(GETKEY_NONE, NULL);
-		switch(key.key)
+		key = pollevent();
+		while(key.type != KEYEV_NONE)
 		{
-			case KEY_OPTN:
-				if(key.type == KEYEV_DOWN) gint_switch(&takeVRAMCapture);
-				break;
-
-			case KEY_MENU:
-				return -1;
-			
-			case KEY_EXE:
-				if(selected == 2)
-				{
-					aboutMenu();
+			switch(key.key)
+			{
+				case KEY_OPTN:
+					if(key.type == KEYEV_DOWN) gint_switch(&takeVRAMCapture);
 					break;
-				}
-				else return selected;
-			
-			case KEY_UP:
-				selected--;
-				if(selected == 1 && !validSave) selected--;
-				break;
-			case KEY_DOWN:
-				selected++;
-				if(selected == 1 && !validSave) selected++;
-				break;
-			
-			default:
-				break;
+
+				case KEY_MENU:
+					timer_stop(timer);
+					return -1;
+				
+				case KEY_EXE:
+					if(selected == 2)
+					{
+						aboutMenu();
+						break;
+					}
+					else
+					{
+						timer_stop(timer);
+						return selected;
+					}
+				
+				case KEY_UP:
+					if(key.type != KEYEV_DOWN) break;
+					selected--;
+					if(selected == 1 && !validSave) selected--;
+					break;
+
+				case KEY_DOWN:
+					if(key.type != KEYEV_DOWN) break;
+					selected++;
+					if(selected == 1 && !validSave) selected++;
+					break;
+
+				default:
+					break;
+			}
+			key = pollevent();
 		}
 
 		selected = min(max(selected, 0), 2);
+
+		while(!flag) sleep();
+		flag = 0;
+		frames++;
 	}
 }
 
