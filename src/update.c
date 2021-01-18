@@ -255,8 +255,9 @@ enum UpdateReturnCodes keyboardUpdate()
 		else if(player.tool.type == TOOL_TYPE_PICK) player.tool.data.pickData.currFramesLeft = 0;
 
 //		Movement
-		if(keydown(KEY_4)) player.props.xVel = -1 * player.bonuses.speedBonus;
-		if(keydown(KEY_6)) player.props.xVel = 1 * player.bonuses.speedBonus;
+		player.props.movingSelf = keydown_any(KEY_4, KEY_6, 0);
+		if(keydown(KEY_4) && player.props.xVel > -1 * player.bonuses.speedBonus) player.props.xVel -= 0.2;
+		if(keydown(KEY_6) && player.props.xVel < 1 * player.bonuses.speedBonus) player.props.xVel += 0.2;
 		if(keydown(KEY_2)) player.props.dropping = true;
 #ifdef DEBUGMODE
 		if(keydown(KEY_4)) player.props.xVel = -1;
@@ -291,8 +292,12 @@ void playerUpdate(int frames)
 	};
 	int time;
 	float regen;
+
 	int playerXSave = player.props.x;
 	int playerYSave = player.props.y;
+//	Used to stop animation if the player is still for too long but has an X velocity
+	static int playerXSaveTimer = 0;
+
 	int damage;
 
 	int minX = VAR_BUF_OFFSET << 3;
@@ -302,6 +307,9 @@ void playerUpdate(int frames)
 
 //	Handle the physics for the player
 	handlePhysics(&player.props, frames, false, WATER_FRICTION);
+
+	if(player.props.x == playerXSave) playerXSaveTimer++;
+	else playerXSaveTimer = 0;
 
 //	Cap the player's position at an offset so variant buffer doesn't corrupt YRAM
 	player.props.x = min(max(minX, player.props.x), maxX);
@@ -329,7 +337,7 @@ void playerUpdate(int frames)
 	}
 
 //	Breath/drowning
-	if(checkPlayerSubmerged())
+	if(checkEntitySubmerged(&player.props, 3))
 	{
 		if(frames % 7 == 0)
 		{
@@ -373,7 +381,7 @@ void playerUpdate(int frames)
 		anim->animation = 2;
 		anim->animationFrame = 5;
 	}
-	else if(player.props.xVel == 0 || (playerXSave == player.props.x && player.props.touchingTileTop))
+	else if(player.props.xVel == 0 || (playerXSaveTimer >= 5 && player.props.touchingTileTop))
 	{
 		anim->animation = 0;
 		anim->animationFrame = 0;

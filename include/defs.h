@@ -30,7 +30,7 @@ extern struct GameCompatibilityPresets game;
 #define allocCheck(x) if((x) == NULL) memoryErrorMenu()
 
 #ifndef DEBUGMODE
-#define VERSION "v0.8.2-indev"
+#define VERSION "v0.9.0-indev"
 #else
 #define VERSION "DEBUG BUILD!"
 #endif

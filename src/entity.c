@@ -19,13 +19,13 @@ img_ents_slime,
 img_ents_zombie,
 img_ents_vulture;
 
-bool checkPlayerSubmerged()
+bool checkEntitySubmerged(struct EntityPhysicsProps *props, int offsetY)
 {
 //	Do it lazily and only check a single tile
-	int checkPixelY = player.props.y + 3;
+	int checkPixelY = props->y + offsetY;
 	int checkTileY = checkPixelY >> 3;
 
-	return getTile(player.props.x >> 3, checkTileY).id == TILE_WATER;
+	return getTile(props->x >> 3, checkTileY).id == TILE_WATER;
 }
 
 /* ----- ENTITY DATA AND BEHAVIOUR DEFINITIONS ----- */
@@ -98,6 +98,11 @@ const struct EntityDrops zombieDrops = {
 	}
 };
 
+void zombieInit(struct EntityBase *self)
+{
+	self->props.movingSelf = true;
+}
+
 bool zombieBehaviour(struct EntityBase *self, int frames)
 {
 	int *animFrame = &self->mem[0];
@@ -149,6 +154,7 @@ void vultureInit(struct EntityBase *self)
 {
 	self->anim.direction = rand() % 2;
 	self->props.dropping = true;
+	self->props.movingSelf = true;
 }
 
 bool vultureBehaviour(struct EntityBase *self, int frames)
@@ -243,17 +249,56 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 	double integer;
 	double fractional;
 
-	bool waterFrictionApplied = false;
-
+//		Friction
 #ifndef DEBUGMODE
 	if(!onlyCollisions)
 	{
 		self->y++;
 		self->yVel = min(max(-4, self->yVel + GRAVITY_ACCEL), 4);
+
+		if(checkEntitySubmerged(self, self->height - 2))
+		{
+			switch(water)
+			{
+				case WATER_FRICTION:
+					self->xVel = sgn(self->xVel) * min(0.5, abs(self->xVel));
+					self->yVel *= 0.85;
+					break;
+				case WATER_FLOAT:
+					self->yVel -= 0.5;
+					if(self->xVel == 0) self->xVel = (rand() % 2) ? 3 : -3;
+					break;
+			}
+		}
+		
+		if(!self->movingSelf)
+		{
+			if(self->touchingTileTop) self->xVel *= 0.7;
+			else if(water != WATER_FLOAT) self->xVel *= 0.95;
+		}
 	}
+#else
+	self->xVel *= 0.7;
+	self->yVel *= 0.7;
 #endif
 
-	if(abs(self->xVel) < 0.1) self->xVel = 0;
+	if(self->x < 0 || self->x > xMax)
+	{
+		self->xVel = 0;
+		self->x = min(max(self->x, 0), xMax);
+	}
+	if(self->y < 0 || self->y > yMax)
+	{
+		self->yVel = 0;
+		self->y = min(max(self->y, 0), yMax);
+	}
+	if(self->y + self->height >= (game.WORLD_HEIGHT << 3) - 1)
+	{
+		self->yVel = 0;
+		self->touchingTileTop = true;
+	}
+
+	if(abs(self->xVel) < 0.01) self->xVel = 0;
 
 //	Interpolate X velocity
 	fractional = modf(self->xVel, &integer);
@@ -266,7 +311,6 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 	if(abs(self->yVel) < 1 && frames % (int)roundf(1.0 / self->yVel) == 0) self->y += sgn(self->yVel);
 	else if(abs(self->yVel) > 1 && frames % (int)roundf(1.0 / fractional) == 0) self->y += integer + sgn(self->yVel);
 	else self->y += integer;
-	
 
 #ifndef DEBUGMODE
 	self->touchingTileTop = false;
@@ -329,52 +373,11 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 			}
 			else if(getTile(x, y).id == TILE_WATER)
 			{
-				switch(water)
-				{
-					case WATER_FRICTION:
-						if(!waterFrictionApplied)
-						{
-							waterFrictionApplied = true;
-							self->xVel *= 0.85;
-							self->yVel *= 0.85;
-						}
-						break;
-					case WATER_FLOAT:
-						self->yVel -= 0.1;
-						break;
-				}
+				
 			}
 		}
 	}
 #endif
-
-	if(!onlyCollisions)
-	{
-//		Friction
-#ifndef DEBUGMODE
-		if(self->touchingTileTop) self->xVel *= 0.7;
-		else if(water != WATER_FLOAT) self->xVel *= 0.95;
-#else
-		self->xVel *= 0.7;
-		self->yVel *= 0.7;
-#endif
-	}
-
-	if(self->x < 0 || self->x > xMax)
-	{
-		self->xVel = 0;
-		self->x = min(max(self->x, 0), xMax);
-	}
-	if(self->y < 0 || self->y > yMax)
-	{
-		self->yVel = 0;
-		self->y = min(max(self->y, 0), yMax);
-	}
-	if(self->y + self->height >= (game.WORLD_HEIGHT << 3) - 1)
-	{
-		self->yVel = 0;
-		self->touchingTileTop = true;
-	}
 }
 
 bool checkCollision(struct EntityPhysicsProps *first, struct EntityPhysicsProps *second)

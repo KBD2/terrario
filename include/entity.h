@@ -53,6 +53,7 @@ struct EntityPhysicsProps {
 	float yVel;
 	bool touchingTileTop;
 	bool dropping;
+	bool movingSelf;
 };
 
 struct AnimationData {
@@ -152,10 +153,14 @@ extern const struct EntityBase entityTemplates[];
 
 extern struct Player player;
 
-/* checkPlayerSubmerged
-Finds whether the pixel above the player's eye is inside a water tile.
+/* checkEntitySubmerged
+Finds whether the entity is inside a water tile.
+
+props: Pointer to the entity's physics properties
+offsetY: Offset in pixels from the top of the entity to be used as the
+submersion line.
 */
-bool checkPlayerSubmerged();
+bool checkEntitySubmerged(struct EntityPhysicsProps *props, int offsetY);
 
 
 /* handlePhysics

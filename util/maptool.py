@@ -315,11 +315,11 @@ def generate():
                 if tile == Tiles.WATER and deltaY > 0:
                     for dY in range(deltaY):
                         setTile(x, y + dY, Tiles.NOTHING)
-                    ySave = y + deltaY
+                    ySave = y + deltaY - 1
                 elif deltaY > (2 if tile != Tiles.SAND else 1) and getTile(x, y + 6) != Tiles.NOTHING:
                     for dY in range(min(deltaY - 1, 2)):
                         setTile(x, y + dY, Tiles.NOTHING)
-                    ySave = y + deltaY
+                    ySave = y + deltaY - 1
                 else:   
                     ySave = y
 

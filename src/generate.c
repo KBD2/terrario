@@ -426,6 +426,7 @@ void generateWorld()
 	middleText("Smooth World", updateProgress());
 	for(int i = 0; i < WORLD_SMOOTH_PASSES; i++)
 	{
+//		Forward and reverse pass
 		for(int pass = 0; pass < 2; pass++)
 		{
 			for(int y = 0; y < game.WORLD_HEIGHT; y++)
@@ -445,7 +446,7 @@ void generateWorld()
 				if(tile.id == TILE_WATER && deltaY > 0)
 				{
 					for(int dY = 0; dY < deltaY; dY++) setTile(x, tempY + dY, TILE_NOTHING);
-					ySave = tempY + deltaY;
+					ySave = tempY + deltaY - 1;
 				}
 				else if(deltaY > ((tile.id != TILE_SAND) ? 2 : 1) && getTile(x, tempY + 6).id != TILE_NOTHING)
 				{
@@ -453,7 +454,7 @@ void generateWorld()
 					{
 						setTile(x, tempY + dY, TILE_NOTHING);
 					}
-					ySave = tempY + deltaY;
+					ySave = tempY + deltaY - 1;
 				}
 				else ySave = tempY;
 			}

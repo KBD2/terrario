@@ -82,9 +82,8 @@ bool gameLoop(volatile int *flag)
 
 	while(true)
 	{
-		if(!respawnCounter) playerUpdate(frames);
-
 		updateRet = keyboardUpdate();
+		if(!respawnCounter) playerUpdate(frames);
 		if(updateRet == UPDATE_EXIT) return true;
 		else if(updateRet == UPDATE_EXIT_NOSAVE) return false;
 
