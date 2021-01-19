@@ -104,18 +104,14 @@ union {
 static inline Tile getTile(int x, int y)
 {
 	int tileWanted = y * game.WORLD_WIDTH + x;
-
-	switch(game.HWMODE)
+	if(game.HWMODE == MODE_RAM)
 	{
-		case MODE_RAM:
-			return world.tiles[tileWanted];
-		
-		case MODE_PRAM:
-			group.aligned = *(uint32_t *)(save.tileData + (tileWanted & ~3));
-			return group.tiles[tileWanted & 3];
-		
-		default:
-			return (Tile){TILE_NULL};
+		return world.tiles[tileWanted];
+	}
+	else
+	{
+		group.aligned = *(uint32_t *)(save.tileData + (tileWanted & ~3));
+		return group.tiles[tileWanted & 3];
 	}
 }
 
@@ -124,18 +120,18 @@ static inline void setTile(int x, int y, enum Tiles tile)
 	int tileWanted = y * game.WORLD_WIDTH + x;
 	uint32_t *nearest;
 
-	switch(game.HWMODE)
+	if(game.HWMODE == MODE_RAM)
 	{
-		case MODE_RAM:
-			world.tiles[tileWanted] = (Tile){tile};
-			return;
-		
-		case MODE_PRAM:
-			nearest = save.tileData + (tileWanted & ~3);
-			group.aligned = *nearest;
-			group.tiles[tileWanted & 3] = (Tile){tile};
-			*nearest = group.aligned;
-			return;
+		world.tiles[tileWanted] = (Tile){tile};
+		return;
+	}
+	else
+	{
+		nearest = save.tileData + (tileWanted & ~3);
+		group.aligned = *nearest;
+		group.tiles[tileWanted & 3] = (Tile){tile};
+		*nearest = group.aligned;
+		return;
 	}
 }
 

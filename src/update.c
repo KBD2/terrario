@@ -265,7 +265,7 @@ enum UpdateReturnCodes keyboardUpdate()
 		if(keydown(KEY_8)) player.props.yVel = -1;
 		if(keydown(KEY_2)) player.props.yVel = 1;
 #endif
-		if(!keydown_any(KEY_8, KEY_2, 0) || (keydown(KEY_8) && !keydown(KEY_2) && player.props.yVel >= 0)) player.props.dropping = false;
+		if(!keydown_any(KEY_8, KEY_2, 0) || (!keydown(KEY_2) && player.props.yVel >= 0)) player.props.dropping = false;
 
 //		Cursor
 		if(keydown(KEY_LEFT)) player.cursor.x--;
