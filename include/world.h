@@ -14,6 +14,7 @@ World API functions.
 #include "entity.h"
 #include "chest.h"
 #include "save.h"
+#include "npc.h"
 
 #define MAX_FRIENDS 4
 
@@ -83,6 +84,8 @@ enum Tiles {
 struct World {
 	Tile *tiles;
 	Entity *entities;
+	int numNPCs;
+	NPC *npcs;
 	struct ParticleExplosion explosion;
 	int timeTicks;
 	struct Chests chests;

@@ -120,6 +120,7 @@ enum UpdateReturnCodes keyboardUpdate()
 	bool playerDead =  player.combat.health <= 0;
 	struct Chest* chest;
 	int ret;
+	NPC *npc;
 	
 	player.inventory.ticksSinceInteracted++;
 
@@ -196,6 +197,24 @@ enum UpdateReturnCodes keyboardUpdate()
 			
 			case KEY_9:
 				if(key.type != KEYEV_DOWN) break;
+
+//				Check NPCs
+				x = player.cursorWorld.x;
+				y = player.cursorWorld.y;
+				for(int idx = 0; idx < world.numNPCs; idx++)
+				{
+					npc = &world.npcs[idx];
+					if(x >= npc->props.x
+					&& x < npc->props.x + npc->props.width
+					&& y >= npc->props.y
+					&& y < npc->props.y + npc->props.height)
+					{
+						if(npcTalk(npc->numInteractDialogue, npc->interactDialogue, npc->menuType)) npc->menu();
+						break;
+					}
+				}
+
+//				Check interactable tiles
 				x = player.cursorTile.x;
 				y = player.cursorTile.y;
 				tile = getTile(x, y).id;

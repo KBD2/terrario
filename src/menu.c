@@ -39,7 +39,7 @@ int mainMenu()
 	key_event_t key;
 	volatile int flag = 0;
 	int timer;
-	unsigned int frames = 0;
+	unsigned int frames = 300;
 	int bunnyBlink = 0;
 
 	int orbX, orbY;

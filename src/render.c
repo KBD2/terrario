@@ -74,6 +74,7 @@ void render(bool renderHUD)
 	int entX, entY;
 	int entSubrectX, entSubrectY;
 	Entity *ent;
+	NPC *npc;
 
 	int x, y;
 
@@ -91,8 +92,11 @@ void render(bool renderHUD)
 
 	Particle particle;
 
-	player.cursorTile.x = (camX + player.cursor.x - (SCREEN_WIDTH >> 1)) >> 3;
-	player.cursorTile.y = (camY + player.cursor.y - (SCREEN_HEIGHT >> 1)) >> 3;
+	player.cursorWorld.x = camX + player.cursor.x - (SCREEN_WIDTH >> 1);
+	player.cursorWorld.y = camY + player.cursor.y - (SCREEN_HEIGHT >> 1);
+
+	player.cursorTile.x = player.cursorWorld.x >> 3;
+	player.cursorTile.y = player.cursorWorld.y >> 3;
 
 	updateVarBuffer(tileLeftX, tileTopY);
 
@@ -236,6 +240,19 @@ void render(bool renderHUD)
 		}
 	}
 
+	for(int idx = 0; idx < world.numNPCs; idx++)
+	{
+		npc = &world.npcs[idx];
+		
+		entX = npc->props.x - (camX - (SCREEN_WIDTH >> 1));
+		entY = npc->props.y - (camY - (SCREEN_HEIGHT >> 1));
+		entSubrectX = npc->anim.direction ? npc->props.width: 0;
+//		NPCs and player have a sticky out bit at the bottom that isn't included in their height,
+//		so add 2 instead of 1 when finding the subrectangle Y
+		entSubrectY = npc->anim.animationFrame * (npc->props.height + 2) + 1;
+		dsubimage(entX, entY, npc->sprite, entSubrectX, entSubrectY, npc->props.width, npc->props.height, DIMAGE_NONE);
+	}
+
 //	Only render player if the player isn't flashing or dead
 	if(!(player.combat.currImmuneFrames & 2) && player.combat.health > 0)
 	{
@@ -283,7 +300,7 @@ void render(bool renderHUD)
 	}
 
 //	Render the hotbar if the player has recently interacted with their inventory
-	if(player.inventory.ticksSinceInteracted < 120)
+	if(renderHUD && player.inventory.ticksSinceInteracted < 120)
 	{
 		if(player.cursor.x < 82 && player.cursor.y < 19) hotbarY = 47;
 		else hotbarY = 0;

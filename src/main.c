@@ -19,9 +19,13 @@
 #include "update.h"
 #include "generate.h"
 #include "optimise.h"
+#include "npc.h"
 
 // Fixes linker problem for newlib
 int __errno = 0;
+
+// Fixes implicit declaration problem
+void spu_zero();
 
 // Syscalls
 const unsigned int sc003B[] = { SCA, SCB, SCE, 0x003B };
@@ -94,6 +98,7 @@ bool gameLoop(volatile int *flag)
 
 		doEntityCycle(frames);
 		doSpawningCycle();
+		npcUpdate(frames);
 		if(player.combat.health <= 0)
 		{
 			if(respawnCounter == 1)
@@ -235,10 +240,13 @@ int main(void)
 	world = (struct World)
 	{
 		.tiles = (Tile*)save.tileData,
+
 		.entities = (Entity*)malloc(MAX_ENTITIES * sizeof(Entity)),
+
 		.explosion = {
 			.particles = malloc(50 * sizeof(Particle))
 		},
+
 		.chests = {
 			.chests = malloc(MAX_CHESTS * sizeof(struct Chest)),
 			.addChest = &addChest,
@@ -308,6 +316,8 @@ int main(void)
 	registerEquipment();
 	registerHeld();
 
+	addNPC(NPC_GUIDE);
+
 	// Do the game
 	doSave = gameLoop(&flag);
 
@@ -328,6 +338,8 @@ int main(void)
 
 	if(doSave) gint_switch(&saveGame);
 	free(world.chests.chests);
+//	Nothing is allocated if there are no NPCs
+	if(world.npcs != NULL) free(world.npcs);
 	if(save.error != -99) saveFailMenu();
 	
 	if(doSave)

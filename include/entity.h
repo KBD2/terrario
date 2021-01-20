@@ -123,6 +123,7 @@ struct Player {
 
 	Coords cursor;
 	Coords cursorTile;
+	Coords cursorWorld;
 	struct GhostObject {
 		short width;
 		short height;
