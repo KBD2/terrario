@@ -6,6 +6,7 @@
 #include "npc.h"
 #include "world.h"
 #include "render.h"
+#include "generate.h"
 
 char *guideDialogue[] = {
 	"Greetings, player. Is there something I can help you with?",
@@ -21,7 +22,7 @@ char *guideHelpDialogue[] = {
 
 void guideMenu()
 {
-	while(npcTalk(sizeof(guideHelpDialogue) / sizeof(char*), guideHelpDialogue, true));
+	while(npcTalk(sizeof(guideHelpDialogue) / sizeof(char*), guideHelpDialogue, MENU_GUIDE));
 }
 
 bool isNPCAlive(enum NPCs id)
@@ -36,7 +37,7 @@ bool isNPCAlive(enum NPCs id)
 
 void addNPC(enum NPCs id)
 {
-	extern bopti_image_t img_npcs_guide;
+	extern bopti_image_t img_npcs_guide, img_npcs_head_guide;
 	NPC *npc;
 	int tileX, tileY = 0;
 
@@ -51,6 +52,7 @@ void addNPC(enum NPCs id)
 		case NPC_GUIDE:
 			*npc = (NPC) {
 				.sprite = &img_npcs_guide,
+				.head = &img_npcs_head_guide,
 				.props = {
 					.width = 16,
 					.height = 23
@@ -63,6 +65,8 @@ void addNPC(enum NPCs id)
 			break;
 	}
 
+	npc->house = (Coords){-1, -1};
+
 	tileX = game.WORLD_WIDTH >> 1;
 	while(getTile(tileX, tileY).id == TILE_NOTHING) tileY++;
 	tileY -= 4;
@@ -73,10 +77,25 @@ void addNPC(enum NPCs id)
 void npcUpdate(int frames)
 {
 	NPC *npc;
+	struct HouseMarker *marker;
 
 	for(int idx = 0; idx < world.numNPCs; idx++)
 	{
 		npc = &world.npcs[idx];
+
+//		Housing
+		if(frames % 300 == 0 && npc->house.x == -1)
+		{
+			for(int i = 0; i < world.numMarkers; i++)
+			{
+				marker = &world.markers[i];
+				if(marker->occupant == NULL)
+				{
+					marker->occupant = npc;
+					npc->house = marker->position;
+				}
+			}
+		}
 
 //		Physics and movement
 
@@ -176,4 +195,81 @@ bool npcTalk(int numDialogue, char **dialogue, enum MenuTypes type)
 				break;
 		}
 	}
+}
+
+// This house validity checker re-uses the worldgen's clump coord buffer to save memory.
+
+struct HouseValidity {
+	bool chair;
+	bool table;
+	bool light;
+	bool taken;
+} valid;
+
+void checkCoord(short x, short y, short *idx)
+{
+	if(valid.taken) return;
+	for(int i = 0; i < world.numMarkers; i++)
+	{
+		if(world.markers[i].position.x == x && world.markers[i].position.y == y)
+		{
+			valid.taken = true;
+			return;
+		}
+	}
+	if(*idx == 501) return;
+	if(x < 0 || x >= game.WORLD_WIDTH || y < 0 || y >= game.WORLD_HEIGHT) return;
+	for(int i = 0; i < *idx; i++)
+	{
+		if(checkCoords[i].x == x && checkCoords[i].y == y) return;
+	}
+	(*idx)++;
+	checkCoords[*idx] = (Coords){x, y};
+	switch(getTile(x, y).id)
+	{
+		case TILE_NOTHING:
+			break;
+		
+		case TILE_CHAIR_L:
+		case TILE_CHAIR_R:
+			valid.chair = true;
+			break;
+		
+		case TILE_WBENCH_L:
+		case TILE_WBENCH_R:
+			valid.table = true;
+			break;
+		
+		case TILE_TORCH:
+			valid.light = true;
+			break;
+		
+		default:
+			return;
+	}
+	checkCoord(x - 1, y, idx);
+	checkCoord(x + 1, y, idx);
+	checkCoord(x, y - 1, idx);
+	checkCoord(x, y + 1, idx);
+}
+
+// Max size 500 instead of 750 to avoid stack overflow
+bool checkHousingValid(short x, short y)
+{
+	short idx = 0;
+
+	valid = (struct HouseValidity){ 0 };
+	checkCoord(x, y, &idx);
+
+	return idx >= 60 && idx < 501 && valid.chair && valid.table && valid.light && !valid.taken;
+}
+
+void addMarker(Coords position, NPC *npc)
+{
+	world.numMarkers++;
+	world.markers = realloc(world.markers, sizeof(world.numMarkers) * sizeof(struct HouseMarker*));
+	world.markers[world.numMarkers - 1] = (struct HouseMarker) {
+		.position = position,
+		.occupant = npc
+	};
 }

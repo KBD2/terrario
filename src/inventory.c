@@ -415,6 +415,7 @@ void registerEquipment()
 void registerHeld()
 {
 	unsigned int currID = player.inventory.getSelected()->id;
+
 	switch(items[currID].type)
 	{
 		case TOOL_TYPE_PICK:
@@ -434,11 +435,18 @@ void registerHeld()
 				player.combat.attack = player.tool.data.swordData.damage;
 			}
 			break;
-					
+
 		default:
 			player.tool.type = TOOL_TYPE_NONE;
 			break;
 	}
+	registerGhost();
+}
+
+void registerGhost()
+{
+	unsigned int currID = player.inventory.getSelected()->id;
+
 	switch(currID)
 	{
 		case ITEM_WBENCH:

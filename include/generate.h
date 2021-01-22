@@ -7,6 +7,9 @@ World generation system.
 */
 
 #include "inventory.h"
+#include "entity.h"
+
+extern GYRAM Coords checkCoords[];
 
 typedef struct {
 	int num;

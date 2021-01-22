@@ -50,7 +50,7 @@ void render(bool renderHUD)
 	unsigned int camMaxY = ((game.WORLD_HEIGHT - VAR_BUF_OFFSET) << 3) - (SCREEN_HEIGHT >> 1);
 	extern bopti_image_t img_player, img_ui_cursor, img_ui_slots, img_ui_slot_highlight,
 	img_leaves, img_ui_deathtext, img_bg_underground, img_sunmoon, img_bg_night,
-	img_tiles_cracks, img_tiles_ghost, img_ui_bubble;
+	img_tiles_cracks, img_tiles_ghost, img_ui_bubble, img_ui_banners;
 	bopti_image_t *swingSprite;
 	int camX = min(max(player.props.x + (player.props.width >> 1), camMinX), camMaxX);
 	int camY = min(max(player.props.y + (player.props.height >> 1), camMinY), camMaxY);
@@ -69,6 +69,8 @@ void render(bool renderHUD)
 	bool marginLeft, marginRight, marginTop, marginBottom;
 	int flags;
 	int state;
+
+	struct HouseMarker *marker;
 
 	int subrectX, subrectY;
 	int entX, entY;
@@ -183,6 +185,20 @@ void render(bool renderHUD)
 				}
 			}
 		}
+	}
+
+//	Render house markers
+	for(int i = 0; i < world.numMarkers; i++)
+	{
+		marker = &world.markers[i];
+		x = (marker->position.x << 3) - camOffsetX;
+		y = (marker->position.y << 3) - camOffsetY;
+		if(marker->occupant != NULL)
+		{
+			dsubimage(x, y, &img_ui_banners, 17, 0, 16, 20, DIMAGE_NONE);
+			dimage(x + 3, y + 6, marker->occupant->head);
+		}
+		else dsubimage(x, y, &img_ui_banners, 0, 0, 16, 20, DIMAGE_NONE);
 	}
 
 //	Render ghost object if player has an object selected

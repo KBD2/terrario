@@ -9,7 +9,8 @@
 #define NUM_WORLD_GEN_PARTS 21
 #define WORLD_SMOOTH_PASSES 5
 
-GYRAM Coords clumpCoords[WORLD_CLUMP_BUFFER_SIZE];
+GYRAM Coords checkCoords[CHECK_BUFFER_SIZE];
+
 unsigned char *yPositions;
 
 struct ChestLootTable undergroundLoot = {
@@ -117,14 +118,14 @@ void clump(int x, int y, int num, enum Tiles tile, bool maskEmpty, float skewHor
 
 	if(maskEmpty && getTile(x, y).id == TILE_NOTHING) return;
 
-	clumpCoords[0] = (Coords){x, y};
+	checkCoords[0] = (Coords){x, y};
 
 	while(num > 0)
 	{
 		if(end == 0) return;
 		selected = (unsigned int)rand() % end;
-		selectedTile = clumpCoords[selected];
-		clumpCoords[selected] = clumpCoords[end - 1];
+		selectedTile = checkCoords[selected];
+		checkCoords[selected] = checkCoords[end - 1];
 		end--;
 		setTile(selectedTile.x, selectedTile.y, tile);
 		num--;
@@ -143,9 +144,9 @@ void clump(int x, int y, int num, enum Tiles tile, bool maskEmpty, float skewHor
 			if(checkX < 0 || checkX >= game.WORLD_WIDTH || checkY < 0 || checkY >= game.WORLD_HEIGHT) continue;
 			tileCheck = getTile(checkX, checkY);
 			if(tileCheck.id == tile || (maskEmpty && tileCheck.id == TILE_NOTHING)) continue;
-			clumpCoords[end] = (Coords){checkX, checkY};
+			checkCoords[end] = (Coords){checkX, checkY};
 			end++;
-			if(end >= WORLD_CLUMP_BUFFER_SIZE) end = 0;
+			if(end >= CHECK_BUFFER_SIZE) end = 0;
 		}
 	}
 }

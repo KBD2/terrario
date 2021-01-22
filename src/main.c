@@ -352,5 +352,8 @@ int main(void)
 #endif
 	}
 
+//	Return to the main menu by restarting the addin
+	gint_switch((void (*)())0x00300200);
+
 	return 1;
 }

@@ -50,7 +50,7 @@ extern struct GameCompatibilityPresets game;
 
 #define MAX_CHESTS 50
 
-#define WORLD_CLUMP_BUFFER_SIZE 750
+#define CHECK_BUFFER_SIZE 750
 
 #define GRAVITY_ACCEL 0.15
 

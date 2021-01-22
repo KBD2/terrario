@@ -215,3 +215,8 @@ void registerEquipment();
 Updates tool data for the held tool.
 */
 void registerHeld();
+
+/* registerGhost
+Applied the appropriate ghost outline for the held item.
+*/
+void registerGhost();

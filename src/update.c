@@ -84,7 +84,7 @@ void useHeld()
 		validRight = x > (player.props.x + player.props.width) >> 3;
 		validTop = y < player.props.y >> 3;
 		validBottom = y > (player.props.y + player.props.height) >> 3;
-//			Disable placing if tile above keeps the tile below
+//		Disable placing if tile above keeps the tile below
 		validSupport = y > 0 && tiles[getTile(x, y - 1).id].support != SUPPORT_KEEP;
 		item = player.inventory.getSelected();
 		tile = items[item->id].tile;
@@ -98,6 +98,7 @@ void useHeld()
 					player.inventory.stackItem(&player.inventory.items[slot], &(Item){ITEM_EMPTY_BUCKET, 1});
 				}
 				world.placeTile(x, y, item);
+				registerGhost();
 			}
 		}
 		else if(item->id == ITEM_EMPTY_BUCKET && getTile(x, y).id == TILE_WATER)
@@ -143,6 +144,7 @@ enum UpdateReturnCodes keyboardUpdate()
 					key.key = KEY_ALPHA;
 					continue;
 				}
+				registerGhost();
 				break;
 			case KEY_ALPHA:
 				player.inventory.ticksSinceInteracted = 0;
@@ -154,6 +156,7 @@ enum UpdateReturnCodes keyboardUpdate()
 					key.key = KEY_SHIFT;
 					continue;
 				}
+				registerGhost();
 				break;
 			
 			case KEY_8:
@@ -242,6 +245,15 @@ enum UpdateReturnCodes keyboardUpdate()
 
 					default:
 						break;
+				}
+				break;
+			
+			case KEY_TAN:
+				if(key.type != KEYEV_DOWN) break;
+				if(getTile(player.cursorTile.x, player.cursorTile.y).id != TILE_NOTHING) break;
+				if(checkHousingValid(player.cursorTile.x, player.cursorTile.y))
+				{
+					addMarker((Coords){player.cursorTile.x, player.cursorTile.y}, NULL);
 				}
 				break;
 			

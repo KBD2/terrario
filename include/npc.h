@@ -17,6 +17,7 @@ enum MenuTypes {
 typedef struct {
 	enum NPCs id;
 	bopti_image_t *sprite;
+	bopti_image_t *head;
 	char *name;
 	struct EntityPhysicsProps props;
 	struct AnimationData anim;
@@ -24,7 +25,13 @@ typedef struct {
 	char **interactDialogue;
 	void (*menu)();
 	enum MenuTypes menuType;
+	Coords house;
 } NPC;
+
+struct HouseMarker {
+	Coords position;
+	NPC *occupant;
+};
 
 bool isNPCAlive(enum NPCs id);
 
@@ -35,3 +42,9 @@ bool removeNPC(enum NPCs id);
 void npcUpdate(int frames);
 
 bool npcTalk(int numDialogue, char **dialogue, enum MenuTypes type);
+
+bool checkHousingValid(short x, short y);
+
+void addMarker(Coords position, NPC *npc);
+
+bool removeMarker(Coords position);
