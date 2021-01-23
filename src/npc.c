@@ -2,6 +2,7 @@
 #include <gint/gray.h>
 #include <gint/keyboard.h>
 #include <gint/std/string.h>
+#include <gint/defs/util.h>
 
 #include "npc.h"
 #include "world.h"
@@ -17,7 +18,8 @@ char *guideDialogue[] = {
 char *guideHelpDialogue[] = {
 	"Underground exploration can yield valuable treasures!",
 	"A house can be a useful refuge from the beasts that roam at night.",
-	"Ropes can be used to traverse pits!"
+	"Ropes can be used to traverse pits!",
+	"You can use [TAN] to mark a valid house as suitable for NPCs!"
 };
 
 void guideMenu()
@@ -65,7 +67,7 @@ void addNPC(enum NPCs id)
 			break;
 	}
 
-	npc->house = (Coords){-1, -1};
+	npc->marker = NULL;
 
 	tileX = game.WORLD_WIDTH >> 1;
 	while(getTile(tileX, tileY).id == TILE_NOTHING) tileY++;
@@ -77,22 +79,41 @@ void addNPC(enum NPCs id)
 void npcUpdate(int frames)
 {
 	NPC *npc;
-	struct HouseMarker *marker;
+	HouseMarker *marker;
+	bool distancedFromPlayer;
+	bool distancedFromMarker;
 
 	for(int idx = 0; idx < world.numNPCs; idx++)
 	{
 		npc = &world.npcs[idx];
 
 //		Housing
-		if(frames % 300 == 0 && npc->house.x == -1)
+		if(frames % 300 == 0)
 		{
-			for(int i = 0; i < world.numMarkers; i++)
+			if(npc->marker == NULL)
 			{
-				marker = &world.markers[i];
-				if(marker->occupant == NULL)
+				if(world.timeTicks > timeToTicks(4, 30) && world.timeTicks < timeToTicks(19, 30))
 				{
-					marker->occupant = npc;
-					npc->house = marker->position;
+					for(int i = 0; i < world.numMarkers; i++)
+					{
+						marker = &world.markers[i];
+						if(marker->occupant == NULL)
+						{
+							marker->occupant = npc;
+							npc->marker = marker;
+							break;
+						}
+					}
+				}
+			}
+			else if(world.timeTicks > timeToTicks(19, 30) || world.timeTicks < timeToTicks(4, 30))
+			{
+				distancedFromPlayer = abs(npc->props.x - player.props.x) > SCREEN_WIDTH || abs(npc->props.y - player.props.y) > SCREEN_HEIGHT;
+				distancedFromMarker = abs((npc->marker->position.x << 3) - player.props.x) > (SCREEN_WIDTH >> 1) + 16 || abs((npc->marker->position.y << 3) - player.props.y) > (SCREEN_HEIGHT >> 1) + 20;
+				if(distancedFromPlayer && distancedFromMarker)
+				{
+					npc->props.x = (npc->marker->position.x << 3);
+					npc->props.y = (npc->marker->position.y << 3);
 				}
 			}
 		}
@@ -197,79 +218,154 @@ bool npcTalk(int numDialogue, char **dialogue, enum MenuTypes type)
 	}
 }
 
-// This house validity checker re-uses the worldgen's clump coord buffer to save memory.
-
-struct HouseValidity {
-	bool chair;
-	bool table;
-	bool light;
-	bool taken;
-} valid;
-
-void checkCoord(short x, short y, short *idx)
-{
-	if(valid.taken) return;
-	for(int i = 0; i < world.numMarkers; i++)
-	{
-		if(world.markers[i].position.x == x && world.markers[i].position.y == y)
-		{
-			valid.taken = true;
-			return;
-		}
-	}
-	if(*idx == 501) return;
-	if(x < 0 || x >= game.WORLD_WIDTH || y < 0 || y >= game.WORLD_HEIGHT) return;
-	for(int i = 0; i < *idx; i++)
-	{
-		if(checkCoords[i].x == x && checkCoords[i].y == y) return;
-	}
-	(*idx)++;
-	checkCoords[*idx] = (Coords){x, y};
-	switch(getTile(x, y).id)
-	{
-		case TILE_NOTHING:
-			break;
-		
-		case TILE_CHAIR_L:
-		case TILE_CHAIR_R:
-			valid.chair = true;
-			break;
-		
-		case TILE_WBENCH_L:
-		case TILE_WBENCH_R:
-			valid.table = true;
-			break;
-		
-		case TILE_TORCH:
-			valid.light = true;
-			break;
-		
-		default:
-			return;
-	}
-	checkCoord(x - 1, y, idx);
-	checkCoord(x + 1, y, idx);
-	checkCoord(x, y - 1, idx);
-	checkCoord(x, y + 1, idx);
-}
-
-// Max size 500 instead of 750 to avoid stack overflow
-bool checkHousingValid(short x, short y)
+bool checkHousingValid(Coords position)
 {
 	short idx = 0;
+	int deltas[4][2] = {
+		{-1, 0},
+		{1, 0},
+		{0, -1},
+		{0, 1}
+	};
+	bool checkAdjacent;
+	short end = 0;
+	Coords toCheck;
+	bool isAlreadyPresent;
+	short x, y;
 
-	valid = (struct HouseValidity){ 0 };
-	checkCoord(x, y, &idx);
+	bool hasChair = false;
+	bool hasTable = false;
+	bool hasLight = false;
 
-	return idx >= 60 && idx < 501 && valid.chair && valid.table && valid.light && !valid.taken;
+	for(int i = 0; i < CHECK_BUFFER_SIZE; i++) checkCoords[i] = (Coords){-1, -1};
+
+	checkCoords[idx] = position;
+
+	while(checkCoords[idx].x != -1)
+	{
+		x = checkCoords[idx].x;
+		y = checkCoords[idx].y;
+
+		if(x < 0 || x >= game.WORLD_WIDTH || y < 0 || y >= game.WORLD_HEIGHT) continue;
+
+		for(int i = 0; i < world.numMarkers; i++)
+		{
+			if(world.markers[i].position.x == x && world.markers[i].position.y == y)
+			{
+				return false;
+			}
+		}
+		checkAdjacent = true;
+		switch(getTile(x, y).id)
+		{
+			case TILE_NOTHING:
+				break;
+			
+			case TILE_CHAIR_L:
+			case TILE_CHAIR_R:
+				hasChair = true;
+				break;
+			
+			case TILE_WBENCH_L:
+			case TILE_WBENCH_R:
+				hasTable = true;
+				break;
+			
+			case TILE_TORCH:
+				hasLight = true;
+				break;
+			
+			default:
+				checkAdjacent = false;
+				break;
+		}
+
+		if(checkAdjacent)
+		{
+			for(int i = 0; i < 4; i++)
+			{
+				toCheck = (Coords){x + deltas[i][0], y + deltas[i][1]};
+				isAlreadyPresent = false;
+				for(int check = 0; check <= end; check++)
+				{
+					if(toCheck.x == checkCoords[check].x && toCheck.y == checkCoords[check].y)
+					{
+						isAlreadyPresent = true;
+						break;
+					}
+				}
+				if(isAlreadyPresent) continue;
+				end++;
+				if(end == CHECK_BUFFER_SIZE) return false;
+				checkCoords[end] = toCheck;
+			}
+		}
+
+		idx++;
+	}
+
+	return idx >= 60 && hasChair && hasTable && hasLight;
 }
 
-void addMarker(Coords position, NPC *npc)
+void addMarker(Coords position)
 {
 	world.numMarkers++;
-	world.markers = realloc(world.markers, sizeof(world.numMarkers) * sizeof(struct HouseMarker*));
-	world.markers[world.numMarkers - 1] = (struct HouseMarker) {
-		.position = position,
-		.occupant = npc
+	world.markers = realloc(world.markers, sizeof(world.numMarkers) * sizeof(HouseMarker));
+	allocCheck(world.markers);
+	world.markers[world.numMarkers - 1] = (HouseMarker) {
+		.position = position
 	};
+}
+
+bool removeMarker(Coords position)
+{
+	HouseMarker *marker;
+
+	for(int idx = 0; idx < world.numMarkers; idx++)
+	{
+		marker = &world.markers[idx];
+		if(marker->position.x == position.x && marker->position.y == position.y)
+		{
+			*marker = world.markers[world.numMarkers - 1];
+			world.numMarkers--;
+			world.markers = realloc(world.markers, sizeof(world.numMarkers) * sizeof(HouseMarker));
+			allocCheck(world.markers);
+			return true;
+		}
+	}
+	return false;
+}
+
+void updateMarkerChecks(Coords position)
+{
+	HouseMarker *marker;
+
+	for(int idx = 0; idx < world.numMarkers; idx++)
+	{
+		marker = &world.markers[idx];
+		if(abs(marker->position.x - position.x) < MARKER_CHECK_DISTANCE && abs(marker->position.y - position.y) < MARKER_CHECK_DISTANCE)
+		{
+			marker->doCheck = true;
+		}
+	}
+}
+
+void doMarkerChecks()
+{
+	HouseMarker *marker;
+
+	for(int idx = world.numMarkers - 1; idx >= 0; idx--)
+	{
+		marker = &world.markers[idx];
+		if(marker->doCheck)
+		{
+			if(!checkHousingValid(marker->position))
+			{
+				if(marker->occupant != NULL) marker->occupant->marker = NULL;
+				removeMarker(marker->position);
+				continue;
+			}
+			marker->doCheck = false;
+		}
+	}
 }

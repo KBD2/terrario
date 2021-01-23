@@ -7,6 +7,7 @@
 #include "save.h"
 #include "defs.h"
 #include "world.h"
+#include "npc.h"
 
 struct SaveInfo {
 	char version[VERSION_BUFFER_SIZE];
@@ -16,6 +17,19 @@ struct SaveInfo {
 union RegionTile {
 	Tile tile;
 	unsigned char count;
+};
+
+struct PlayerSave {
+	Item items[INVENTORY_SIZE];
+	Item accessories[5];
+	Item armour[3];
+	int health;
+	Coords spawn;
+};
+
+struct HousingSave {
+	Coords position;
+	enum NPCs npc;
 };
 
 GXRAM union RegionTile regionBuffer[REGION_SIZE * REGION_SIZE];
@@ -64,6 +78,7 @@ void saveGame()
 	const uint16_t *playerPath = u"\\\\fls0\\TERRARIO\\player.dat";
 	const uint16_t *infoPath = u"\\\\fls0\\TERRARIO\\save.info";
 	const uint16_t *chestPath = u"\\\\fls0\\TERRARIO\\chests.dat";
+	const uint16_t *housingPath = u"\\\\fls0\\TERRARIO\\housing.dat";
 
 	int handle;
 	int descriptor;
@@ -83,6 +98,17 @@ void saveGame()
 	int playerSaveSize = sizeof(struct PlayerSave);
 	int infoFileSize = sizeof(struct SaveInfo);
 	int chestDataSize = world.chests.number * sizeof(struct Chest);
+
+	int numMarkers = world.numMarkers;
+	int numHomelessNPCs = 0;
+	for(int idx = 0; idx < world.numNPCs; idx++)
+	{
+		if(world.npcs[idx].marker == NULL) numHomelessNPCs++;
+	}
+	int housingFileSize = 2 * sizeof(int) + (numMarkers + numHomelessNPCs) * sizeof(struct HousingSave);
+	struct HousingSave housingSave;
+	NPC *npc;
+	HouseMarker *marker;
 
 	int regionIndex, count;
 
@@ -126,6 +152,35 @@ void saveGame()
 		BFile_Write(descriptor, world.chests.chests, chestDataSize);
 		BFile_Close(descriptor);
 	}
+
+//	Create housing.dat and put in markers and homeless NPCs
+	BFile_Remove(housingPath);
+	BFile_Create(housingPath, BFile_File, &housingFileSize);
+	descriptor = BFile_Open(housingPath, BFile_WriteOnly);
+	BFile_Write(descriptor, &numMarkers, sizeof(int));
+	BFile_Write(descriptor, &numHomelessNPCs, sizeof(int));
+	for(int idx = 0; idx < numMarkers; idx++)
+	{
+		marker = &world.markers[idx];
+		housingSave = (struct HousingSave) {
+			.position = marker->position,
+			.npc = marker->occupant != NULL ? marker->occupant->id : (enum NPCs)-1
+		};
+		BFile_Write(descriptor, &housingSave, sizeof(struct HousingSave));
+	}
+	for(int idx = 0; idx < world.numNPCs; idx++)
+	{
+		npc = &world.npcs[idx];
+		if(npc->marker == NULL)
+		{
+			housingSave = (struct HousingSave) {
+				.position = (Coords){npc->props.x, npc->props.y},
+				.npc = npc->id
+			};
+			BFile_Write(descriptor, &housingSave, sizeof(struct HousingSave));
+		}
+	}
+	BFile_Close(descriptor);
 
 	for(int y = 0; y < save.regionsY; y++)
 	{
@@ -186,6 +241,7 @@ void loadSave()
 	const uint16_t *playerPath = u"\\\\fls0\\TERRARIO\\player.dat";
 	const uint16_t *infoPath = u"\\\\fls0\\TERRARIO\\save.info";
 	const uint16_t *chestPath = u"\\\\fls0\\TERRARIO\\chests.dat";
+	const uint16_t *housingPath = u"\\\\fls0\\TERRARIO\\housing.dat";
 	char buffer[30];
 	uint16_t filePath[30];
 
@@ -201,6 +257,12 @@ void loadSave()
 	int regionStartX, regionStartY;
 
 	struct PlayerSave playerSave;
+
+	int numMarkers;
+	int numHomelessNPCs;
+	struct HousingSave housingSave;
+	NPC *npc;
+	HouseMarker *marker;
 
 	union RegionTile *tile;
 
@@ -279,4 +341,50 @@ void loadSave()
 			}
 		}
 	}
+	
+	error = BFile_FindFirst(housingPath, &handle, foundPath, &fileInfo);
+	BFile_FindClose(handle);
+	if(error < 0)
+	{
+		save.error = -2;
+		return;
+	}
+	descriptor = BFile_Open(housingPath, BFile_ReadOnly);
+	BFile_Read(descriptor, &numMarkers, sizeof(int), 0);
+	BFile_Read(descriptor, &numHomelessNPCs, sizeof(int), -1);
+	for(int idx = 0; idx < numMarkers; idx++)
+	{
+		BFile_Read(descriptor, &housingSave, sizeof(struct HousingSave), -1);
+		if(!checkHousingValid(housingSave.position))
+		{
+			if(housingSave.npc != (enum NPCs)-1)
+			{
+				addNPC(housingSave.npc);
+				npc = &world.npcs[world.numNPCs - 1];
+				npc->props.x = housingSave.position.x << 3;
+				npc->props.y = housingSave.position.y << 3;
+				continue;
+			}
+		}
+		addMarker(housingSave.position);
+		if(housingSave.npc != (enum NPCs)-1)
+		{
+			marker = &world.markers[world.numMarkers - 1];
+			addNPC(housingSave.npc);
+			npc = &world.npcs[world.numNPCs - 1];
+			npc->props.x = housingSave.position.x << 3;
+			npc->props.y = housingSave.position.y << 3;
+			npc->marker = marker;
+			marker->occupant = npc;
+		}
+	}
+	for(int idx = 0; idx < numHomelessNPCs; idx++)
+	{
+		BFile_Read(descriptor, &housingSave, sizeof(struct HousingSave), -1);
+		addNPC(housingSave.npc);
+		npc = &world.npcs[world.numNPCs - 1];
+		npc->props.x = housingSave.position.x;
+		npc->props.y = housingSave.position.y;
+	}
+	BFile_Close(descriptor);
 }

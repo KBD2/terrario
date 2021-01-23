@@ -87,7 +87,7 @@ struct World {
 	int numNPCs;
 	NPC *npcs;
 	int numMarkers;
-	struct HouseMarker *markers;
+	HouseMarker *markers;
 	struct ParticleExplosion explosion;
 	int timeTicks;
 	struct Chests chests;

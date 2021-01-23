@@ -439,6 +439,7 @@ void placeTile(int x, int y, Item *item)
 			}
 			if(success)
 			{
+				updateMarkerChecks((Coords){x, y});
 				regionChange(x, y);
 				item->amount--;
 				if(item->amount == 0) *item = (Item){ITEM_NULL, 0};
@@ -517,6 +518,7 @@ void removeTile(int x, int y)
 				setTile(x, y, TILE_NOTHING);
 				break;
 		}
+		updateMarkerChecks((Coords){x, y});
 		regionChange(x, y);
 
 		tile = getTile(x, y);

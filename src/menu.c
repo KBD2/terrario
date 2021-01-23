@@ -199,6 +199,7 @@ void loadFailMenu()
 	dtext(0, 0, C_BLACK, "Failed to load");
 	if(save.error > -1) dprint(0, 8, C_BLACK, "\\TERRARIO\\reg%i-%i.dat", save.error >> 4, save.error & 0xf);
 	if(save.error == -1) dtext(0, 8, C_BLACK, "\\TERRARIO\\player.dat");
+	if(save.error == -2) dtext(0, 8, C_BLACK, "\\TERRARIO\\housing.dat");
 	dtext(0, 16, C_BLACK, "Please report bug or");
 	dtext(0, 24, C_BLACK, "delete \\TERRARIO.");
 	dtext(0, 40, C_BLACK, "[EXIT] to exit");

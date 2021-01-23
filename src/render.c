@@ -70,7 +70,7 @@ void render(bool renderHUD)
 	int flags;
 	int state;
 
-	struct HouseMarker *marker;
+	HouseMarker *marker;
 
 	int subrectX, subrectY;
 	int entX, entY;
@@ -138,6 +138,19 @@ void render(bool renderHUD)
 		}
 	}
 
+//	Render house markers
+	for(int i = 0; i < world.numMarkers; i++)
+	{
+		marker = &world.markers[i];
+		x = (marker->position.x << 3) - camOffsetX;
+		y = (marker->position.y << 3) - camOffsetY;
+		dsubimage(x, y, &img_ui_banners, 0, 0, 16, 20, DIMAGE_NONE);
+//		14px x 14px max
+		if(marker->occupant != NULL) dimage(x + 1, y + 4, marker->occupant->head);
+	}
+
+//	Render tiles
+
 	for(unsigned int y = tileTopY; y <= tileBottomY; y++)
 	{
 		for(unsigned int x = tileLeftX; x <= tileRightX; x++)
@@ -185,20 +198,6 @@ void render(bool renderHUD)
 				}
 			}
 		}
-	}
-
-//	Render house markers
-	for(int i = 0; i < world.numMarkers; i++)
-	{
-		marker = &world.markers[i];
-		x = (marker->position.x << 3) - camOffsetX;
-		y = (marker->position.y << 3) - camOffsetY;
-		if(marker->occupant != NULL)
-		{
-			dsubimage(x, y, &img_ui_banners, 17, 0, 16, 20, DIMAGE_NONE);
-			dimage(x + 3, y + 6, marker->occupant->head);
-		}
-		else dsubimage(x, y, &img_ui_banners, 0, 0, 16, 20, DIMAGE_NONE);
 	}
 
 //	Render ghost object if player has an object selected

@@ -93,6 +93,8 @@ bool gameLoop(volatile int *flag)
 
 		if(frames & 1) updateExplosion(&world.explosion);
 		if(frames % 8 == 0) worldUpdate();
+		if(frames % 3600 == 0) doMarkerChecks();
+
 		// Only bother rendering 30 frames (60 updates)
 		if(world.explosion.deltaTicks == 30) world.explosion.numParticles = 0;
 
@@ -276,6 +278,7 @@ int main(void)
 		player.inventory.items[1] = (Item){ITEM_COPPER_PICK, 1};
 		world.timeTicks = timeToTicks(8, 15);
 		setPlayerSpawn();
+		addNPC(NPC_GUIDE);
 	} 
 	else if(menuSelect == 1) // Load game
 	{
@@ -316,8 +319,6 @@ int main(void)
 	registerEquipment();
 	registerHeld();
 
-	addNPC(NPC_GUIDE);
-
 	// Do the game
 	doSave = gameLoop(&flag);
 
@@ -340,6 +341,7 @@ int main(void)
 	free(world.chests.chests);
 //	Nothing is allocated if there are no NPCs
 	if(world.npcs != NULL) free(world.npcs);
+	if(world.markers != NULL) free(world.markers);
 	if(save.error != -99) saveFailMenu();
 	
 	if(doSave)
@@ -353,7 +355,7 @@ int main(void)
 	}
 
 //	Return to the main menu by restarting the addin
-	gint_switch((void (*)())0x00300200);
+	//gint_switch((void (*)())0x00300200);
 
 	return 1;
 }

@@ -14,6 +14,8 @@ enum MenuTypes {
 	MENU_HEAL
 };
 
+struct HouseMarker;
+
 typedef struct {
 	enum NPCs id;
 	bopti_image_t *sprite;
@@ -25,13 +27,14 @@ typedef struct {
 	char **interactDialogue;
 	void (*menu)();
 	enum MenuTypes menuType;
-	Coords house;
+	struct HouseMarker *marker;
 } NPC;
 
-struct HouseMarker {
+typedef struct HouseMarker {
 	Coords position;
 	NPC *occupant;
-};
+	bool doCheck;
+} HouseMarker;
 
 bool isNPCAlive(enum NPCs id);
 
@@ -43,8 +46,12 @@ void npcUpdate(int frames);
 
 bool npcTalk(int numDialogue, char **dialogue, enum MenuTypes type);
 
-bool checkHousingValid(short x, short y);
+bool checkHousingValid(Coords position);
 
-void addMarker(Coords position, NPC *npc);
+void addMarker(Coords position);
 
 bool removeMarker(Coords position);
+
+void updateMarkerChecks(Coords position);
+
+void doMarkerChecks();

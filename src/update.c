@@ -251,9 +251,9 @@ enum UpdateReturnCodes keyboardUpdate()
 			case KEY_TAN:
 				if(key.type != KEYEV_DOWN) break;
 				if(getTile(player.cursorTile.x, player.cursorTile.y).id != TILE_NOTHING) break;
-				if(checkHousingValid(player.cursorTile.x, player.cursorTile.y))
+				if(checkHousingValid(player.cursorTile))
 				{
-					addMarker((Coords){player.cursorTile.x, player.cursorTile.y}, NULL);
+					addMarker(player.cursorTile);
 				}
 				break;
 			

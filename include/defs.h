@@ -75,5 +75,7 @@ before doing so!
 */
 #define VERSION_BUFFER_SIZE 16
 
+#define MARKER_CHECK_DISTANCE 30
+
 // Callback used to govern loops that have a framerate
 int frameCallback(volatile int *flag);
