@@ -128,6 +128,7 @@ struct Player {
 		short width;
 		short height;
 	} ghost;
+	int useFrames;
 
 	struct Inventory inventory;
 	struct PlayerTool tool;

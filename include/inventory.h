@@ -50,6 +50,7 @@ enum Items {
 	ITEM_SAND,
 	ITEM_EMPTY_BUCKET,
 	ITEM_WATER_BUCKET,
+	ITEM_CRYST,
 
 	ITEMS_COUNT
 };
@@ -93,7 +94,6 @@ struct PickData {
 	int knockback;
 	int damage;
 	bopti_image_t *swingSprite;
-	int currFramesLeft;
 	struct {
 		int x;
 		int y;

@@ -42,6 +42,7 @@ const struct ItemData items[] = {
 	{	999,	TILE_SAND,			"Sand",				TOOL_TYPE_NONE		},	// ITEM_SAND
 	{	99,		TILE_NULL,			"Empty Bucket",		TOOL_TYPE_NONE		},	// ITEM_EMPTY_BUCKET
 	{	1,		TILE_WATER,			"Water Bucket",		TOOL_TYPE_NONE		},	// ITEM_WATER_BUCKET
+	{	99,		TILE_CRYST_L,		"Life Crystal",		TOOL_TYPE_OTHER		},	// ITEM_CRYST
 };
 
 extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick;

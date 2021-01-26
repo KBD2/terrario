@@ -23,6 +23,8 @@ void useHeld()
 	bool validLeft, validRight, validTop, validBottom;
 	enum Tiles tile;
 
+	if(player.useFrames > 0) return;
+
 	itemData = &items[player.inventory.getSelected()->id];
 //	Picks and swords
 	if(itemData->type == TOOL_TYPE_PICK || itemData->type == TOOL_TYPE_SWORD)
@@ -32,29 +34,25 @@ void useHeld()
 		{
 			case TOOL_TYPE_PICK:
 				heldPickData = &player.tool.data.pickData;
-				if(heldPickData->currFramesLeft == 0)
+				x = player.cursorTile.x;
+				y = player.cursorTile.y;
+				player.inventory.ticksSinceInteracted = 0;
+				if(x != heldPickData->targeted.x || y != heldPickData->targeted.y)
 				{
-					x = player.cursorTile.x;
-					y = player.cursorTile.y;
-					player.inventory.ticksSinceInteracted = 0;
-					if(x != heldPickData->targeted.x || y != heldPickData->targeted.y)
-					{
-//							You can safely assume this will be called at least once.
-						heldPickData->targeted.x = x;
-						heldPickData->targeted.y = y;
-						heldPickData->targeted.damage = 0;
-						heldPickData->targeted.crackVar = rand() % 6;
-					}
-					heldPickData->targeted.damage += (float)heldPickData->power / tiles[getTile(x, y).id].hitpoints;
-					if(heldPickData->targeted.damage >= 100)
-					{
-						world.removeTile(x, y);
-						heldPickData->targeted.damage = 0;
-					}
-					else setVar(x, y);
-					heldPickData->currFramesLeft = heldPickData->speed;
+//						You can safely assume this will be called at least once.
+					heldPickData->targeted.x = x;
+					heldPickData->targeted.y = y;
+					heldPickData->targeted.damage = 0;
+					heldPickData->targeted.crackVar = rand() % 6;
 				}
-				else heldPickData->currFramesLeft--;
+				heldPickData->targeted.damage += (float)heldPickData->power / tiles[getTile(x, y).id].hitpoints;
+				if(heldPickData->targeted.damage >= 100)
+				{
+					world.removeTile(x, y);
+					heldPickData->targeted.damage = 0;
+				}
+				else setVar(x, y);
+				player.useFrames = heldPickData->speed;
 
 			default:
 				break;
@@ -69,6 +67,18 @@ void useHeld()
 				player.props.x = player.spawn.x;
 				player.props.y = player.spawn.y;
 				player.pixelsFallen = 0;
+				player.useFrames = 90;
+				break;
+			
+			case ITEM_CRYST:
+				if(player.maxHealth < 400)
+				{
+					player.maxHealth += 20;
+					player.combat.health += 20;
+					player.inventory.removeItem(player.inventory.getSelected());
+					player.inventory.ticksSinceInteracted = 0;
+					player.useFrames = 30;
+				}
 				break;
 				
 			default:
@@ -178,7 +188,7 @@ enum UpdateReturnCodes keyboardUpdate()
 			
 			case KEY_F1: case KEY_F2: case KEY_F3: case KEY_F4: case KEY_F5:
 				player.inventory.ticksSinceInteracted = 0;
-				if(player.swingFrame == 0 && !playerDead) player.inventory.hotbarSlot = keycode_function(key.key) - 1;
+				if(player.useFrames == 0 && !playerDead) player.inventory.hotbarSlot = keycode_function(key.key) - 1;
 //				Updates held item data
 				registerHeld();
 				break;
@@ -283,7 +293,6 @@ enum UpdateReturnCodes keyboardUpdate()
 		{
 			useHeld();
 		}
-		else if(player.tool.type == TOOL_TYPE_PICK) player.tool.data.pickData.currFramesLeft = 0;
 
 //		Movement
 		player.props.movingSelf = keydown_any(KEY_4, KEY_6, 0);
@@ -335,6 +344,8 @@ void playerUpdate(int frames)
 	int maxX = ((game.WORLD_WIDTH - VAR_BUF_OFFSET) << 3) - player.props.width;
 	int minY = VAR_BUF_OFFSET << 3;
 	int maxY = ((game.WORLD_HEIGHT - VAR_BUF_OFFSET) << 3) - player.props.height;
+
+	if(player.useFrames > 0) player.useFrames--;
 
 //	Handle the physics for the player
 	handlePhysics(&player.props, frames, false, WATER_FRICTION);

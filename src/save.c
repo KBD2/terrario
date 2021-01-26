@@ -24,6 +24,7 @@ struct PlayerSave {
 	Item accessories[5];
 	Item armour[3];
 	int health;
+	int maxHealth;
 	Coords spawn;
 };
 
@@ -45,7 +46,7 @@ bool getSave()
 	error = BFile_FindFirst((const uint16_t*)u"\\\\fls0\\TERRARIO\\save.info", &handle, foundPath, &fileInfo);
 	BFile_FindClose(handle);
 
-	return error == 0 ? true : false;
+	return error == 0;
 }
 
 void getVersionInfo()
@@ -133,6 +134,7 @@ void saveGame()
 //	Create player.dat and put in player information and inventory
 	struct PlayerSave playerSave;
 	playerSave.health = player.combat.health;
+	playerSave.maxHealth = player.maxHealth;
 	memcpy(playerSave.items, player.inventory.items, INVENTORY_SIZE * sizeof(Item));
 	memcpy(playerSave.accessories, player.inventory.accessories, 5 * sizeof(Item));
 	memcpy(playerSave.armour, player.inventory.armour, 3 * sizeof(Item));
@@ -297,6 +299,7 @@ void loadSave()
 	}
 
 	player.combat.health = playerSave.health;
+	player.maxHealth = playerSave.maxHealth;
 	memcpy(player.inventory.items, playerSave.items, INVENTORY_SIZE * sizeof(Item));
 	memcpy(player.inventory.accessories, playerSave.accessories, 5 * sizeof(Item));
 	memcpy(player.inventory.armour, playerSave.armour, 3 * sizeof(Item));

@@ -233,7 +233,6 @@ int main(void)
 		},
 
 		.tool = { TOOL_TYPE_NONE },
-		.maxHealth = 100,
 		.breath = 200
 	};
 
@@ -276,6 +275,7 @@ int main(void)
 		memset(save.regionData, 1, save.regionsX * save.regionsY);
 		player.inventory.items[0] = (Item){ITEM_COPPER_SWORD, 1};
 		player.inventory.items[1] = (Item){ITEM_COPPER_PICK, 1};
+		player.maxHealth = 100;
 		world.timeTicks = timeToTicks(8, 15);
 		setPlayerSpawn();
 		addNPC(NPC_GUIDE);

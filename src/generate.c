@@ -6,7 +6,7 @@
 #include "world.h"
 #include "chest.h"
 
-#define NUM_WORLD_GEN_PARTS 21
+#define NUM_WORLD_GEN_PARTS 22
 #define WORLD_SMOOTH_PASSES 5
 
 GYRAM Coords checkCoords[CHECK_BUFFER_SIZE];
@@ -459,6 +459,31 @@ void generateWorld()
 				}
 				else ySave = tempY;
 			}
+		}
+	}
+
+//	Life Crystals
+	middleText("Life Crystals", updateProgress());
+	for(int i = 0; i < 40 * game.WORLDGEN_MULTIPLIER; i++)
+	{
+		check = (Item){ITEM_CRYST, 1};
+		for(int try = 0; try < 50; try++)
+		{
+			x = randRange(25, game.WORLD_WIDTH - 25);
+			y = randRange(game.WORLD_HEIGHT / 2.8, game.WORLD_HEIGHT - 10);
+			if(getTile(x, y).id == TILE_NOTHING)
+			{
+				setTile(x + 1, y, TILE_NOTHING);
+				setTile(x, y + 1, TILE_NOTHING);
+				setTile(x + 1, y + 1, TILE_NOTHING);
+				if(!checkArea(x, y, 2, 2, true))
+				{
+					setTile(x, y + 2, TILE_STONE);
+					setTile(x + 1, y + 2, TILE_STONE);
+				}
+				placeTile(x, y, &check);
+			}
+			if(check.amount == 0) break;
 		}
 	}
 
