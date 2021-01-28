@@ -279,3 +279,8 @@ width, height: Size of the area.
 support: Whether to check if the tiles below the area fully support the area.
 */
 bool checkArea(int x, int y, int width, int height, bool support);
+
+/*isDay
+Returns true if it's currently daytime.
+*/
+bool isDay();

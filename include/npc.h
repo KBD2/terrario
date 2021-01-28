@@ -5,13 +5,15 @@
 #include "entity.h"
 
 enum NPCs {
-	NPC_GUIDE
+	NPC_NONE,
+	NPC_GUIDE,
+	NPC_NURSE
 };
 
 enum MenuTypes {
 	MENU_SHOP,
 	MENU_GUIDE,
-	MENU_HEAL
+	MENU_NURSE
 };
 
 struct HouseMarker;
@@ -27,12 +29,12 @@ typedef struct {
 	char **interactDialogue;
 	void (*menu)();
 	enum MenuTypes menuType;
-	struct HouseMarker *marker;
+	short marker;
 } NPC;
 
 typedef struct HouseMarker {
 	Coords position;
-	NPC *occupant;
+	short occupant;
 	bool doCheck;
 } HouseMarker;
 

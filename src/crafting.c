@@ -14,9 +14,6 @@
 #include "defs.h"
 #include "render.h"
 
-bool *tilesBuffer = NULL;
-short *craftableRecipes = NULL;
-
 const struct Recipe recipes[] = {
 //		Workbench			Result						N	Ingredient list
 	{	TILE_NULL,			{ITEM_PLATFORM, 2},			1,	(const Item[]){ {ITEM_WOOD, 1}												}	},
@@ -43,7 +40,7 @@ const struct Recipe recipes[] = {
 
 const int numRecipes = sizeof(recipes) / sizeof(struct Recipe);
 
-void findNearTiles()
+void findNearTiles(bool *tilesBuffer)
 {
 	int playerTileX = player.props.x >> 3;
 	int playerTileY = player.props.y >> 3;
@@ -86,13 +83,13 @@ bool checkRecipeIsCraftable(int recipe)
 	return craftable;
 }
 
-void findCraftableRecipes()
+void findCraftableRecipes(bool *tilesBuffer, short *craftableRecipes)
 {
 	const struct Recipe *currRecipe;
 	bool craftable;
 	int count = 0;
 
-	findNearTiles();
+	findNearTiles(tilesBuffer);
 
 	for(int i = 0; i < RECIPE_BUFFER_SIZE; i++) craftableRecipes[i] = -1;
 
@@ -123,19 +120,10 @@ void craftingMenu()
 	Item result;
 	enum Items crafting = ITEM_NULL;
 
-	if(craftableRecipes == NULL)
-	{
-		craftableRecipes = malloc(RECIPE_BUFFER_SIZE * sizeof(short));
-		allocCheck(craftableRecipes);
-	}
+	bool tilesBuffer[TILES_COUNT];
+	short craftableRecipes[RECIPE_BUFFER_SIZE];
 
-	if(tilesBuffer == NULL)
-	{
-		tilesBuffer = (bool*)malloc(TILES_COUNT * sizeof(bool));
-		allocCheck(tilesBuffer);
-	}
-
-	findCraftableRecipes();
+	findCraftableRecipes(tilesBuffer, craftableRecipes);
 
 	while(true)
 	{
@@ -215,7 +203,7 @@ void craftingMenu()
 				}
 
 // 				Regen valid recipe buffer as multiple may have changed
-				findCraftableRecipes(); 
+				findCraftableRecipes(tilesBuffer, craftableRecipes);
 				for(int i = 0; i < RECIPE_BUFFER_SIZE; i++) 
 				{
 					if(craftableRecipes[i] == -1)
@@ -239,10 +227,4 @@ void craftingMenu()
 		}
 		selected = min(max(0, selected), recipesMax);
 	}
-}
-
-void craftingCleanup()
-{
-	if(tilesBuffer != NULL) free(tilesBuffer);
-	if(craftableRecipes != NULL) free(craftableRecipes);
 }

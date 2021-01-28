@@ -104,7 +104,7 @@ void saveGame()
 	int numHomelessNPCs = 0;
 	for(int idx = 0; idx < world.numNPCs; idx++)
 	{
-		if(world.npcs[idx].marker == NULL) numHomelessNPCs++;
+		if(world.npcs[idx].marker == -1) numHomelessNPCs++;
 	}
 	int housingFileSize = 2 * sizeof(int) + (numMarkers + numHomelessNPCs) * sizeof(struct HousingSave);
 	struct HousingSave housingSave;
@@ -166,14 +166,14 @@ void saveGame()
 		marker = &world.markers[idx];
 		housingSave = (struct HousingSave) {
 			.position = marker->position,
-			.npc = marker->occupant != NULL ? marker->occupant->id : (enum NPCs)-1
+			.npc = marker->occupant != -1 ? world.npcs[marker->occupant].id : NPC_NONE
 		};
 		BFile_Write(descriptor, &housingSave, sizeof(struct HousingSave));
 	}
 	for(int idx = 0; idx < world.numNPCs; idx++)
 	{
 		npc = &world.npcs[idx];
-		if(npc->marker == NULL)
+		if(npc->marker == -1)
 		{
 			housingSave = (struct HousingSave) {
 				.position = (Coords){npc->props.x, npc->props.y},
@@ -360,7 +360,7 @@ void loadSave()
 		BFile_Read(descriptor, &housingSave, sizeof(struct HousingSave), -1);
 		if(!checkHousingValid(housingSave.position))
 		{
-			if(housingSave.npc != (enum NPCs)-1)
+			if(housingSave.npc != NPC_NONE)
 			{
 				addNPC(housingSave.npc);
 				npc = &world.npcs[world.numNPCs - 1];
@@ -370,15 +370,15 @@ void loadSave()
 			}
 		}
 		addMarker(housingSave.position);
-		if(housingSave.npc != (enum NPCs)-1)
+		if(housingSave.npc != NPC_NONE)
 		{
 			marker = &world.markers[world.numMarkers - 1];
 			addNPC(housingSave.npc);
 			npc = &world.npcs[world.numNPCs - 1];
 			npc->props.x = housingSave.position.x << 3;
 			npc->props.y = housingSave.position.y << 3;
-			npc->marker = marker;
-			marker->occupant = npc;
+			npc->marker = idx;
+			marker->occupant = world.numNPCs - 1;
 		}
 	}
 	for(int idx = 0; idx < numHomelessNPCs; idx++)

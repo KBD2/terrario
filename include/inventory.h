@@ -11,7 +11,6 @@ The inventory menu and API functions.
 
 #include "defs.h"
 #include "menu.h"
-#include "chest.h"
 
 #define NUM_PICKS 2
 #define NUM_SWORDS 2

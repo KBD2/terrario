@@ -107,7 +107,7 @@ void render(bool renderHUD)
 	if(player.props.y > (game.WORLD_HEIGHT / 2.8) * 8) dimage(0, 0, &img_bg_underground);
 	else
 	{
-		if(world.timeTicks < timeToTicks(4, 30) || world.timeTicks > timeToTicks(19, 30)) dimage(0, 0, &img_bg_night);
+		if(!isDay()) dimage(0, 0, &img_bg_night);
 
 		dayPolarAngle = (((float)PI * 2.0) / (float)DAY_TICKS) * (float)world.timeTicks;
 
@@ -146,7 +146,7 @@ void render(bool renderHUD)
 		y = (marker->position.y << 3) - camOffsetY;
 		dsubimage(x, y, &img_ui_banners, 0, 0, 16, 20, DIMAGE_NONE);
 //		14px x 14px max
-		if(marker->occupant != NULL) dimage(x + 1, y + 4, marker->occupant->head);
+		if(marker->occupant != -1) dimage(x + 1, y + 4, world.npcs[marker->occupant].head);
 	}
 
 //	Render tiles
@@ -261,11 +261,11 @@ void render(bool renderHUD)
 		
 		entX = npc->props.x - (camX - (SCREEN_WIDTH >> 1));
 		entY = npc->props.y - (camY - (SCREEN_HEIGHT >> 1));
-		entSubrectX = npc->anim.direction ? npc->props.width: 0;
+		entSubrectX = npc->anim.direction ? npc->props.width : 0;
 //		NPCs and player have a sticky out bit at the bottom that isn't included in their height,
 //		so add 2 instead of 1 when finding the subrectangle Y
 		entSubrectY = npc->anim.animationFrame * (npc->props.height + 2) + 1;
-		dsubimage(entX, entY, npc->sprite, entSubrectX, entSubrectY, npc->props.width, npc->props.height, DIMAGE_NONE);
+		dsubimage(entX, entY, npc->sprite, entSubrectX, entSubrectY, npc->props.width, npc->props.height + 1, DIMAGE_NONE);
 	}
 
 //	Only render player if the player isn't flashing or dead

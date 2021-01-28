@@ -362,7 +362,7 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 					}
 					else
 					{
-						//self->xVel = 0;
+						self->xVel = 0;
 						if(entBox.TL.x <= checkLeft)
 						{
 							self->x -= overlapX;
@@ -563,7 +563,7 @@ void doSpawningCycle()
 				spawnY++;
 				if(tiles[getTile(spawnX, spawnY).id].physics != PHYS_NON_SOLID)
 				{
-					if(world.timeTicks > timeToTicks(19, 30) || world.timeTicks < timeToTicks(4, 30)) chosen = ENT_ZOMBIE;
+					if(!isDay()) chosen = ENT_ZOMBIE;
 					else if(getTile(spawnX, spawnY).id == TILE_SAND && rand() % 4 > 0) chosen = ENT_VULTURE;
 					else chosen = ENT_SLIME;
 					world.spawnEntity(chosen, spawnX << 3, (spawnY << 3) - entityTemplates[chosen].props.height);

@@ -10,7 +10,7 @@ Various macros, constant definitions, and utility functions used throughout the 
 Disables certain game features to make testing easier. Adds warnings in the
 main menu and game version in case it's accidentally left enabled.
 */
-#define DEBUGMODE
+//#define DEBUGMODE
 
 enum HWModes {
 	MODE_RAM,

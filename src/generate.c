@@ -9,9 +9,9 @@
 #define NUM_WORLD_GEN_PARTS 22
 #define WORLD_SMOOTH_PASSES 5
 
-GYRAM Coords checkCoords[CHECK_BUFFER_SIZE];
+GYRAM unsigned char yPositions[1000];
 
-unsigned char *yPositions;
+GYRAM Coords checkCoords[CHECK_BUFFER_SIZE];
 
 struct ChestLootTable undergroundLoot = {
 	.num = 2,
@@ -208,8 +208,6 @@ void generateWorld()
 	int ySave = 0;
 	int deltaY;
 	int depth, leftY, rightY;
-
-	yPositions = malloc(game.WORLD_WIDTH * sizeof(unsigned char));
 
 	middleText("Reset", updateProgress());
 	for(int y = 0; y < game.WORLD_HEIGHT; y++)
@@ -647,8 +645,6 @@ void generateWorld()
 			}
 		}
 	}
-
-	free(yPositions);
 }
 
 void addLoot(struct Chest *chest, enum LootTables table)

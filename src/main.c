@@ -21,10 +21,10 @@
 #include "optimise.h"
 #include "npc.h"
 
-// Fixes linker problem for newlib
+// Fixes linker error for newlib
 int __errno = 0;
 
-// Fixes implicit declaration problem
+// Fixes implicit declaration warning (feature is not meant for use in normal addins)
 void spu_zero();
 
 // Syscalls
@@ -335,7 +335,6 @@ int main(void)
 
 	free(world.entities);
 	destroyExplosion(&world.explosion);
-	craftingCleanup();
 
 	if(doSave) gint_switch(&saveGame);
 	free(world.chests.chests);

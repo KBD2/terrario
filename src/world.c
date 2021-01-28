@@ -620,3 +620,8 @@ bool checkFreeEntitySlot()
 	}
 	return false;
 }
+
+bool isDay()
+{
+	return world.timeTicks >= timeToTicks(4, 30) && world.timeTicks <= timeToTicks(19, 30);
+}

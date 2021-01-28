@@ -277,13 +277,24 @@ enum UpdateReturnCodes keyboardUpdate()
 
 	if(!playerDead)
 	{
+//		Fun debug thing, will remove sometime
+//		-----
+		static int which = 0;
 		if(keydown(KEY_DOT))
 		{
 			x = player.cursorTile.x;
 			y = player.cursorTile.y;
-			setTile(x, y, TILE_WATER);
+			if(which == 0)
+			{
+				if(getTile(x, y).id == TILE_NOTHING) which = 1;
+				else which = 2;
+			}
+			if(getTile(x, y).id == TILE_NOTHING && which == 1) setTile(x, y, TILE_WATER);
+			else if(getTile(x, y).id == TILE_WATER && which == 2) setTile(x, y, TILE_NOTHING);
 		}
-		if(keydown(KEY_8) && !player.jumpReleased && player.jumpTimer < 10)
+		else which = 0;
+//		-----
+		if(keydown(KEY_8) && !player.jumpReleased && player.jumpTimer < 15)
 		{
 			player.props.yVel = -3.5;
 			player.jumpTimer++;
@@ -333,10 +344,7 @@ void playerUpdate(int frames)
 	int time;
 	float regen;
 
-	int playerXSave = player.props.x;
 	int playerYSave = player.props.y;
-//	Used to stop animation if the player is still for too long but has an X velocity
-	static int playerXSaveTimer = 0;
 
 	int damage;
 
@@ -349,9 +357,6 @@ void playerUpdate(int frames)
 
 //	Handle the physics for the player
 	handlePhysics(&player.props, frames, false, WATER_FRICTION);
-
-	if(player.props.x == playerXSave) playerXSaveTimer++;
-	else playerXSaveTimer = 0;
 
 //	Cap the player's position at an offset so variant buffer doesn't corrupt YRAM
 	player.props.x = min(max(minX, player.props.x), maxX);
@@ -423,7 +428,7 @@ void playerUpdate(int frames)
 		anim->animation = 2;
 		anim->animationFrame = 5;
 	}
-	else if(player.props.xVel == 0 || (playerXSaveTimer >= 5 && player.props.touchingTileTop))
+	else if(player.props.xVel == 0)
 	{
 		anim->animation = 0;
 		anim->animationFrame = 0;
