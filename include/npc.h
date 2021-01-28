@@ -52,8 +52,10 @@ bool checkHousingValid(Coords position);
 
 void addMarker(Coords position);
 
-bool removeMarker(Coords position);
+bool removeMarker(int idx);
 
 void updateMarkerChecks(Coords position);
 
 void doMarkerChecks();
+
+void doNPCHouseCheck();

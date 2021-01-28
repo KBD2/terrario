@@ -318,6 +318,7 @@ void itemMenu()
 		dtext_opt(127, 18, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "F4: Butcher");
 		dtext_opt(127, 24, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "F5: Save");
 		dtext_opt(127, 30, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "F6: Spawn");
+		dtext_opt(127, 36, C_BLACK, C_WHITE, DTEXT_RIGHT, DTEXT_TOP, "SHIFT: Force housing");
 		dupdate();
 
 		key = getkey_opt(GETKEY_REP_ARROWS, NULL);
@@ -380,6 +381,11 @@ void itemMenu()
 			case KEY_F6:
 				player.props.x = player.spawn.x;
 				player.props.y = player.spawn.y;
+				return;
+			
+			case KEY_SHIFT:
+				doMarkerChecks();
+				doNPCHouseCheck();
 				return;
 			
 			default:

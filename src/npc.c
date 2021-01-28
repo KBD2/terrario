@@ -433,7 +433,7 @@ bool checkHousingValid(Coords position)
 void addMarker(Coords position)
 {
 	world.numMarkers++;
-	world.markers = realloc(world.markers, sizeof(world.numMarkers) * sizeof(HouseMarker));
+	world.markers = realloc(world.markers, world.numMarkers * sizeof(HouseMarker));
 	allocCheck(world.markers);
 	world.markers[world.numMarkers - 1] = (HouseMarker) {
 		.position = position,
@@ -441,25 +441,21 @@ void addMarker(Coords position)
 	};
 }
 
-bool removeMarker(Coords position)
+bool removeMarker(int idx)
 {
-	HouseMarker *marker;
+	HouseMarker *marker = &world.markers[idx];
 
-	for(int idx = 0; idx < world.numMarkers; idx++)
-	{
-		marker = &world.markers[idx];
-		if(marker->position.x == position.x && marker->position.y == position.y)
-		{
-			if(marker->occupant != -1) world.npcs[marker->occupant].marker = -1;
-			*marker = world.markers[world.numMarkers - 1];
-			if(marker->occupant != -1) world.npcs[marker->occupant].marker = idx;
-			world.numMarkers--;
-			world.markers = realloc(world.markers, sizeof(world.numMarkers) * sizeof(HouseMarker));
-			allocCheck(world.markers);
-			return true;
-		}
-	}
-	return false;
+	if(idx < 0 || idx >= world.numMarkers) return false;
+
+	if(marker->occupant != -1) world.npcs[marker->occupant].marker = -1;
+	marker->occupant = -1;
+	*marker = world.markers[world.numMarkers - 1];
+	if(marker->occupant != -1) world.npcs[marker->occupant].marker = idx;
+	world.numMarkers--;
+	world.markers = realloc(world.markers, world.numMarkers * sizeof(HouseMarker));
+	if(world.numMarkers > 0) allocCheck(world.markers);
+
+	return true;
 }
 
 void updateMarkerChecks(Coords position)
@@ -479,18 +475,26 @@ void updateMarkerChecks(Coords position)
 void doMarkerChecks()
 {
 	HouseMarker *marker;
+	Coords save;
 
-	for(int idx = world.numMarkers - 1; idx >= 0; idx--)
+	for(int idx = 0; idx < world.numMarkers; idx++)
 	{
 		marker = &world.markers[idx];
 		if(marker->doCheck)
 		{
-			if(!checkHousingValid(marker->position))
+			save = marker->position;
+			marker->position = (Coords){-1, -1};
+			if(!checkHousingValid(save))
 			{
-				removeMarker(marker->position);
-				continue;
+				removeMarker(idx);
+//				Last marker will have been moved to current index
+				idx--;
 			}
-			marker->doCheck = false;
+			else
+			{
+				marker->doCheck = false;
+				marker->position = save;
+			}
 		}
 	}
 }
