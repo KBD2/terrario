@@ -252,6 +252,10 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 	double integer;
 	double fractional;
 
+	int stepUpX;
+	bool canStepUp;
+	enum PhysicsTypes physics;
+
 //		Friction
 #ifndef DEBUGMODE
 	if(!onlyCollisions)
@@ -317,9 +321,9 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 
 #ifndef DEBUGMODE
 	self->touchingTileTop = false;
-	for(int y = tileCheckBox.TL.y; y <= tileCheckBox.BR.y; y++)
+	for(int y = tileCheckBox.BR.y; y >= tileCheckBox.TL.y; y--)
 	{
-		for(int x = tileCheckBox.TL.x; x <= tileCheckBox.BR.x; x++)
+		for(int x = tileCheckBox.BR.x; x >= tileCheckBox.TL.x; x--)
 		{
 			if(tiles[getTile(x, y).id].physics != PHYS_NON_SOLID)
 			{
@@ -362,6 +366,27 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 					}
 					else
 					{
+//						Check if the ent can 'step up' a single block
+						if(self->touchingTileTop)
+						{
+							stepUpX = self->xVel <= 0 ? (self->x - 1) >> 3 : (self->x + self->width) >> 3;
+							canStepUp = true;
+							for(int stepUpY = (self->y - 8) >> 3; stepUpY <= (self->y + self->height - 9) >> 3; stepUpY++)
+							{
+								physics = tiles[getTile(stepUpX, stepUpY).id].physics;
+								if(physics == PHYS_SOLID || physics == PHYS_SAND)
+								{
+									canStepUp = false;
+									break;
+								}
+							}
+							if(canStepUp)
+							{
+								self->y -= 8;
+								continue;
+							}
+						}
+
 						self->xVel = 0;
 						if(entBox.TL.x <= checkLeft)
 						{
@@ -373,10 +398,6 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 						}
 					}
 				}
-			}
-			else if(getTile(x, y).id == TILE_WATER)
-			{
-				
 			}
 		}
 	}

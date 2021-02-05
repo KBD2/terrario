@@ -345,6 +345,7 @@ void playerUpdate(int frames)
 	float regen;
 
 	int playerYSave = player.props.y;
+	static int playerXChangeTicks = 0;
 
 	int damage;
 
@@ -432,11 +433,16 @@ void playerUpdate(int frames)
 	{
 		anim->animation = 0;
 		anim->animationFrame = 0;
+		playerXChangeTicks = 0;
 	}
 	else if(player.props.xVel != 0 && anim->animation != 3)
 	{
-		anim->animation = 3;
-		anim->animationFrame = 6;
+		if(playerXChangeTicks < 5) playerXChangeTicks++;
+		else
+		{
+			anim->animation = 3;
+			anim->animationFrame = 6;
+		}
 	}
 	else 
 	{
