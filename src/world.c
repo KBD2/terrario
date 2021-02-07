@@ -1,6 +1,6 @@
 #include <gint/std/stdlib.h>
 #include <gint/defs/util.h>
-#include <math.h>
+#include <openlibm/openlibm_math.h>
 #include <string.h>
 
 #include "world.h"

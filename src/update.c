@@ -1,7 +1,7 @@
 #include <gint/keyboard.h>
 #include <gint/gint.h>
 #include <gint/defs/util.h>
-#include <math.h>
+#include <openlibm/openlibm_math.h>
 #include <gint/std/stdlib.h>
 
 #include "update.h"

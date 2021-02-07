@@ -6,7 +6,7 @@
 #include <gint/timer.h>
 #include <gint/std/stdlib.h>
 #include <gint/std/stdio.h>
-#include <math.h>
+#include <openlibm/openlibm_math.h>
 
 #include "render.h"
 #include "defs.h"

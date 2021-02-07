@@ -2,7 +2,7 @@
 #include <gint/defs/util.h>
 #include <gint/gray.h>
 #include <stdbool.h>
-#include <math.h>
+#include <openlibm/openlibm_math.h>
 #include <gint/timer.h>
 #include <gint/gint.h>
 #include <gint/std/stdlib.h>
@@ -533,6 +533,8 @@ void doSpawningCycle()
 	int playerTileY = player.props.y >> 3;
 	int spawnAttempts = 0;
 	enum Entities chosen;
+	HouseMarker *marker;
+	int dX, dY;
 
 	for(int idx = 0; idx < MAX_ENTITIES; idx++)
 	{
@@ -587,6 +589,16 @@ void doSpawningCycle()
 					if(!isDay()) chosen = ENT_ZOMBIE;
 					else if(getTile(spawnX, spawnY).id == TILE_SAND && rand() % 4 > 0) chosen = ENT_VULTURE;
 					else chosen = ENT_SLIME;
+					
+					for(int idx = 0; idx < world.numMarkers; idx++)
+					{
+						marker = &world.markers[idx];
+						if(marker->occupant != -1) continue;
+						dX = spawnX - marker->position.x;
+						dY = spawnY - marker->position.y;
+						if(dX * dX + dY * dY < 225) return;
+					}
+
 					world.spawnEntity(chosen, spawnX << 3, (spawnY << 3) - entityTemplates[chosen].props.height);
 					return;
 				}

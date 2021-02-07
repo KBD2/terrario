@@ -10,7 +10,7 @@
 #include <gint/std/stdlib.h>
 #include <gint/clock.h>
 #include <gint/std/stdio.h>
-#include <math.h>
+#include <openlibm/openlibm_math.h>
 
 #include "menu.h"
 #include "syscalls.h"
