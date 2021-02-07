@@ -7,6 +7,7 @@ The rendering system, particle explosion engine, and utility functions.
 */
 
 #include "inventory.h"
+#include "entity.h"
 
 enum SpriteTypes {
 	TYPE_TILE,
@@ -30,6 +31,8 @@ struct ParticleExplosion {
 };
 
 extern char varBuffer[VAR_BUF_HEIGHT][VAR_BUF_WIDTH];
+
+extern Coords varBufferPos;
 
 /* render
 Renders the world using a calculated camera position and a HUD.

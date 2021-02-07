@@ -54,7 +54,7 @@ const TileData tiles[] = {
 	{	&img_tiles_platform,	PHYS_PLATFORM,	true,	TYPE_SHEET,		SUPPORT_NONE,	{-1},												ITEM_PLATFORM,	"Platform",		false,	0.1,	true	},	// TILE_PLATFORM
 	{	&img_tiles_chair,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_CHAIR,		"Chair L",		false,	0.1,	true	},	// TILE_CHAIR_L
 	{	&img_tiles_chair,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_CHAIR,		"Chair R",		false,	0.1,	true	},	// TILE_CHAIR_R
-	{	&img_tiles_torch,		PHYS_NON_SOLID,	true,	TYPE_SHEET,		SUPPORT_NONE,	{TILE_NOTHING, -1},									ITEM_TORCH,		"Torch",		false,	0.1,	true	},	// TILE_TORCH
+	{	&img_tiles_torch,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},									ITEM_TORCH,		"Torch",		false,	0.1,	true	},	// TILE_TORCH
 	{	&img_tiles_furnace_edge,PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_FURNACE,	"Furnace",		false,	0.1,	true	},	// TILE_FURNACE_EDGE
 	{	&img_tiles_furnace_mid,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_FURNACE,	"Furnace",		false,	0.1,	true	},	// TILE_FURNACE_MID
 	{	&img_tiles_iron_ore,	PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},						ITEM_IRON_ORE,	"Iron Ore",		false,	1.0,	false	},	// TILE_IRON_ORE

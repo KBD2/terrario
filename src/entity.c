@@ -366,7 +366,7 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 					}
 					else
 					{
-//						Check if the ent can 'step up' a single block
+//						Check if the entity can 'step up' a single block
 						if(self->touchingTileTop)
 						{
 							stepUpX = self->xVel <= 0 ? (self->x - 1) >> 3 : (self->x + self->width) >> 3;

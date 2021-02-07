@@ -461,6 +461,7 @@ void worldUpdate()
 	enum Tiles tile;
 	int placeX, placeY;
 	enum SupportTypes support;
+	int virtX, virtY;
 
 	for(int y = min(game.WORLD_HEIGHT - 1, (player.props.y >> 3) + 10); y > max(0, (player.props.y >> 3) - 10); y--)
 	{
@@ -533,6 +534,14 @@ void worldUpdate()
 					|| getTile(x, y + 1).id == TILE_GRASS
 					|| getTile(x, y - 1).id == TILE_GRASS)
 				&& rand() % 275 == 0) setTile(x, y, TILE_GRASS);
+			}
+//			Torch animation
+			else if(tile == TILE_TORCH)
+			{
+				virtX = x - varBufferPos.x;
+				virtY = y - varBufferPos.y;
+				if(varBuffer[virtY][virtX] == 2) varBuffer[virtY][virtX] = 0;
+				else varBuffer[virtY][virtX]++;
 			}
 		}
 	}
