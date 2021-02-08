@@ -473,12 +473,13 @@ void worldUpdate()
 			{
 				for(tempY = y; tempY >= 0 && tiles[getTile(x, tempY).id].physics == PHYS_SAND; tempY--)
 				{
+					support = tiles[getTile(x, tempY - 1).id].support;
+					if(support == SUPPORT_NEED) world.removeTile(x, tempY - 1);
+					else if(support == SUPPORT_KEEP) break;
 					setTile(x, tempY + 1, getTile(x, tempY).id);
 					setVar(x, tempY + 1);
 				}
 				setTile(x, tempY + 1, TILE_NOTHING);
-				support = tiles[getTile(x, tempY).id].support;
-				if(support == SUPPORT_NEED || support == SUPPORT_KEEP) world.removeTile(x, tempY);
 			}
 //			Water tile physics
 			else if(tile == TILE_WATER)

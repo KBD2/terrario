@@ -131,7 +131,7 @@ bool zombieBehaviour(struct EntityBase *self, int frames)
 		else
 		{
 			checkX += self->anim.direction ? -1 : 1;
-			for(int dY = 0; dY < 3; dY++)
+			for(int dY = 0; dY < 2; dY++)
 			{
 				if(tiles[getTile(checkX, checkY + dY).id].physics != PHYS_NON_SOLID && self->props.touchingTileTop)
 				{
@@ -593,10 +593,10 @@ void doSpawningCycle()
 					for(int idx = 0; idx < world.numMarkers; idx++)
 					{
 						marker = &world.markers[idx];
-						if(marker->occupant != -1) continue;
+						if(marker->occupant == -1) continue;
 						dX = spawnX - marker->position.x;
 						dY = spawnY - marker->position.y;
-						if(dX * dX + dY * dY < 225) return;
+						if(dX * dX + dY * dY < 576) return;
 					}
 
 					world.spawnEntity(chosen, spawnX << 3, (spawnY << 3) - entityTemplates[chosen].props.height);
