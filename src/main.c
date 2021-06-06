@@ -21,9 +21,6 @@
 #include "optimise.h"
 #include "npc.h"
 
-// Fixes linker error for newlib
-int __errno = 0;
-
 // Fixes implicit declaration warning (feature is not meant for use in normal addins)
 void spu_zero();
 
@@ -201,7 +198,7 @@ int main(void)
 	dclear(C_WHITE);
 	dimage(12, 4, &img_splash);
 	dupdate();
-	timer = timer_setup(TIMER_ANY, 1500 * 1000, NULL);
+	timer = timer_configure(TIMER_ANY, 1500 * 1000, GINT_CALL(NULL));
 	timer_start(timer);
 	timer_wait(timer);
 
@@ -286,14 +283,14 @@ int main(void)
 		dclear(C_WHITE);
 		dupdate();
 
-		gint_switch(&getVersionInfo);
+		gint_world_switch(GINT_CALL(&getVersionInfo));
 		if(strcmp(versionBuffer, VERSION) != 0) saveVersionDifferenceMenu(versionBuffer);
 
 		dclear(C_WHITE);
 		dsize("Loading World...", NULL, &w, &h);
 		dtext(64 - w / 2, 32 - h / 2, C_BLACK, "Loading World...");
 		dupdate();
-		gint_switch(&loadSave);
+		gint_world_switch(GINT_CALL(&loadSave));
 		if(save.error != -99) 
 		{
 			loadFailMenu();
@@ -311,7 +308,7 @@ int main(void)
 	player.props.x = player.spawn.x;
 	player.props.y = player.spawn.y;
 
-	timer = timer_setup(TIMER_ANY, (1000 / 60) * 1000, &frameCallback, &flag);
+	timer = timer_configure(TIMER_ANY, (1000 / 60) * 1000, GINT_CALL(&frameCallback, &flag));
 	timer_start(timer);
 
 	fillVarBuffer(0, 0, VAR_BUF_WIDTH, VAR_BUF_HEIGHT);
@@ -336,7 +333,7 @@ int main(void)
 	free(world.entities);
 	destroyExplosion(&world.explosion);
 
-	if(doSave) gint_switch(&saveGame);
+	if(doSave) gint_world_switch(GINT_CALL(&saveGame));
 	free(world.chests.chests);
 //	Nothing is allocated if there are no NPCs
 	if(world.npcs != NULL) free(world.npcs);
@@ -349,12 +346,12 @@ int main(void)
 		if(mediaFree[1] < 350000) lowSpaceMenu(mediaFree[1]);
 
 #ifndef DEBUGMODE
-		gint_switch(&JumpOptimising);
+		gint_world_switch(GINT_CALL(&JumpOptimising));
 #endif
 	}
 
 //	Return to the main menu by restarting the addin
-	//gint_switch((void (*)())0x00300200);
+	//gint_world_switch((void (*)())0x00300200);
 
 	return 1;
 }

@@ -141,7 +141,7 @@ enum UpdateReturnCodes keyboardUpdate()
 		switch(key.key)
 		{
 			case KEY_OPTN:
-				if(key.type == KEYEV_DOWN) gint_switch(&takeVRAMCapture);
+				if(key.type == KEYEV_DOWN) gint_world_switch(GINT_CALL(&takeVRAMCapture));
 				break;
 			
 			case KEY_SHIFT:

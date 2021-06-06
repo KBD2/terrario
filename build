@@ -1,0 +1,7 @@
+fxsdk build-fx
+for f in ./*.g1a
+do
+    cp "$f" /mnt/s/"$f"
+    ssh pi@192.168.0.100 "cd \$HOME/shared;p7 send -f -# \"$f\""
+    echo "Built and sent $f"
+done

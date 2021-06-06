@@ -258,7 +258,7 @@ void generateWorld()
 		x = randRange(0, game.WORLD_WIDTH - width);
 		for(int dX = 0; dX < width; dX++)
 		{
-			left = min(20, mul * abs(dX - width / 2) + 30);
+			left = min(20, mul * fabs(dX - width / 2) + 30);
 			y = 0;
 			while(left > 0)
 			{

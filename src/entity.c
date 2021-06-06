@@ -2,10 +2,11 @@
 #include <gint/defs/util.h>
 #include <gint/gray.h>
 #include <stdbool.h>
-#include <openlibm/openlibm_math.h>
+#include <openlibm_math.h>
 #include <gint/timer.h>
 #include <gint/gint.h>
 #include <gint/std/stdlib.h>
+#include <stdlib.h>
 
 #include "entity.h"
 #include "defs.h"
@@ -268,7 +269,7 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 			switch(water)
 			{
 				case WATER_FRICTION:
-					self->xVel = sgn(self->xVel) * min(0.5, abs(self->xVel));
+					self->xVel = sgn(self->xVel) * min(0.5, fabs(self->xVel));
 					self->yVel *= 0.85;
 					break;
 				case WATER_FLOAT:
@@ -309,14 +310,14 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 
 //	Interpolate X velocity
 	fractional = modf(self->xVel, &integer);
-	if(abs(self->xVel) < 1 && frames % (int)roundf(1.0 / self->xVel) == 0) self->x += sgn(self->xVel);
-	else if(abs(self->xVel) > 1 && frames % (int)roundf(1.0 / fractional) == 0) self->x += integer + sgn(self->xVel);
+	if(fabs(self->xVel) < 1 && frames % (int)roundf(1.0 / self->xVel) == 0) self->x += sgn(self->xVel);
+	else if(fabs(self->xVel) > 1 && frames % (int)roundf(1.0 / fractional) == 0) self->x += integer + sgn(self->xVel);
 	else self->x += integer;
 
 //	Interpolate Y velocity
 	fractional = modf(self->yVel, &integer);
-	if(abs(self->yVel) < 1 && frames % (int)roundf(1.0 / self->yVel) == 0) self->y += sgn(self->yVel);
-	else if(abs(self->yVel) > 1 && frames % (int)roundf(1.0 / fractional) == 0) self->y += integer + sgn(self->yVel);
+	if(fabs(self->yVel) < 1 && frames % (int)roundf(1.0 / self->yVel) == 0) self->y += sgn(self->yVel);
+	else if(fabs(self->yVel) > 1 && frames % (int)roundf(1.0 / fractional) == 0) self->y += integer + sgn(self->yVel);
 	else self->y += integer;
 
 #ifndef DEBUGMODE

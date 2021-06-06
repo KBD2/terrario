@@ -152,10 +152,10 @@ Item *getSelected()
 	return &player.inventory.items[player.inventory.hotbarSlot];
 }
 
-int inventoryKeyFilter(int key, GUNUSED int duration, GUNUSED int count)
+int inventoryKeyProfile(int key, GUNUSED int duration, GUNUSED int count)
 {
-	if(key == KEY_F1) return -1;
-	return 0;
+        if(key == KEY_F1) return 0;
+        return 16;
 }
 
 /*
@@ -177,7 +177,7 @@ void inventoryMenu(struct Chest* chest)
 	int tab = (chest == NULL) ? TAB_MAIN : TAB_CHEST;
 
 	getkey_repeat(16, 16);
-	getkey_repeat_filter(&inventoryKeyFilter);
+	getkey_set_repeat_profile(&inventoryKeyProfile);	
 
 	while(true)
 	{
@@ -260,11 +260,11 @@ void inventoryMenu(struct Chest* chest)
 		}
 		dupdate();
 
-		key = getkey_opt(GETKEY_REP_ALL | GETKEY_REP_FILTER, NULL);
+		key = getkey_opt(GETKEY_REP_ALL | GETKEY_REP_PROFILE, NULL);
 		switch(key.key)
 		{
 			case KEY_OPTN:
-				if(key.type == KEYEV_DOWN) gint_switch(&takeVRAMCapture);
+				if(key.type == KEYEV_DOWN) gint_world_switch((gint_call_t){&takeVRAMCapture});
 				break;
 
 			case KEY_SHIFT: case KEY_ALPHA:
@@ -280,7 +280,7 @@ void inventoryMenu(struct Chest* chest)
 						else break;
 					}
 					getkey_repeat(400, 40);
-					getkey_repeat_filter(NULL);
+					getkey_set_repeat_profile(NULL);
 					return;
 				}
 				break;

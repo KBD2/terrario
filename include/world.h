@@ -103,10 +103,12 @@ struct World {
 	
 extern struct World world;
 
-union {
+typedef union {
 	Tile tiles[4];
 	uint32_t aligned;
-} group;
+} tilePun;
+
+extern tilePun group;
 
 static inline Tile getTile(int x, int y)
 {

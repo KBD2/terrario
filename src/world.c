@@ -76,6 +76,8 @@ const TileData tiles[] = {
 	{	&img_tiles_cryst,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},												ITEM_CRYST,		"Life Crystal",	false,	1.0,	false	},	// TILE_CRYST_R
 };
 
+tilePun group;
+
 int timeToTicks(int hour, int minute)
 {
 	hour %= 24;
