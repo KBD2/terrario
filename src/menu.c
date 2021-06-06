@@ -45,7 +45,7 @@ int mainMenu()
 	int orbX, orbY;
 	float dayPolarAngle;
 
-	timer = timer_setup(TIMER_ANY, (1000 / 30) * 1000, &frameCallback, &flag);
+	timer = timer_configure(TIMER_ANY, (1000 / 30) * 1000, GINT_CALL(&frameCallback, &flag));
 	timer_start(timer);
 
 	while(1)
@@ -85,7 +85,7 @@ int mainMenu()
 			switch(key.key)
 			{
 				case KEY_OPTN:
-					if(key.type == KEYEV_DOWN) gint_world_switch((gint_call_t){&takeVRAMCapture});
+					if(key.type == KEYEV_DOWN) gint_world_switch(GINT_CALL(&takeVRAMCapture));
 					break;
 
 				case KEY_MENU:
@@ -375,7 +375,7 @@ void itemMenu()
 				return;
 			
 			case KEY_F5:
-				gint_world_switch((gint_call_t){&saveGame});
+				gint_world_switch(GINT_CALL(&saveGame));
 				return;
 			
 			case KEY_F6:

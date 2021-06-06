@@ -373,10 +373,8 @@ void takeVRAMCapture()
 
 void createExplosion(struct ParticleExplosion *explosion, int x, int y)
 {
-	*explosion = (struct ParticleExplosion) {
-		.numParticles = 50,
-		.deltaTicks = 0
-	};
+	explosion->numParticles = 50;
+	explosion->deltaTicks = 0;
 
 	for(int i = 0; i < 50; i++)
 	{

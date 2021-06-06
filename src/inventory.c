@@ -264,7 +264,7 @@ void inventoryMenu(struct Chest* chest)
 		switch(key.key)
 		{
 			case KEY_OPTN:
-				if(key.type == KEYEV_DOWN) gint_world_switch((gint_call_t){&takeVRAMCapture});
+				if(key.type == KEYEV_DOWN) gint_world_switch(GINT_CALL(&takeVRAMCapture));
 				break;
 
 			case KEY_SHIFT: case KEY_ALPHA:

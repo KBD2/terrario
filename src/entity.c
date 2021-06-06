@@ -269,7 +269,7 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 			switch(water)
 			{
 				case WATER_FRICTION:
-					self->xVel = sgn(self->xVel) * min(0.5, fabs(self->xVel));
+					self->xVel = sgn(self->xVel) * min(0.5, fabsf(self->xVel));
 					self->yVel *= 0.85;
 					break;
 				case WATER_FLOAT:
@@ -306,18 +306,18 @@ void handlePhysics(struct EntityPhysicsProps *self, int frames, bool onlyCollisi
 		self->touchingTileTop = true;
 	}
 
-	if(abs(self->xVel) < 0.01) self->xVel = 0;
+	if(fabsf(self->xVel) < 0.01) self->xVel = 0;
 
 //	Interpolate X velocity
 	fractional = modf(self->xVel, &integer);
-	if(fabs(self->xVel) < 1 && frames % (int)roundf(1.0 / self->xVel) == 0) self->x += sgn(self->xVel);
-	else if(fabs(self->xVel) > 1 && frames % (int)roundf(1.0 / fractional) == 0) self->x += integer + sgn(self->xVel);
+	if(fabsf(self->xVel) < 1 && frames % (int)roundf(1.0 / self->xVel) == 0) self->x += sgn(self->xVel);
+	else if(fabsf(self->xVel) > 1 && frames % (int)roundf(1.0 / fractional) == 0) self->x += integer + sgn(self->xVel);
 	else self->x += integer;
 
 //	Interpolate Y velocity
 	fractional = modf(self->yVel, &integer);
-	if(fabs(self->yVel) < 1 && frames % (int)roundf(1.0 / self->yVel) == 0) self->y += sgn(self->yVel);
-	else if(fabs(self->yVel) > 1 && frames % (int)roundf(1.0 / fractional) == 0) self->y += integer + sgn(self->yVel);
+	if(fabsf(self->yVel) < 1 && frames % (int)roundf(1.0 / self->yVel) == 0) self->y += sgn(self->yVel);
+	else if(fabsf(self->yVel) > 1 && frames % (int)roundf(1.0 / fractional) == 0) self->y += integer + sgn(self->yVel);
 	else self->y += integer;
 
 #ifndef DEBUGMODE
