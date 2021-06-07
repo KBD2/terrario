@@ -1,4 +1,4 @@
-#include <gint/std/stdlib.h>
+#include <stdlib.h>
 
 #include "chest.h"
 #include "world.h"

@@ -1,12 +1,13 @@
+#include <stdbool.h>
+#include <string.h>
+
+#include <gint/clock.h>
+#include <gint/bfile.h>
+#include <gint/hardware.h>
 #include <gint/std/stdlib.h>
 #include <gint/gray.h>
 #include <gint/gint.h>
 #include <gint/timer.h>
-#include <stdbool.h>
-#include <gint/std/string.h>
-#include <gint/clock.h>
-#include <gint/bfile.h>
-#include <gint/hardware.h>
 
 #include "defs.h"
 #include "syscalls.h"
@@ -88,7 +89,7 @@ bool gameLoop(volatile int *flag)
 		if(updateRet == UPDATE_EXIT) return true;
 		else if(updateRet == UPDATE_EXIT_NOSAVE) return false;
 
-		if(frames & 1) updateExplosion(&world.explosion);
+		if(frames & 1) updateExplosion();
 		if(frames % 8 == 0) worldUpdate();
 		if(frames % 3600 == 0) doMarkerChecks();
 
@@ -115,7 +116,7 @@ bool gameLoop(volatile int *flag)
 			else if(respawnCounter > 0) respawnCounter--;
 			else
 			{
-				createExplosion(&world.explosion, player.props.x + (player.props.width >> 1), player.props.y + (player.props.height >> 1));
+				resetExplosion(player.props.x + (player.props.width >> 1), player.props.y + (player.props.height >> 1));
 				respawnCounter = 300;
 			}
 		}
@@ -242,6 +243,7 @@ int main(void)
 		.entities = (Entity*)malloc(MAX_ENTITIES * sizeof(Entity)),
 
 		.explosion = {
+			.numParticles = 50,
 			.particles = malloc(50 * sizeof(Particle))
 		},
 
@@ -331,7 +333,7 @@ int main(void)
 	}
 
 	free(world.entities);
-	destroyExplosion(&world.explosion);
+	free(world.explosion.particles);
 
 	if(doSave) gint_world_switch(GINT_CALL(&saveGame));
 	free(world.chests.chests);

@@ -1,12 +1,13 @@
-#include <gint/keyboard.h>
-#include <gint/defs/util.h>
-#include <gint/gray.h>
 #include <stdbool.h>
-#include <openlibm_math.h>
+#include <math.h>
+#include <stdlib.h>
+
 #include <gint/timer.h>
 #include <gint/gint.h>
 #include <gint/std/stdlib.h>
-#include <stdlib.h>
+#include <gint/keyboard.h>
+#include <gint/defs/util.h>
+#include <gint/gray.h>
 
 #include "entity.h"
 #include "defs.h"
@@ -512,7 +513,7 @@ void doEntityCycle(int frames)
 				{
 					player.inventory.ticksSinceInteracted = 0;
 					doEntityDrop(ent->drops);
-					createExplosion(&world.explosion, ent->props.x + (ent->props.width >> 1), ent->props.y + (ent->props.height >> 1));
+					resetExplosion(ent->props.x + (ent->props.width >> 1), ent->props.y + (ent->props.height >> 1));
 					world.removeEntity(idx);
 				}
 			}

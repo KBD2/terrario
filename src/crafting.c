@@ -1,9 +1,10 @@
-#include <gint/std/stdlib.h>
-#include <gint/std/string.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
 #include <gint/keyboard.h>
 #include <gint/gray.h>
 #include <gint/timer.h>
-#include <stdbool.h>
 #include <gint/gint.h>
 #include <gint/defs/util.h>
 

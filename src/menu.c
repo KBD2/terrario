@@ -1,16 +1,17 @@
 // Miscellaneous menus
 
+#include <stdio.h>
+#include <math.h>
+#include <stdbool.h>
+#include <string.h>
+
 #include <gint/gray.h>
 #include <gint/gint.h>
 #include <gint/keyboard.h>
 #include <gint/defs/util.h>
 #include <gint/timer.h>
-#include <stdbool.h>
-#include <gint/std/string.h>
 #include <gint/std/stdlib.h>
 #include <gint/clock.h>
-#include <gint/std/stdio.h>
-#include <openlibm/openlibm_math.h>
 
 #include "menu.h"
 #include "syscalls.h"

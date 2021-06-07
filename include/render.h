@@ -61,14 +61,7 @@ explosion: Pointer to an explosion struct. NOTE: The particles variable *MUST*
 have been allocated to `50 * sizeof Particle` bytes!
 x, y: Pixel coordinates of the explosion's origin.
 */
-void createExplosion(struct ParticleExplosion *explosion, int x, int y);
-
-/* destroyExplosion
-Destructor for the given explosion. Frees the particle buffer.
-
-explosion: Pointer to the explosion to destruct.
-*/
-void destroyExplosion(struct ParticleExplosion *explosion);
+void resetExplosion(int x, int y);
 
 /* renderAndUpdateExplosion
 Updates the given explosion by one frame.
@@ -76,7 +69,7 @@ Updates the given explosion by one frame.
 explosion: Pointer to the explosion.
 offsetX, offsetY: Delta coordinates to be used with a camera.
 */
-void updateExplosion(struct ParticleExplosion *explosion);
+void updateExplosion();
 
 /* middleText
 Clears the screen and displays some text in the middle.

@@ -1,5 +1,7 @@
+#include <string.h>
+
 #include <gint/defs/attributes.h>
-#include <gint/std/string.h>
+
 #include "optimise.h"
 
 typedef struct{

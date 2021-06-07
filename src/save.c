@@ -1,8 +1,9 @@
-#include <gint/bfile.h>
 #include <stdbool.h>
-#include <gint/std/stdio.h>
-#include <gint/std/string.h>
-#include <gint/std/stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include <gint/bfile.h>
 
 #include "save.h"
 #include "defs.h"

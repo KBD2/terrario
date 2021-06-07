@@ -1,6 +1,8 @@
+#include <stdlib.h>
+#include <math.h>
+
 #include <gint/std/stdlib.h>
 #include <gint/defs/util.h>
-#include "math.h"
 
 #include "generate.h"
 #include "world.h"

@@ -1,12 +1,14 @@
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <math.h>
+
 #include <gint/gray.h>
 #include <gint/defs/util.h>
-#include <stdbool.h>
 #include <gint/bfile.h>
-#include <gint/std/string.h>
 #include <gint/timer.h>
 #include <gint/std/stdlib.h>
-#include <gint/std/stdio.h>
-#include <openlibm/openlibm_math.h>
 
 #include "render.h"
 #include "defs.h"
@@ -371,14 +373,13 @@ void takeVRAMCapture()
 	BFile_Close(descriptor);
 }
 
-void createExplosion(struct ParticleExplosion *explosion, int x, int y)
+void resetExplosion(int x, int y)
 {
-	explosion->numParticles = 50;
-	explosion->deltaTicks = 0;
+	world.explosion.deltaTicks = 0;
 
 	for(int i = 0; i < 50; i++)
 	{
-		explosion->particles[i] = (Particle) {
+		world.explosion.particles[i] = (Particle) {
 			x,
 			y,
 			(float)((rand() % 201) - 80) / 100.0,
@@ -388,23 +389,13 @@ void createExplosion(struct ParticleExplosion *explosion, int x, int y)
 	}
 }
 
-void destroyExplosion(struct ParticleExplosion *explosion)
-{
-	if(explosion->particles != NULL)
-	{
-		free(explosion->particles);
-		explosion->particles = NULL;
-	}
-	explosion->numParticles = 0;
-}
-
-void updateExplosion(struct ParticleExplosion *explosion)
+void updateExplosion()
 {
 	Particle* particle;
 	
-	for(int i = 0; i < explosion->numParticles; i++)
+	for(int i = 0; i < world.explosion.numParticles; i++)
 	{
-		particle = &explosion->particles[i];
+		particle = &world.explosion.particles[i];
 
 		particle->x += round(particle->xVel);
 		particle->y += round(particle->yVel);
@@ -412,7 +403,7 @@ void updateExplosion(struct ParticleExplosion *explosion)
 		particle->yVel += 0.2;
 		particle->xVel *= 0.95;
 	}
-	explosion->deltaTicks++;
+	world.explosion.deltaTicks++;
 }
 
 void middleText(char *text, int progress)

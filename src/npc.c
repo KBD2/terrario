@@ -1,8 +1,10 @@
-#include <gint/std/stdlib.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <gint/gray.h>
-#include <gint/keyboard.h>
-#include <gint/std/string.h>
 #include <gint/defs/util.h>
+#include <gint/keyboard.h>
+#include <gint/std/stdlib.h>
 
 #include "npc.h"
 #include "world.h"

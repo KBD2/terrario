@@ -1,7 +1,8 @@
+#include <math.h>
+
 #include <gint/keyboard.h>
 #include <gint/gint.h>
 #include <gint/defs/util.h>
-#include <openlibm/openlibm_math.h>
 #include <gint/std/stdlib.h>
 
 #include "update.h"
@@ -180,7 +181,7 @@ enum UpdateReturnCodes keyboardUpdate()
 						if(!player.props.touchingTileTop && player.bonuses.doubleJump)
 						{
 							player.bonuses.hasDoubleJumped = true;
-							createExplosion(&world.explosion, player.props.x + (player.props.width >> 1), player.props.y + player.props.height);
+							resetExplosion(player.props.x + (player.props.width >> 1), player.props.y + player.props.height);
 						}
 					}
 				}

@@ -1,13 +1,12 @@
+#include <math.h>
+#include <string.h>
+
 #include <gint/std/stdlib.h>
 #include <gint/defs/util.h>
-#include <openlibm/openlibm_math.h>
-#include <string.h>
 
 #include "world.h"
 #include "defs.h"
 #include "save.h"
-
-#include <gint/gray.h>
 
 #define PI 3.14159265358979323846
 
