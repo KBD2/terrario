@@ -24,7 +24,7 @@ bool removeChest(int x, int y)
 
 	if(chest == NULL) return false;
 	world.chests.number--;
-	idx = (chest - world.chests.chests) / sizeof(struct Chest);
+	idx = chest - world.chests.chests;
 	world.chests.chests[idx] = world.chests.chests[world.chests.number];
 	
 	return true;
