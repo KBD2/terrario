@@ -377,7 +377,7 @@ void resetExplosion(int x, int y)
 {
 	world.explosion.deltaTicks = 0;
 
-	for(int i = 0; i < 50; i++)
+	for(int i = 0; i < world.explosion.numParticles; i++)
 	{
 		world.explosion.particles[i] = (Particle) {
 			x,

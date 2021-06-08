@@ -450,7 +450,6 @@ bool removeMarker(int idx)
 	if(idx < 0 || idx >= world.numMarkers) return false;
 
 	if(marker->occupant != -1) world.npcs[marker->occupant].marker = -1;
-	marker->occupant = -1;
 	*marker = world.markers[world.numMarkers - 1];
 	if(marker->occupant != -1) world.npcs[marker->occupant].marker = idx;
 	world.numMarkers--;

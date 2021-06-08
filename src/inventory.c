@@ -260,7 +260,7 @@ void inventoryMenu(struct Chest* chest)
 		}
 		dupdate();
 
-		key = getkey_opt(GETKEY_REP_ALL | GETKEY_REP_PROFILE, NULL);
+		key = getkey_opt(GETKEY_REP_ALL, NULL);
 		switch(key.key)
 		{
 			case KEY_OPTN:

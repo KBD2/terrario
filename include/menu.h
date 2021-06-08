@@ -74,3 +74,11 @@ void incompatibleMenu();
 A debug menu.
 */
 void itemMenu();
+
+/* debugNumberMenu
+Displays hexadecimal numbers for debug purposes.
+
+numbers: Pointer to an array of integers.
+num: The number of items in said array.
+*/
+void debugNumberMenu(int *numbers, int num);

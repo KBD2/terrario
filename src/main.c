@@ -240,7 +240,7 @@ int main(void)
 	{
 		.tiles = (Tile*)save.tileData,
 
-		.entities = (Entity*)malloc(MAX_ENTITIES * sizeof(Entity)),
+		.entities = malloc(MAX_ENTITIES * sizeof(Entity)),
 
 		.explosion = {
 			.numParticles = 50,
@@ -331,6 +331,9 @@ int main(void)
 		dtext(64 - w / 2, 32 - h / 2, C_BLACK, "Saving World...");
 		dupdate();
 	}
+
+	//int nums[] = {world.entities, world.chests.chests, world.explosion.particles, world.npcs, world.markers};
+	//debugNumberMenu(nums, 5);
 
 	free(world.entities);
 	free(world.explosion.particles);

@@ -658,3 +658,17 @@ void saveVersionDifferenceMenu(char *saveVersion)
 		}
 	}
 }
+
+void debugNumberMenu(int *numbers, int num)
+{
+	char buf[50];
+
+	dclear(C_WHITE);
+	for(int i = 0; i < num; i++)
+	{
+		dprint(0, 8 * i, C_BLACK, "0x%X", numbers[i]);
+	}
+	dupdate();
+
+	getkey_opt(GETKEY_NONE, NULL);
+}
