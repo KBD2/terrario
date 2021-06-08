@@ -4,13 +4,13 @@
 #include <math.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <gint/gray.h>
 #include <gint/gint.h>
 #include <gint/keyboard.h>
 #include <gint/defs/util.h>
 #include <gint/timer.h>
-#include <gint/std/stdlib.h>
 #include <gint/clock.h>
 
 #include "menu.h"
@@ -430,10 +430,10 @@ void aboutMenu()
 	sprintf(buffer, "%s %s %s %s:%s", timestamp.day, month, timestamp.year, timestamp.hour, timestamp.minute);
 	const char *thanksText[] = {
 		"Special thanks to:",
-		"Lephenixnoir - gint",
-		"Memallox - Newlib",
+		"Lephenixnoir",
 		"Dark Storm",
-		"Yatis"
+		"Yatis",
+		"and you!"
 	};
 	const char *versionText[] = {
 		VERSION,
@@ -661,8 +661,6 @@ void saveVersionDifferenceMenu(char *saveVersion)
 
 void debugNumberMenu(int *numbers, int num)
 {
-	char buf[50];
-
 	dclear(C_WHITE);
 	for(int i = 0; i < num; i++)
 	{

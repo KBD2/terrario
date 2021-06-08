@@ -154,8 +154,9 @@ Item *getSelected()
 
 int inventoryKeyProfile(int key, GUNUSED int duration, GUNUSED int count)
 {
-        if(key == KEY_F1) return 0;
-        return 16;
+        if(key == KEY_F1) return -1;
+		if(key == KEY_F2) return 300000;
+        return 16000;
 }
 
 /*
@@ -260,7 +261,7 @@ void inventoryMenu(struct Chest* chest)
 		}
 		dupdate();
 
-		key = getkey_opt(GETKEY_REP_ALL, NULL);
+		key = getkey_opt(GETKEY_REP_PROFILE, NULL);
 		switch(key.key)
 		{
 			case KEY_OPTN:

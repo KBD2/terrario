@@ -4,7 +4,6 @@
 
 #include <gint/timer.h>
 #include <gint/gint.h>
-#include <gint/std/stdlib.h>
 #include <gint/keyboard.h>
 #include <gint/defs/util.h>
 #include <gint/gray.h>

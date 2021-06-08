@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <gint/std/stdlib.h>
 #include <gint/defs/util.h>
 
 #include "generate.h"

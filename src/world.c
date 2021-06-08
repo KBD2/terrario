@@ -1,7 +1,7 @@
 #include <math.h>
 #include <string.h>
+#include <stdlib.h>
 
-#include <gint/std/stdlib.h>
 #include <gint/defs/util.h>
 
 #include "world.h"

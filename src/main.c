@@ -1,10 +1,10 @@
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <gint/clock.h>
 #include <gint/bfile.h>
 #include <gint/hardware.h>
-#include <gint/std/stdlib.h>
 #include <gint/gray.h>
 #include <gint/gint.h>
 #include <gint/timer.h>

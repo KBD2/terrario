@@ -4,7 +4,6 @@
 #include <gint/gray.h>
 #include <gint/defs/util.h>
 #include <gint/keyboard.h>
-#include <gint/std/stdlib.h>
 
 #include "npc.h"
 #include "world.h"

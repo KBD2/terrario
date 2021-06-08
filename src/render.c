@@ -8,7 +8,6 @@
 #include <gint/defs/util.h>
 #include <gint/bfile.h>
 #include <gint/timer.h>
-#include <gint/std/stdlib.h>
 
 #include "render.h"
 #include "defs.h"

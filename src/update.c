@@ -1,9 +1,9 @@
 #include <math.h>
+#include <stdlib.h>
 
 #include <gint/keyboard.h>
 #include <gint/gint.h>
 #include <gint/defs/util.h>
-#include <gint/std/stdlib.h>
 
 #include "update.h"
 #include "defs.h"
