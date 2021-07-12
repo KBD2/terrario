@@ -31,6 +31,32 @@ struct {
 	char minute[3];
 } timestamp;
 
+const char *title_messages[] = {
+	"Debug edition!",
+	"Shut up and Dig Gaiden!",
+	"Sand is Overpowered",
+	"A Bunnies Tale",
+	"There is No Cow Layer",
+	"Purple Grass!",
+	"Dig Peon, Dig!",
+	"Epic Dirt",
+	"Also try Casio Kart!", // Yeah sorry if you don't like it, it's a reference to my own Casio Calculator game...
+	"Terrario: Terrario:",
+	"Press Shift+AC", // Love this one
+	"Dividing by zero",
+	"FA-124? What's That?",
+	"Now with 4 COLORS",
+	"A good day to dig hard",
+	"Now in a calc near you!",
+	"You sand bro?",
+	"Legend of Maxx",
+	"NOT THE BEES!!!",
+	"Oficially Duck-free!",
+	"9 + 1 = 11",
+	"Hey Guys!",
+	"Totally not Terraria!"
+};
+
 int mainMenu()
 {
 	extern bopti_image_t img_mainmenu, img_ui_mainmenuselect, img_ents_slime, img_sunmoon;
@@ -45,6 +71,13 @@ int mainMenu()
 
 	int orbX, orbY;
 	float dayPolarAngle;
+
+	int message_index = (rand() % 22) + 1;
+	int message_x = -256;
+
+#ifdef DEBUGMODE
+	message_index = 0;
+#endif
 
 	timer = timer_configure(TIMER_ANY, (1000 / 30) * 1000, GINT_CALL(&frameCallback, &flag));
 	timer_start(timer);
@@ -75,10 +108,11 @@ int mainMenu()
 			dline(91, 57, 91, 58, C_WHITE);
 			bunnyBlink--;
 		}
-		#ifdef DEBUGMODE
-		dtext_opt(0, 0, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, "DEBUG BUILD");
-		#endif
+		dtext_opt(message_x / 2, 120, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, title_messages[message_index]);
 		dupdate();
+
+		message_x++;
+		if (message_x > 256) message_x = -256;
 
 		key = pollevent();
 		while(key.type != KEYEV_NONE)
