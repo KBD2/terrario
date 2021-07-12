@@ -27,6 +27,7 @@ struct PlayerSave {
 	int health;
 	int maxHealth;
 	Coords spawn;
+	int x, y;
 };
 
 struct HousingSave {
@@ -140,6 +141,8 @@ void saveGame()
 	memcpy(playerSave.accessories, player.inventory.accessories, 5 * sizeof(Item));
 	memcpy(playerSave.armour, player.inventory.armour, 3 * sizeof(Item));
 	playerSave.spawn = player.spawn;
+	playerSave.x = player.props.x;
+	playerSave.y = player.props.y;
 	BFile_Remove(playerPath);
 	BFile_Create(playerPath, BFile_File, &playerSaveSize);
 	descriptor = BFile_Open(playerPath, BFile_WriteOnly);
@@ -391,4 +394,7 @@ void loadSave()
 		npc->props.y = housingSave.position.y;
 	}
 	BFile_Close(descriptor);
+
+	player.props.x = playerSave.x;
+	player.props.y = playerSave.y;
 }

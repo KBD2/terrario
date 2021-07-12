@@ -278,6 +278,9 @@ int main(void)
 		world.timeTicks = timeToTicks(8, 15);
 		setPlayerSpawn();
 		addNPC(NPC_GUIDE);
+
+		player.props.x = player.spawn.x;
+		player.props.y = player.spawn.y;
 	} 
 	else if(menuSelect == 1) // Load game
 	{
@@ -306,9 +309,6 @@ int main(void)
 	dupdate();
 
 	dfont(&font_smalltext);
-
-	player.props.x = player.spawn.x;
-	player.props.y = player.spawn.y;
 
 	timer = timer_configure(TIMER_ANY, (1000 / 60) * 1000, GINT_CALL(&frameCallback, &flag));
 	timer_start(timer);

@@ -43,20 +43,34 @@ const struct ItemData items[] = {
 	{	99,		TILE_NULL,			"Empty Bucket",		TOOL_TYPE_NONE		},	// ITEM_EMPTY_BUCKET
 	{	1,		TILE_WATER,			"Water Bucket",		TOOL_TYPE_NONE		},	// ITEM_WATER_BUCKET
 	{	99,		TILE_CRYST_L,		"Life Crystal",		TOOL_TYPE_OTHER		},	// ITEM_CRYST
+
+	{	1,		TILE_NULL,			"Tin Helmet",		TOOL_TYPE_HELMET	},	// ITEM_TIN_HELMET
+	{	1,		TILE_NULL,			"Tin Breastplate",	TOOL_TYPE_TORSO		},	// ITEM_TIN_BREASTPLATE
+	{	1,		TILE_NULL,			"Tin Greaves",		TOOL_TYPE_PANTS		},	// ITEM_TIN_GREAVES
+	{	1,		TILE_NULL,			"Tin Sword",		TOOL_TYPE_SWORD		},	// ITEM_TIN_SWORD
+	{	1,		TILE_NULL,			"Tin Pick",			TOOL_TYPE_PICK		},	// ITEM_TIN_PICK
+	{	999,	TILE_MUD,			"Mud",				TOOL_TYPE_NONE		},	// ITEM_MUD
+	{	999,	TILE_CLAY,			"Clay",				TOOL_TYPE_NONE		},	// ITEM_CLAY
+	{	999,	TILE_COPPER_ORE,	"Copper Ore",		TOOL_TYPE_NONE		},	// ITEM_COPPER_ORE
+	{	999,	TILE_NULL,			"Copper Bar",		TOOL_TYPE_NONE		},	// ITEM_COPPER_BAR
+	{	999,	TILE_TIN_ORE,		"Tin Ore",			TOOL_TYPE_NONE		},	// ITEM_TIN_ORE
+	{	999,	TILE_NULL,			"Tin Bar",			TOOL_TYPE_NONE		},	// ITEM_TIN_BAR
 };
 
-extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick;
+extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick, img_swing_tin_pick;
 
 const struct PickData pickData[NUM_PICKS] = {
 	{.item = ITEM_COPPER_PICK,	.power = 35,	.speed = 15,	.knockback = 2,	.damage = 4,	.swingSprite = &img_swing_copper_pick},
-	{.item = ITEM_IRON_PICK,	.power = 40,	.speed = 13,	.knockback = 2,	.damage = 5,	.swingSprite = &img_swing_iron_pick}
+	{.item = ITEM_IRON_PICK,	.power = 40,	.speed = 13,	.knockback = 2,	.damage = 5,	.swingSprite = &img_swing_iron_pick},
+	{.item = ITEM_TIN_PICK,		.power = 35,	.speed = 15,	.knockback = 2,	.damage = 5,	.swingSprite = &img_swing_tin_pick},
 };
 
-extern bopti_image_t img_swing_copper_sword, img_swing_iron_sword;
+extern bopti_image_t img_swing_copper_sword, img_swing_iron_sword, img_swing_tin_sword;
 
 const struct SwordData swordData[NUM_SWORDS] = {
 	{.item = ITEM_COPPER_SWORD,	.knockback = 5,	.damage = 8,	.swingSprite = &img_swing_copper_sword},
-	{.item = ITEM_IRON_SWORD,	.knockback = 5,	.damage = 10,	.swingSprite = &img_swing_iron_sword}
+	{.item = ITEM_IRON_SWORD,	.knockback = 5,	.damage = 10,	.swingSprite = &img_swing_iron_sword},
+	{.item = ITEM_TIN_SWORD,	.knockback = 5,	.damage = 9,	.swingSprite = &img_swing_tin_sword},
 };
 
 const struct ArmourData armourData[NUM_ARMOUR] = {
@@ -65,7 +79,10 @@ const struct ArmourData armourData[NUM_ARMOUR] = {
 	{.item = ITEM_IRON_GREAVES,		.defense = 2},
 	{.item = ITEM_WOOD_HELMET,		.defense = 1},
 	{.item = ITEM_WOOD_BREASTPLATE,	.defense = 1},
-	{.item = ITEM_WOOD_GREAVES,		.defense = 0}
+	{.item = ITEM_WOOD_GREAVES,		.defense = 0},
+	{.item = ITEM_TIN_HELMET,		.defense = 2},
+	{.item = ITEM_TIN_CHAINMAIL,	.defense = 2},
+	{.item = ITEM_TIN_GREAVES,		.defense = 1},
 };
 
 enum InventoryTabs {

@@ -216,11 +216,13 @@ void generateWorld()
 		for(int x = 0; x < game.WORLD_WIDTH; x++) setTile(x, y, TILE_NOTHING);
 	}
 
-	middleText("Terrain", updateProgress());
+	middleText("Terrain, Now With Mud(TM)!", updateProgress());
 //	Dirt
 	perlin(10, 30, game.WORLD_HEIGHT / 5, TILE_DIRT, 3);
 //	Stone
 	perlin(6, 20, game.WORLD_HEIGHT / 2.8, TILE_STONE, 1);
+//	Mud(I'm just inventing these numbers, hoping it works...)
+	perlin(4, 10, game.WORLD_HEIGHT / 2.8, TILE_CLAY, 1);
 
 //	Tunnels
 	middleText("Tunnels", updateProgress());
@@ -353,15 +355,39 @@ void generateWorld()
 		}
 	}
 
-//	Shinies
-	middleText("Shinies", updateProgress());
+//	Iron
+	middleText("Iron!", updateProgress());
+	for(int i = 0; i < 500 * game.WORLDGEN_MULTIPLIER; i++)
+	{
+		x = rand() % game.WORLD_WIDTH;
+		y = rand() % game.WORLD_HEIGHT;
+		if(getTile(x, y).id != TILE_SAND)
+		{
+			clump(x, y, poisson(6), TILE_IRON_ORE, true, 0, 0);
+		}
+	}
+
+//	Copper
+	middleText("Copper!", updateProgress());
 	for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
 		y = rand() % game.WORLD_HEIGHT;
 		if(getTile(x, y).id != TILE_SAND)
 		{
-			clump(x, y, poisson(10), TILE_IRON_ORE, true, 0, 0);
+			clump(x, y, poisson(8), TILE_COPPER_ORE, true, 0, 0);
+		}
+	}
+
+//	Tin
+	middleText("Tin!", updateProgress());
+	for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
+	{
+		x = rand() % game.WORLD_WIDTH;
+		y = rand() % game.WORLD_HEIGHT;
+		if(getTile(x, y).id != TILE_SAND)
+		{
+			clump(x, y, poisson(10), TILE_TIN_ORE, true, 0, 0);
 		}
 	}
 
