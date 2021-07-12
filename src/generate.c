@@ -210,20 +210,20 @@ void generateWorld()
 	int deltaY;
 	int depth, leftY, rightY;
 
-	middleText("Reset", updateProgress());
+	middleText("Clearing", updateProgress());
 	for(int y = 0; y < game.WORLD_HEIGHT; y++)
 	{
 		for(int x = 0; x < game.WORLD_WIDTH; x++) setTile(x, y, TILE_NOTHING);
 	}
 
-	middleText("Terrain", updateProgress());
+	middleText("Putting Dirt", updateProgress());
 //	Dirt
 	perlin(10, 30, game.WORLD_HEIGHT / 5, TILE_DIRT, 3);
 //	Stone
 	perlin(6, 20, game.WORLD_HEIGHT / 2.8, TILE_STONE, 1);
 
 //	Tunnels
-	middleText("Tunnels", updateProgress());
+	middleText("Emptying Caves", updateProgress());
 	x = 100;
 	while(x < game.WORLD_WIDTH - 100)
 	{
@@ -244,17 +244,46 @@ void generateWorld()
 		else x++;
 	}
 
-//	Sand
-	middleText("Sand", updateProgress());
-	for(int i = 0; i < 60 * game.WORLDGEN_MULTIPLIER; i++)
+//	Mud
+	middleText("Junglifying", updateProgress());
+	for(int i = 0; i < 40 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
 		y = randRange(game.WORLD_HEIGHT / 3.5, game.WORLD_HEIGHT / 2);
-		clump(x, y, poisson(50), TILE_SAND, true, 0, 0);
+		clump(x, y, poisson(40), TILE_SAND, true, 0, 0);
 	}
 	for(int i = 0; i < max(2, poisson(3)); i++)
 	{
-		width = poisson(75) * game.WORLDGEN_MULTIPLIER;
+		width = poisson(60) * game.WORLDGEN_MULTIPLIER;
+		mul = -60 / width;
+		x = randRange(0, game.WORLD_WIDTH - width);
+		for(int dX = 0; dX < width; dX++)
+		{
+			left = min(20, mul * abs(dX - width / 2) + 30);
+			y = 0;
+			while(left > 0)
+			{
+				if(getTile(x + dX, y).id != TILE_NOTHING)
+				{
+					setTile(x + dX, y, TILE_MUD);
+					left--;
+				}
+				y++;
+			}
+		}
+	}
+
+//	Sand
+	middleText("Desertifying", updateProgress());
+	for(int i = 0; i < 40 * game.WORLDGEN_MULTIPLIER; i++)
+	{
+		x = rand() % game.WORLD_WIDTH;
+		y = randRange(game.WORLD_HEIGHT / 3.5, game.WORLD_HEIGHT / 2);
+		clump(x, y, poisson(40), TILE_SAND, true, 0, 0);
+	}
+	for(int i = 0; i < max(2, poisson(3)); i++)
+	{
+		width = poisson(60) * game.WORLDGEN_MULTIPLIER;
 		mul = -60 / width;
 		x = randRange(0, game.WORLD_WIDTH - width);
 		for(int dX = 0; dX < width; dX++)
@@ -274,19 +303,19 @@ void generateWorld()
 	}
 
 //	Rocks in dirt
-	middleText("Rocks In Dirt", updateProgress());
+	middleText("Rocking Dirt", updateProgress());
 	for(int i = 0; i < 1000 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
 		y = rand() % (int)(game.WORLD_HEIGHT / 2.8);
-		if(getTile(x, y).id == TILE_DIRT)
+		if(getTile(x, y).id == TILE_DIRT || getTile(x, y).id == TILE_MUD)
 		{
 			clump(x, y, poisson(10), TILE_STONE, true, 0, 0);
 		}
 	}
 
 //	Rocks in dirt
-	middleText("Clay In Dirt", updateProgress());
+	middleText("Claying Dirt", updateProgress());
 	for(int i = 0; i < 1000 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
@@ -298,7 +327,7 @@ void generateWorld()
 	}
 
 //	Dirt in rocks
-	middleText("Dirt In Rocks", updateProgress());
+	middleText("Dirting Rocks", updateProgress());
 	for(int i = 0; i < 3000 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
@@ -310,7 +339,7 @@ void generateWorld()
 	}
 
 //	Small holes
-	middleText("Small Holes", updateProgress());
+	middleText("Cheeseholing", updateProgress());
 	for(int i = 0; i < 250 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
@@ -325,7 +354,7 @@ void generateWorld()
 	}
 
 //	Caves
-	middleText("Caves", updateProgress());
+	middleText("Caving", updateProgress());
 	for(int i = 0; i < 150 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
@@ -334,7 +363,7 @@ void generateWorld()
 	}
 
 //	Grass
-	middleText("Grass", updateProgress());
+	middleText("Growing Grass", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
 		for(int y = 0; y < game.WORLD_HEIGHT / 2.8; y++)
@@ -366,7 +395,7 @@ void generateWorld()
 	}
 
 //	Iron
-	middleText("Iron", updateProgress());
+	middleText("Ironing", updateProgress());
 	for(int i = 0; i < 500 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
@@ -378,7 +407,7 @@ void generateWorld()
 	}
 
 //	Copper
-	middleText("Copper", updateProgress());
+	middleText("Coppering", updateProgress());
 	for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
@@ -390,7 +419,7 @@ void generateWorld()
 	}
 
 //	Tin
-	middleText("Tin", updateProgress());
+	middleText("Tinning", updateProgress());
 	for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
@@ -402,7 +431,7 @@ void generateWorld()
 	}
 
 //	Lakes
-	middleText("Lakes", updateProgress());
+	middleText("Lakifying", updateProgress());
 	for(int i = 0; i < max(2, poisson(3)); i++)
 	{
 		x = randRange(75, game.WORLD_WIDTH - 75);
@@ -425,7 +454,7 @@ void generateWorld()
 	}
 
 //	Beaches
-	middleText("Beaches", updateProgress());
+	middleText("Beaching", updateProgress());
 	leftY = 0;
 	while(getTile(60 * game.WORLDGEN_MULTIPLIER, leftY).id == TILE_NOTHING) leftY++;
 	rightY = 0;
@@ -459,7 +488,7 @@ void generateWorld()
 	}
 
 //	Smooth World
-	middleText("Smooth World", updateProgress());
+	middleText("Smoothing", updateProgress());
 	for(int i = 0; i < WORLD_SMOOTH_PASSES; i++)
 	{
 //		Forward and reverse pass
@@ -498,7 +527,7 @@ void generateWorld()
 	}
 
 //	Life Crystals
-	middleText("Life Crystals", updateProgress());
+	middleText("Crystalyzing", updateProgress());
 	for(int i = 0; i < 40 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		check = (Item){ITEM_CRYST, 1};
@@ -523,7 +552,7 @@ void generateWorld()
 	}
 
 //	Buried Chests
-	middleText("Buried Chests", updateProgress());
+	middleText("Burying Chests", updateProgress());
 	for(int i = 0; i < 30 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		placedChest = false;
@@ -573,7 +602,7 @@ void generateWorld()
 	}
 
 //	Surface Chests
-	middleText("Surface Chests", updateProgress());
+	middleText("Chestifying", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
 		stage = 0;
@@ -620,7 +649,7 @@ void generateWorld()
 	}
 
 //	Cacti
-	middleText("Moss", updateProgress());
+	middleText("Cactifying", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
 		for(int y = 0; y < game.WORLD_HEIGHT; y++)
@@ -654,6 +683,11 @@ void generateWorld()
 						generateTree(x, y - 1, copseHeight);
 						break;
 					}
+					else if(tile.id == TILE_MUD)
+					{
+						generateTree(x, y - 1, copseHeight + 4);
+						break;
+					}
 					else if(tile.id != TILE_NOTHING) break;
 				}
 			}
@@ -661,24 +695,42 @@ void generateWorld()
 	}
 
 //	Weeds
-	middleText("Weeds", updateProgress());
+	middleText("Weedifying", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
 		for(int y = 1; y < game.WORLD_HEIGHT; y++)
 		{
-			if(getTile(x, y).id == TILE_GRASS && getTile(x, y - 1).id == TILE_NOTHING && rand() % 4 > 0) setTile(x, y - 1, TILE_PLANT);
+			if((getTile(x, y).id == TILE_GRASS || getTile(x, y).id == TILE_MUD) && getTile(x, y - 1).id == TILE_NOTHING && rand() % 4 > 0) setTile(x, y - 1, TILE_PLANT);
 		}
 	}
 
 //	Vines
-	middleText("Vines", updateProgress());
+	middleText("Vining", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
 		for(int y = 0; y < game.WORLD_WIDTH / 4.5; y++)
 		{
-			if(getTile(x, y).id == TILE_GRASS && getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 3) > 0)
+			if((getTile(x, y).id == TILE_GRASS || getTile(x, y).id == TILE_MUD) && getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 3) > 0)
 			{
 				for(int dY = 1; dY < randRange(3, 11) && getTile(x, y + dY).id == TILE_NOTHING; dY++) setTile(x, y + dY, TILE_VINE);
+			}
+		}
+	}
+
+//	Water on Mud
+	middleText("Wetting", updateProgress());
+	for(int x = 0; x < game.WORLD_WIDTH; x++)
+	{
+		for(int y = 0; y < game.WORLD_WIDTH / 4.5; y++)
+		{
+			if(getTile(x, y).id == TILE_MUD && getTile(x + 1, y).id == TILE_NOTHING && randRange(0, 3) > 0)
+			{
+				setTile(x + 1, y, TILE_WATER);
+			}
+
+			if(getTile(x, y).id == TILE_MUD && getTile(x - 1, y).id == TILE_NOTHING && randRange(0, 3) > 0)
+			{
+				setTile(x - 1, y, TILE_WATER);
 			}
 		}
 	}
