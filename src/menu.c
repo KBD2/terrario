@@ -73,7 +73,7 @@ int mainMenu()
 	float dayPolarAngle;
 
 	int message_index = (rand() % 22) + 1;
-	int message_x = -256;
+	int message_x = 256;
 
 #ifdef DEBUGMODE
 	message_index = 0;
@@ -108,11 +108,11 @@ int mainMenu()
 			dline(91, 57, 91, 58, C_WHITE);
 			bunnyBlink--;
 		}
-		dtext_opt(message_x / 2, 120, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, title_messages[message_index]);
+		dprint_opt(message_x / 2, 56, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, "Terrario: %s", title_messages[message_index]);
 		dupdate();
 
-		message_x++;
-		if (message_x > 256) message_x = -256;
+		message_x--;
+		if (message_x < -256) message_x = 256;
 
 		key = pollevent();
 		while(key.type != KEYEV_NONE)
