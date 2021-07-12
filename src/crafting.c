@@ -40,6 +40,14 @@ const struct Recipe recipes[] = {
 
 	{	TILE_FURNACE_MID,	{ITEM_COPPER_BAR, 1}, 		1,	(const Item[]){ {ITEM_COPPER_ORE, 3}										}	},
 	{	TILE_FURNACE_MID,	{ITEM_TIN_BAR, 1}, 			1,	(const Item[]){ {ITEM_TIN_ORE, 3}											}	},
+	{	TILE_ANVIL_L,		{ITEM_TIN_HELMET, 1},		1,	(const Item[]){ {ITEM_TIN_BAR, 8}											}	},//15
+	{	TILE_ANVIL_L,		{ITEM_TIN_CHAINMAIL, 1},	1,	(const Item[]){ {ITEM_TIN_BAR, 16}											}	},//25
+	{	TILE_ANVIL_L,		{ITEM_TIN_GREAVES, 1},		1,	(const Item[]){ {ITEM_TIN_BAR, 10}											}	},//20
+	{	TILE_ANVIL_L,		{ITEM_COPPER_SWORD, 1},		1,	(const Item[]){ {ITEM_COPPER_BAR, 8}										}	},
+	{	TILE_ANVIL_L,		{ITEM_COPPER_PICK, 1},		2,	(const Item[]){ {ITEM_COPPER_BAR, 12},	{ITEM_WOOD, 3}						}	},
+	{	TILE_ANVIL_L,		{ITEM_TIN_SWORD, 1},		1,	(const Item[]){ {ITEM_TIN_BAR, 8}											}	},
+	{	TILE_ANVIL_L,		{ITEM_TIN_PICK, 1},			2,	(const Item[]){ {ITEM_TIN_BAR, 12},	{ITEM_WOOD, 3}							}	},
+
 };
 
 const int numRecipes = sizeof(recipes) / sizeof(struct Recipe);
