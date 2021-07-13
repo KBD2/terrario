@@ -15,20 +15,22 @@ GYRAM unsigned char yPositions[1000];
 GYRAM Coords checkCoords[CHECK_BUFFER_SIZE];
 
 struct ChestLootTable undergroundLoot = {
-	.num = 2,
+	.num = 3,
 	.loot = (const ChestLoot[]){
-//		 Num			   		 Items									Min	Max	Low	High
-		{2,	(const enum Items[]){ITEM_CLOUD_BOTTLE, ITEM_MAGIC_MIRROR},	1,	1,	1,	2},
-		{1,	(const enum Items[]){ITEM_IRON_BAR},						5,	14,	1,	2}
+//		 Num			   		 Items											Min	Max	Low	High
+		{2,	(const enum Items[]){ITEM_CLOUD_BOTTLE, ITEM_MAGIC_MIRROR},			1,	1,	1,	2},
+		{3,	(const enum Items[]){ITEM_IRON_BAR, ITEM_COPPER_BAR, ITEM_TIN_BAR},	5,	14,	1,	2},
+		{1, (const enum Items[]){ITEM_COIN_SILVER},								0,  20,	1,	2},
 	}
 };
 
 struct ChestLootTable surfaceLoot = {
-	.num = 2,
+	.num = 3,
 	.loot = (const ChestLoot[]){
 //		 Num					 Items				Min	Max	Low	High
 		{1,	(const enum Items[]){ITEM_AGLET},		1,	1,	1,	1},
-		{1,	(const enum Items[]){ITEM_IRON_BAR},	3,	10,	1,	2}
+		{1,	(const enum Items[]){ITEM_IRON_BAR},	3,	10,	1,	2},
+		{1, (const enum Items[]){ITEM_COIN_COPPER},	0,  20,	1,	2},
 	}
 };
 
@@ -708,7 +710,7 @@ void generateWorld()
 	middleText("Vining", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
-		for(int y = 0; y < game.WORLD_WIDTH / 4.5; y++)
+		for(int y = 0; y < game.WORLD_HEIGHT; y++)
 		{
 			if((getTile(x, y).id == TILE_GRASS || getTile(x, y).id == TILE_MUD) && getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 3) > 0)
 			{
@@ -721,7 +723,7 @@ void generateWorld()
 	middleText("Wetting Mud", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
-		for(int y = 0; y < game.WORLD_WIDTH / 2; y++)
+		for(int y = 0; y < game.WORLD_HEIGHT / 2; y++)
 		{
 			if (getTile(x, y).id == TILE_MUD)
 			{
