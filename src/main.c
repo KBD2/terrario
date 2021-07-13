@@ -199,7 +199,7 @@ int main(void)
 	dclear(C_WHITE);
 	dimage(12, 4, &img_splash);
 	dupdate();
-	timer = timer_configure(TIMER_ANY, 1500 * 1000, GINT_CALL(NULL));
+	timer = timer_configure(TIMER_ANY, 3000 * 1000, GINT_CALL(NULL));
 	timer_start(timer);
 	timer_wait(timer);
 
