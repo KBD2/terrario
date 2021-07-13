@@ -55,6 +55,10 @@ const struct ItemData items[] = {
 	{	999,	0,		TILE_NULL,			"Copper Bar",		TOOL_TYPE_NONE		},	// ITEM_COPPER_BAR
 	{	999,	0,		TILE_TIN_ORE,		"Tin Ore",			TOOL_TYPE_NONE		},	// ITEM_TIN_ORE
 	{	999,	0,		TILE_NULL,			"Tin Bar",			TOOL_TYPE_NONE		},	// ITEM_TIN_BAR
+	{	99,		0,		TILE_NULL,			"Copper Coin",		TOOL_TYPE_NONE		},	// ITEM_COIN_COPPER
+	{	99,		0,		TILE_NULL,			"Silver Coin",		TOOL_TYPE_NONE		},	// ITEM_COIN_SILVER
+	{	99,		0,		TILE_NULL,			"Gold Coin",		TOOL_TYPE_NONE		},	// ITEM_COIN_GOLD
+	{	99,		0,		TILE_NULL,			"Platinum Coin",	TOOL_TYPE_NONE		},	// ITEM_COIN_PLATINUM
 };
 
 extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick, img_swing_tin_pick;

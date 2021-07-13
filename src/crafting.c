@@ -47,6 +47,13 @@ const struct Recipe recipes[] = {
 	{	TILE_ANVIL_L,		{ITEM_COPPER_PICK, PREFIX_NONE, 1},			2,	(const Item[]){ {ITEM_COPPER_BAR, PREFIX_NONE, 12},	{ITEM_WOOD, PREFIX_NONE, 3}										}	},
 	{	TILE_ANVIL_L,		{ITEM_TIN_SWORD, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_TIN_BAR, PREFIX_NONE, 8}																		}	},
 	{	TILE_ANVIL_L,		{ITEM_TIN_PICK, PREFIX_NONE, 1},			2,	(const Item[]){ {ITEM_TIN_BAR, PREFIX_NONE, 12},	{ITEM_WOOD, PREFIX_NONE, 3}										}	},
+	{	TILE_NULL,			{ITEM_COIN_COPPER, PREFIX_NONE, 100},		1,	(const Item[]){ {ITEM_COIN_SILVER, PREFIX_NONE, 1}																	}	},
+	{	TILE_NULL,			{ITEM_COIN_SILVER, PREFIX_NONE, 100},		1,	(const Item[]){ {ITEM_COIN_GOLD, PREFIX_NONE, 1}																	}	},
+	{	TILE_NULL,			{ITEM_COIN_GOLD, PREFIX_NONE, 100},			1,	(const Item[]){ {ITEM_COIN_PLATINUM, PREFIX_NONE, 1}																}	},
+	{	TILE_NULL,			{ITEM_COIN_SILVER, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_COIN_COPPER, PREFIX_NONE, 100}																}	},
+	{	TILE_NULL,			{ITEM_COIN_GOLD, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_COIN_SILVER, PREFIX_NONE, 100}																}	},
+	{	TILE_NULL,			{ITEM_COIN_PLATINUM, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_COIN_GOLD, PREFIX_NONE, 100}																	}	},
+
 
 };
 

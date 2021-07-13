@@ -34,10 +34,11 @@ bool checkEntitySubmerged(struct EntityPhysicsProps *props, int offsetY)
 // SLIMES
 
 const struct EntityDrops slimeDrops = {
-	.num = 1,
+	.num = 2,
 	.dropList = (const Drop[]){
-//		 Item		Min Max Low Hi
-		{ITEM_GEL,	1,	2,	1,	1}
+//		 Item				Min Max Low Hi
+		{ITEM_GEL,			1,	2,	1,	1},
+		{ITEM_COIN_COPPER,	3,	3,	1,	1},
 	}
 };
 
@@ -92,10 +93,11 @@ bool slimeBehaviour(struct EntityBase *self, int frames)
 // ZOMBIES
 
 const struct EntityDrops zombieDrops = {
-	.num = 1,
+	.num = 2,
 	.dropList = (const Drop[]){
-//		 Item			Min Max Low Hi
-		{ITEM_SHACKLE,	1,	1,	1,	50}
+//		 Item				Min Max Low Hi
+		{ITEM_SHACKLE,		1,	1,	1,	50	},
+		{ITEM_COIN_COPPER, 	60,	60,	1,	1	},
 	}
 };
 
