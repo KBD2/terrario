@@ -451,7 +451,7 @@ void doEntityDrop(const struct EntityDrops *drops)
 			if(rand() % currDrop->ratioHigh <= currDrop->ratioLow - 1)
 			{
 				amount = (rand() % (currDrop->amountMax - currDrop->amountMin + 1)) + currDrop->amountMin;
-				hold = (Item){currDrop->item, amount};
+				hold = (Item){currDrop->item, rand() % PREFIX_COUNT, amount};
 
 				while(hold.id != ITEM_NULL)
 				{

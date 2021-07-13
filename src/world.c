@@ -159,7 +159,7 @@ void breakTree(int x, int y)
 		regionChange(x, y);
 		wood++;
 	}
-	woodStack = (Item){ITEM_WOOD, wood << 1};
+	woodStack = (Item){ITEM_WOOD, PREFIX_NONE, wood << 1};
 	while(woodStack.id != ITEM_NULL)
 	{
 		freeSlot = player.inventory.getFirstFreeSlot(woodStack.id);
@@ -461,7 +461,7 @@ void placeTile(int x, int y, Item *item)
 				updateMarkerChecks((Coords){x, y});
 				regionChange(x, y);
 				item->amount--;
-				if(item->amount == 0) *item = (Item){ITEM_NULL, 0};
+				if(item->amount == 0) *item = (Item){ITEM_NULL, PREFIX_NONE, 0};
 			}
 		}
 	}
@@ -489,7 +489,7 @@ void removeTile(int x, int y)
 		if(tiles[tile.id].item != ITEM_NULL)
 		{
 			freeSlot = player.inventory.getFirstFreeSlot(tiles[tile.id].item);
-			if(freeSlot > -1) player.inventory.stackItem(&player.inventory.items[freeSlot], &((Item){tiles[tile.id].item, 1}));
+			if(freeSlot > -1) player.inventory.stackItem(&player.inventory.items[freeSlot], &((Item){tiles[tile.id].item, PREFIX_NONE, 1}));
 		}
 		switch(tile.id)
 		{

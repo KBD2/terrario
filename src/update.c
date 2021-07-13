@@ -46,7 +46,7 @@ void useHeld()
 					heldPickData->targeted.damage = 0;
 					heldPickData->targeted.crackVar = rand() % 6;
 				}
-				heldPickData->targeted.damage += (float)heldPickData->power / tiles[getTile(x, y).id].hitpoints;
+				heldPickData->targeted.damage += ((float)(heldPickData->power) * prefixes[player.inventory.getSelected()->prefix].power) / tiles[getTile(x, y).id].hitpoints;
 				if(heldPickData->targeted.damage >= 100)
 				{
 					world.removeTile(x, y);
@@ -106,7 +106,7 @@ void useHeld()
 				if(item->id == ITEM_WATER_BUCKET)
 				{
 					slot = player.inventory.getFirstFreeSlot(ITEM_EMPTY_BUCKET);
-					player.inventory.stackItem(&player.inventory.items[slot], &(Item){ITEM_EMPTY_BUCKET, 1});
+					player.inventory.stackItem(&player.inventory.items[slot], &(Item){ITEM_EMPTY_BUCKET, PREFIX_NONE, 1});
 				}
 				world.placeTile(x, y, item);
 				registerGhost();
@@ -115,7 +115,7 @@ void useHeld()
 		else if(item->id == ITEM_EMPTY_BUCKET && getTile(x, y).id == TILE_WATER)
 		{
 			slot = player.inventory.getFirstFreeSlot(ITEM_WATER_BUCKET);
-			player.inventory.stackItem(&player.inventory.items[slot], &(Item){ITEM_WATER_BUCKET, 1});
+			player.inventory.stackItem(&player.inventory.items[slot], &(Item){ITEM_WATER_BUCKET, PREFIX_NONE, 1});
 			player.inventory.removeItem(item);
 			setTile(x, y, TILE_NOTHING);
 			regionChange(x, y);

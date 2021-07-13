@@ -530,7 +530,7 @@ void generateWorld()
 	middleText("Crystalyzing", updateProgress());
 	for(int i = 0; i < 40 * game.WORLDGEN_MULTIPLIER; i++)
 	{
-		check = (Item){ITEM_CRYST, 1};
+		check = (Item){ITEM_CRYST, PREFIX_NONE, 1};
 		for(int try = 0; try < 50; try++)
 		{
 			x = randRange(25, game.WORLD_WIDTH - 25);
@@ -577,7 +577,7 @@ void generateWorld()
 				if(randRange(0, num) == 0 || room == num - 1)
 				{
 					tries = 0;
-					check = (Item){ITEM_CHEST, 1};
+					check = (Item){ITEM_CHEST, PREFIX_NONE, 1};
 					do
 					{
 						tempX = randRange(x, x + width - 2);
@@ -594,7 +594,7 @@ void generateWorld()
 			}
 			tempX = randFloat() < 0.5 ? x : x + width - 1;
 			for(int dY = 2; dY < 5; dY++) setTile(tempX, y + dY, TILE_NOTHING);
-			check = (Item){ITEM_DOOR, 1};
+			check = (Item){ITEM_DOOR, PREFIX_NONE, 1};
 			placeTile(tempX, y + 2, &check);
 			y += 7;
 			x += randRange(-(width - 3), width - 3);
@@ -613,7 +613,7 @@ void generateWorld()
 			{
 				if(rand() % 35 == 0)
 				{
-					check = (Item){ITEM_CHEST, 1};
+					check = (Item){ITEM_CHEST, PREFIX_NONE, 1};
 					while(getTile(x, y + 2).id == TILE_NOTHING) y++;
 					placeTile(x, y, &check);
 					if(check.amount == 0)
@@ -718,19 +718,25 @@ void generateWorld()
 	}
 
 //	Water on Mud
-	middleText("Wetting", updateProgress());
+	middleText("Wetting Mud", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
-		for(int y = 0; y < game.WORLD_WIDTH / 4.5; y++)
+		for(int y = 0; y < game.WORLD_WIDTH / 2; y++)
 		{
-			if(getTile(x, y).id == TILE_MUD && getTile(x + 1, y).id == TILE_NOTHING && randRange(0, 3) > 0)
+			if (getTile(x, y).id == TILE_MUD)
 			{
-				setTile(x + 1, y, TILE_WATER);
-			}
-
-			if(getTile(x, y).id == TILE_MUD && getTile(x - 1, y).id == TILE_NOTHING && randRange(0, 3) > 0)
-			{
-				setTile(x - 1, y, TILE_WATER);
+				if(getTile(x + 1, y).id == TILE_NOTHING && randRange(0, 3) > 0)
+				{
+					setTile(x + 1, y, TILE_WATER);
+				}
+				if(getTile(x - 1, y).id == TILE_NOTHING && randRange(0, 3) > 0)
+				{
+					setTile(x - 1, y, TILE_WATER);
+				}
+				if(getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 3) > 0)
+				{
+					setTile(x, y + 1, TILE_WATER);
+				}
 			}
 		}
 	}
@@ -764,7 +770,7 @@ void addLoot(struct Chest *chest, enum LootTables table)
 		{
 			amount = (rand() % (currLoot->amountMax - currLoot->amountMin + 1)) + currLoot->amountMin;
 			item = currLoot->items[rand() % currLoot->num];
-			chest->items[slot] = (Item){item, amount};
+			chest->items[slot] = (Item){item, rand() % PREFIX_COUNT, amount};
 			slot++;
 		}
 	}

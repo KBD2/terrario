@@ -66,8 +66,30 @@ enum Items {
 	ITEMS_COUNT
 };
 
+enum ItemPrefixes {
+	PREFIX_NONE,
+
+	PREFIX_KEEN,
+	PREFIX_SUPERIOR,
+	PREFIX_FORCEFUL,
+	PREFIX_BROKEN,
+	PREFIX_DAMAGED,
+	PREFIX_SHODDY,
+	PREFIX_HURTFUL,
+	PREFIX_STRONG,
+	PREFIX_UNPLEASANT,
+	PREFIX_WEAK,
+	PREFIX_RUTHLESS,
+	PREFIX_GODLY,
+	PREFIX_DEMONIC,
+	PREFIX_ZEALOUS,
+
+	PREFIX_COUNT
+};
+
 typedef struct {
 	enum Items id;
+	enum ItemPrefixes prefix;
 	int amount;
 } Item;
 
@@ -142,12 +164,28 @@ enum ToolTypes {
 
 struct ItemData {
 	int maxStack;
+	int tier;
 	int tile;
 	char *name;
 	enum ToolTypes type;
 };
 
 extern const struct ItemData items[];
+
+// Warning: Using floats is usually slow
+struct ItemPrefixData {
+	char *name;
+	int tier;
+
+	float dmgdef; // Damage and Defense
+	float knockback;
+
+	// Only if pick
+	float speed;
+	float power;
+};
+
+extern const struct ItemPrefixData prefixes[];
 
 struct PlayerTool {
 	enum ToolTypes type;

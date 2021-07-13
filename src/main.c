@@ -234,7 +234,7 @@ int main(void)
 		.breath = 200
 	};
 
-	for(int slot = 0; slot < INVENTORY_SIZE; slot++) player.inventory.items[slot] = (Item){ITEM_NULL, 0};
+	for(int slot = 0; slot < INVENTORY_SIZE; slot++) player.inventory.items[slot] = (Item){ITEM_NULL, PREFIX_NONE, 0};
 
 	world = (struct World)
 	{
@@ -272,8 +272,8 @@ int main(void)
 	{
 		generateWorld();
 		memset(save.regionData, 1, save.regionsX * save.regionsY);
-		player.inventory.items[0] = (Item){ITEM_COPPER_SWORD, 1};
-		player.inventory.items[1] = (Item){ITEM_COPPER_PICK, 1};
+		player.inventory.items[0] = (Item){ITEM_COPPER_SWORD, rand() % PREFIX_COUNT, 1};
+		player.inventory.items[1] = (Item){ITEM_COPPER_PICK, rand() % PREFIX_COUNT, 1};
 		player.maxHealth = 100;
 		world.timeTicks = timeToTicks(8, 15);
 		setPlayerSpawn();

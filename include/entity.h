@@ -76,8 +76,8 @@ struct Combat {
 
 	int immuneFrames;
 	
-	int attack;
-	int defense;
+	float attack;
+	float defense;
 	float knockbackResist;
 
 	int currImmuneFrames;
