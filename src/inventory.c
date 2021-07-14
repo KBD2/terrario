@@ -66,6 +66,7 @@ const struct ItemData items[] = {
 	{	1,		0,		TILE_NULL,			"Cactus Greaves",		TOOL_TYPE_PANTS		},	// ITEM_CACTUS_GREAVES
 	{	1,		0,		TILE_NULL,			"Cactus Sword",			TOOL_TYPE_SWORD		},	// ITEM_CACTUS_SWORD
 	{	1,		0,		TILE_NULL,			"Cactus Pick",			TOOL_TYPE_PICK		},	// ITEM_CACTUS_PICK
+	{	1,		0,		TILE_NULL,			"Zombie Arm",			TOOL_TYPE_SWORD		},	// ITEM_ZOMBIE_ARM
 };
 
 extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick, img_swing_tin_pick, img_swing_cactus_pick;
@@ -77,9 +78,10 @@ const struct PickData pickData[NUM_PICKS] = {
 	{.item = ITEM_CACTUS_PICK,	.power = 35,	.speed = 16,	.knockback = 2,	.damage = 4,	.swingSprite = &img_swing_cactus_pick},
 };
 
-extern bopti_image_t img_swing_copper_sword, img_swing_iron_sword, img_swing_tin_sword, img_swing_cactus_sword;
+extern bopti_image_t img_swing_zombie_arm, img_swing_copper_sword, img_swing_iron_sword, img_swing_tin_sword, img_swing_cactus_sword;
 
 const struct SwordData swordData[NUM_SWORDS] = {
+	{.item = ITEM_ZOMBIE_ARM,	.knockback = 4,	.damage = 12,	.swingSprite = &img_swing_zombie_arm},
 	{.item = ITEM_COPPER_SWORD,	.knockback = 5,	.damage = 8,	.swingSprite = &img_swing_copper_sword},
 	{.item = ITEM_IRON_SWORD,	.knockback = 5,	.damage = 10,	.swingSprite = &img_swing_iron_sword},
 	{.item = ITEM_TIN_SWORD,	.knockback = 5,	.damage = 9,	.swingSprite = &img_swing_tin_sword},

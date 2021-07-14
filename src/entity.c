@@ -94,10 +94,11 @@ bool slimeBehaviour(struct EntityBase *self, int frames)
 // ZOMBIES
 
 const struct EntityDrops zombieDrops = {
-	.num = 2,
+	.num = 3,
 	.dropList = (const Drop[]){
 //		 Item				Min Max Low Hi
 		{ITEM_SHACKLE,		1,	1,	1,	50	},
+		{ITEM_ZOMBIE_ARM,	1,	1,	1,	100	}, // Was originally 1/250, increased it
 		{ITEM_COIN_COPPER, 	60,	60,	1,	1	},
 	}
 };

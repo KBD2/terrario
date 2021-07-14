@@ -13,7 +13,7 @@ The inventory menu and API functions.
 #include "menu.h"
 
 #define NUM_PICKS 4
-#define NUM_SWORDS 4
+#define NUM_SWORDS 5
 #define NUM_ARMOUR 12
 
 enum Items {
@@ -73,6 +73,7 @@ enum Items {
 	ITEM_CACTUS_GREAVES,
 	ITEM_CACTUS_SWORD,
 	ITEM_CACTUS_PICK,
+	ITEM_ZOMBIE_ARM,
 
 	ITEMS_COUNT
 };
