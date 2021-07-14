@@ -12,9 +12,9 @@ The inventory menu and API functions.
 #include "defs.h"
 #include "menu.h"
 
-#define NUM_PICKS 3
-#define NUM_SWORDS 3
-#define NUM_ARMOUR 9
+#define NUM_PICKS 4
+#define NUM_SWORDS 4
+#define NUM_ARMOUR 12
 
 enum Items {
 	ITEM_NULL,
@@ -67,6 +67,12 @@ enum Items {
 	ITEM_COIN_GOLD,
 	ITEM_COIN_PLATINUM,
 	ITEM_LENS,
+	ITEM_CACTUS,
+	ITEM_CACTUS_HELMET,
+	ITEM_CACTUS_BREASTPLATE,
+	ITEM_CACTUS_GREAVES,
+	ITEM_CACTUS_SWORD,
+	ITEM_CACTUS_PICK,
 
 	ITEMS_COUNT
 };

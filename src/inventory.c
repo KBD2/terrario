@@ -10,84 +10,95 @@
 
 const struct ItemData items[] = {
 //		Max		Tier 	Tile				Name				Tool type
-	{	0,		0,		TILE_NULL,			"Null",				TOOL_TYPE_NONE		},	// ITEM_NULL
-	{	999,	0,		TILE_STONE,			"Stone",			TOOL_TYPE_NONE		},	// ITEM_STONE
-	{	999,	0,		TILE_DIRT,			"Dirt",				TOOL_TYPE_NONE		},	// ITEM_DIRT
-	{	999,	0,		TILE_WOOD,			"Wood",				TOOL_TYPE_NONE		},	// ITEM_WOOD
-	{	99,		0,		TILE_WBENCH_L,		"Workbench",		TOOL_TYPE_NONE		},	// ITEM_WORKBENCH
-	{	999,	0,		TILE_PLATFORM,		"Platform",			TOOL_TYPE_NONE		},	// ITEM_PLATFORM
-	{	99,		0,		TILE_CHAIR_L,		"Chair",			TOOL_TYPE_NONE		},	// ITEM_CHAIR
-	{	1,		0,		TILE_NULL,			"Copper Sword",		TOOL_TYPE_SWORD		},	// ITEM_COPPER_SWORD
-	{	1,		0,		TILE_NULL,			"Copper Pick",		TOOL_TYPE_PICK		},	// ITEM_COPPER_PICK
-	{	999,	0,		TILE_NULL,			"Gel",				TOOL_TYPE_NONE		},	// ITEM_GEL
-	{	99,		0,		TILE_TORCH,			"Torch",			TOOL_TYPE_NONE		},	// ITEM_TORCH
-	{	99,		0,		TILE_FURNACE_EDGE,	"Furnace",			TOOL_TYPE_NONE		},	// ITEM_FURNACE
-	{	999,	0,		TILE_IRON_ORE,		"Iron Ore",			TOOL_TYPE_NONE		},	// ITEM_IRON_ORE
-	{	999,	0,		TILE_NULL,			"Iron Bar",			TOOL_TYPE_NONE		},	// ITEM_IRON_BAR
-	{	99,		0,		TILE_ANVIL_L,		"Anvil",			TOOL_TYPE_NONE		},	// ITEM_ANVIL
-	{	99,		0,		TILE_CHEST_L,		"Chest",			TOOL_TYPE_NONE		},	// ITEM_CHEST
-	{	99,		0,		TILE_DOOR_C,		"Door",				TOOL_TYPE_NONE		},	// ITEM_DOOR
-	{	1,		0,		TILE_NULL,			"Iron Helmet",		TOOL_TYPE_HELMET	},	// ITEM_IRON_HELMET
-	{	1,		0,		TILE_NULL,			"Iron Chainmail",	TOOL_TYPE_TORSO		},	// ITEM_IRON_CHAINMAIL
-	{	1,		0,		TILE_NULL,			"Iron Greaves",		TOOL_TYPE_PANTS		},	// ITEM_IRON_GREAVES
-	{	1,		0,		TILE_NULL,			"Wood Helmet",		TOOL_TYPE_HELMET	},	// ITEM_WOOD_HELMET
-	{	1,		0,		TILE_NULL,			"Wood Breastplate",	TOOL_TYPE_TORSO		},	// ITEM_WOOD_BREASTPLATE
-	{	1,		0,		TILE_NULL,			"Wood Greaves",		TOOL_TYPE_PANTS		},	// ITEM_WOOD_GREAVES
-	{	1,		0,		TILE_NULL,			"Iron Sword",		TOOL_TYPE_SWORD		},	// ITEM_IRON_SWORD
-	{	1,		0,		TILE_NULL,			"Iron Pick",		TOOL_TYPE_PICK		},	// ITEM_IRON_PICK
-	{	1,		0,		TILE_NULL,			"Shackle",			TOOL_TYPE_ACCESSORY	},	// ITEM_SHACKLE
-	{	1, 		0,		TILE_NULL,			"Cloud in a Bottle",TOOL_TYPE_ACCESSORY	},	// ITEM_CLOUD_BOTTLE
-	{	1,		0,		TILE_NULL,			"Magic Mirror",		TOOL_TYPE_OTHER		},	// ITEM_MAGIC_MIRROR
-	{	1,		0,		TILE_NULL,			"Aglet",			TOOL_TYPE_ACCESSORY	},	// ITEM_AGLET
-	{	999,	0,		TILE_SAND,			"Sand",				TOOL_TYPE_NONE		},	// ITEM_SAND
-	{	99,		0,		TILE_NULL,			"Empty Bucket",		TOOL_TYPE_NONE		},	// ITEM_EMPTY_BUCKET
-	{	1,		0,		TILE_WATER,			"Water Bucket",		TOOL_TYPE_NONE		},	// ITEM_WATER_BUCKET
-	{	99,		0,		TILE_CRYST_L,		"Life Crystal",		TOOL_TYPE_OTHER		},	// ITEM_CRYST
+	{	0,		0,		TILE_NULL,			"Null",					TOOL_TYPE_NONE		},	// ITEM_NULL
+	{	999,	0,		TILE_STONE,			"Stone",				TOOL_TYPE_NONE		},	// ITEM_STONE
+	{	999,	0,		TILE_DIRT,			"Dirt",					TOOL_TYPE_NONE		},	// ITEM_DIRT
+	{	999,	0,		TILE_WOOD,			"Wood",					TOOL_TYPE_NONE		},	// ITEM_WOOD
+	{	99,		0,		TILE_WBENCH_L,		"Workbench",			TOOL_TYPE_NONE		},	// ITEM_WORKBENCH
+	{	999,	0,		TILE_PLATFORM,		"Platform",				TOOL_TYPE_NONE		},	// ITEM_PLATFORM
+	{	99,		0,		TILE_CHAIR_L,		"Chair",				TOOL_TYPE_NONE		},	// ITEM_CHAIR
+	{	1,		0,		TILE_NULL,			"Copper Sword",			TOOL_TYPE_SWORD		},	// ITEM_COPPER_SWORD
+	{	1,		0,		TILE_NULL,			"Copper Pick",			TOOL_TYPE_PICK		},	// ITEM_COPPER_PICK
+	{	999,	0,		TILE_NULL,			"Gel",					TOOL_TYPE_NONE		},	// ITEM_GEL
+	{	99,		0,		TILE_TORCH,			"Torch",				TOOL_TYPE_NONE		},	// ITEM_TORCH
+	{	99,		0,		TILE_FURNACE_EDGE,	"Furnace",				TOOL_TYPE_NONE		},	// ITEM_FURNACE
+	{	999,	0,		TILE_IRON_ORE,		"Iron Ore",				TOOL_TYPE_NONE		},	// ITEM_IRON_ORE
+	{	999,	0,		TILE_NULL,			"Iron Bar",				TOOL_TYPE_NONE		},	// ITEM_IRON_BAR
+	{	99,		0,		TILE_ANVIL_L,		"Anvil",				TOOL_TYPE_NONE		},	// ITEM_ANVIL
+	{	99,		0,		TILE_CHEST_L,		"Chest",				TOOL_TYPE_NONE		},	// ITEM_CHEST
+	{	99,		0,		TILE_DOOR_C,		"Door",					TOOL_TYPE_NONE		},	// ITEM_DOOR
+	{	1,		0,		TILE_NULL,			"Iron Helmet",			TOOL_TYPE_HELMET	},	// ITEM_IRON_HELMET
+	{	1,		0,		TILE_NULL,			"Iron Chainmail",		TOOL_TYPE_TORSO		},	// ITEM_IRON_CHAINMAIL
+	{	1,		0,		TILE_NULL,			"Iron Greaves",			TOOL_TYPE_PANTS		},	// ITEM_IRON_GREAVES
+	{	1,		0,		TILE_NULL,			"Wood Helmet",			TOOL_TYPE_HELMET	},	// ITEM_WOOD_HELMET
+	{	1,		0,		TILE_NULL,			"Wood Breastplate",		TOOL_TYPE_TORSO		},	// ITEM_WOOD_BREASTPLATE
+	{	1,		0,		TILE_NULL,			"Wood Greaves",			TOOL_TYPE_PANTS		},	// ITEM_WOOD_GREAVES
+	{	1,		0,		TILE_NULL,			"Iron Sword",			TOOL_TYPE_SWORD		},	// ITEM_IRON_SWORD
+	{	1,		0,		TILE_NULL,			"Iron Pick",			TOOL_TYPE_PICK		},	// ITEM_IRON_PICK
+	{	1,		0,		TILE_NULL,			"Shackle",				TOOL_TYPE_ACCESSORY	},	// ITEM_SHACKLE
+	{	1, 		0,		TILE_NULL,			"Cloud in a Bottle",	TOOL_TYPE_ACCESSORY	},	// ITEM_CLOUD_BOTTLE
+	{	1,		0,		TILE_NULL,			"Magic Mirror",			TOOL_TYPE_OTHER		},	// ITEM_MAGIC_MIRROR
+	{	1,		0,		TILE_NULL,			"Aglet",				TOOL_TYPE_ACCESSORY	},	// ITEM_AGLET
+	{	999,	0,		TILE_SAND,			"Sand",					TOOL_TYPE_NONE		},	// ITEM_SAND
+	{	99,		0,		TILE_NULL,			"Empty Bucket",			TOOL_TYPE_NONE		},	// ITEM_EMPTY_BUCKET
+	{	1,		0,		TILE_WATER,			"Water Bucket",			TOOL_TYPE_NONE		},	// ITEM_WATER_BUCKET
+	{	99,		0,		TILE_CRYST_L,		"Life Crystal",			TOOL_TYPE_OTHER		},	// ITEM_CRYST
 
-	{	1,		0,		TILE_NULL,			"Tin Helmet",		TOOL_TYPE_HELMET	},	// ITEM_TIN_HELMET
-	{	1,		0,		TILE_NULL,			"Tin Breastplate",	TOOL_TYPE_TORSO		},	// ITEM_TIN_BREASTPLATE
-	{	1,		0,		TILE_NULL,			"Tin Greaves",		TOOL_TYPE_PANTS		},	// ITEM_TIN_GREAVES
-	{	1,		0,		TILE_NULL,			"Tin Sword",		TOOL_TYPE_SWORD		},	// ITEM_TIN_SWORD
-	{	1,		0,		TILE_NULL,			"Tin Pick",			TOOL_TYPE_PICK		},	// ITEM_TIN_PICK
-	{	999,	0,		TILE_MUD,			"Mud",				TOOL_TYPE_NONE		},	// ITEM_MUD
-	{	999,	0,		TILE_CLAY,			"Clay",				TOOL_TYPE_NONE		},	// ITEM_CLAY
-	{	999,	0,		TILE_COPPER_ORE,	"Copper Ore",		TOOL_TYPE_NONE		},	// ITEM_COPPER_ORE
-	{	999,	0,		TILE_NULL,			"Copper Bar",		TOOL_TYPE_NONE		},	// ITEM_COPPER_BAR
-	{	999,	0,		TILE_TIN_ORE,		"Tin Ore",			TOOL_TYPE_NONE		},	// ITEM_TIN_ORE
-	{	999,	0,		TILE_NULL,			"Tin Bar",			TOOL_TYPE_NONE		},	// ITEM_TIN_BAR
-	{	100,	0,		TILE_NULL,			"Copper Coin",		TOOL_TYPE_NONE		},	// ITEM_COIN_COPPER
-	{	100,	0,		TILE_NULL,			"Silver Coin",		TOOL_TYPE_NONE		},	// ITEM_COIN_SILVER
-	{	100,	0,		TILE_NULL,			"Gold Coin",		TOOL_TYPE_NONE		},	// ITEM_COIN_GOLD
-	{	100,	0,		TILE_NULL,			"Platinum Coin",	TOOL_TYPE_NONE		},	// ITEM_COIN_PLATINUM
-	{	99,		0,		TILE_NULL,			"Lens",				TOOL_TYPE_NONE		},	// ITEM_LENS
+	{	1,		0,		TILE_NULL,			"Tin Helmet",			TOOL_TYPE_HELMET	},	// ITEM_TIN_HELMET
+	{	1,		0,		TILE_NULL,			"Tin Chainmail",		TOOL_TYPE_TORSO		},	// ITEM_TIN_CHAINMAIL
+	{	1,		0,		TILE_NULL,			"Tin Greaves",			TOOL_TYPE_PANTS		},	// ITEM_TIN_GREAVES
+	{	1,		0,		TILE_NULL,			"Tin Sword",			TOOL_TYPE_SWORD		},	// ITEM_TIN_SWORD
+	{	1,		0,		TILE_NULL,			"Tin Pick",				TOOL_TYPE_PICK		},	// ITEM_TIN_PICK
+	{	999,	0,		TILE_MUD,			"Mud",					TOOL_TYPE_NONE		},	// ITEM_MUD
+	{	999,	0,		TILE_CLAY,			"Clay",					TOOL_TYPE_NONE		},	// ITEM_CLAY
+	{	999,	0,		TILE_COPPER_ORE,	"Copper Ore",			TOOL_TYPE_NONE		},	// ITEM_COPPER_ORE
+	{	999,	0,		TILE_NULL,			"Copper Bar",			TOOL_TYPE_NONE		},	// ITEM_COPPER_BAR
+	{	999,	0,		TILE_TIN_ORE,		"Tin Ore",				TOOL_TYPE_NONE		},	// ITEM_TIN_ORE
+	{	999,	0,		TILE_NULL,			"Tin Bar",				TOOL_TYPE_NONE		},	// ITEM_TIN_BAR
+	{	100,	0,		TILE_NULL,			"Copper Coin",			TOOL_TYPE_NONE		},	// ITEM_COIN_COPPER
+	{	100,	0,		TILE_NULL,			"Silver Coin",			TOOL_TYPE_NONE		},	// ITEM_COIN_SILVER
+	{	100,	0,		TILE_NULL,			"Gold Coin",			TOOL_TYPE_NONE		},	// ITEM_COIN_GOLD
+	{	100,	0,		TILE_NULL,			"Platinum Coin",		TOOL_TYPE_NONE		},	// ITEM_COIN_PLATINUM
+	{	99,		0,		TILE_NULL,			"Lens",					TOOL_TYPE_NONE		},	// ITEM_LENS
+	{	999,	0,		TILE_CACTUS,		"Cactus",				TOOL_TYPE_NONE		},	// ITEM_CACTUS
+	{	1,		0,		TILE_NULL,			"Cactus Helmet",		TOOL_TYPE_HELMET	},	// ITEM_CACTUS_HELMET
+	{	1,		0,		TILE_NULL,			"Cactus Breastplate",	TOOL_TYPE_TORSO		},	// ITEM_CACTUS_BREASTPLATE
+	{	1,		0,		TILE_NULL,			"Cactus Greaves",		TOOL_TYPE_PANTS		},	// ITEM_CACTUS_GREAVES
+	{	1,		0,		TILE_NULL,			"Cactus Sword",			TOOL_TYPE_SWORD		},	// ITEM_CACTUS_SWORD
+	{	1,		0,		TILE_NULL,			"Cactus Pick",			TOOL_TYPE_PICK		},	// ITEM_CACTUS_PICK
 };
 
-extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick, img_swing_tin_pick;
+extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick, img_swing_tin_pick, img_swing_cactus_pick;
 
 const struct PickData pickData[NUM_PICKS] = {
 	{.item = ITEM_COPPER_PICK,	.power = 35,	.speed = 15,	.knockback = 2,	.damage = 4,	.swingSprite = &img_swing_copper_pick},
 	{.item = ITEM_IRON_PICK,	.power = 40,	.speed = 13,	.knockback = 2,	.damage = 5,	.swingSprite = &img_swing_iron_pick},
 	{.item = ITEM_TIN_PICK,		.power = 35,	.speed = 15,	.knockback = 2,	.damage = 5,	.swingSprite = &img_swing_tin_pick},
+	{.item = ITEM_CACTUS_PICK,	.power = 35,	.speed = 16,	.knockback = 2,	.damage = 4,	.swingSprite = &img_swing_cactus_pick},
 };
 
-extern bopti_image_t img_swing_copper_sword, img_swing_iron_sword, img_swing_tin_sword;
+extern bopti_image_t img_swing_copper_sword, img_swing_iron_sword, img_swing_tin_sword, img_swing_cactus_sword;
 
 const struct SwordData swordData[NUM_SWORDS] = {
 	{.item = ITEM_COPPER_SWORD,	.knockback = 5,	.damage = 8,	.swingSprite = &img_swing_copper_sword},
 	{.item = ITEM_IRON_SWORD,	.knockback = 5,	.damage = 10,	.swingSprite = &img_swing_iron_sword},
 	{.item = ITEM_TIN_SWORD,	.knockback = 5,	.damage = 9,	.swingSprite = &img_swing_tin_sword},
+	{.item = ITEM_CACTUS_SWORD,	.knockback = 5,	.damage = 8,	.swingSprite = &img_swing_cactus_sword},
 };
 
 const struct ArmourData armourData[NUM_ARMOUR] = {
-	{.item = ITEM_IRON_HELMET,		.defense = 2},
-	{.item = ITEM_IRON_CHAINMAIL,	.defense = 2},
-	{.item = ITEM_IRON_GREAVES,		.defense = 2},
-	{.item = ITEM_WOOD_HELMET,		.defense = 1},
-	{.item = ITEM_WOOD_BREASTPLATE,	.defense = 1},
-	{.item = ITEM_WOOD_GREAVES,		.defense = 0},
-	{.item = ITEM_TIN_HELMET,		.defense = 2},
-	{.item = ITEM_TIN_CHAINMAIL,	.defense = 2},
-	{.item = ITEM_TIN_GREAVES,		.defense = 1},
+	{.item = ITEM_IRON_HELMET,			.defense = 2},
+	{.item = ITEM_IRON_CHAINMAIL,		.defense = 2},
+	{.item = ITEM_IRON_GREAVES,			.defense = 2},
+	{.item = ITEM_WOOD_HELMET,			.defense = 1},
+	{.item = ITEM_WOOD_BREASTPLATE,		.defense = 1},
+	{.item = ITEM_WOOD_GREAVES,			.defense = 0},
+	{.item = ITEM_TIN_HELMET,			.defense = 2},
+	{.item = ITEM_TIN_CHAINMAIL,		.defense = 2},
+	{.item = ITEM_TIN_GREAVES,			.defense = 1},
+	{.item = ITEM_CACTUS_HELMET,		.defense = 1},
+	{.item = ITEM_CACTUS_BREASTPLATE,	.defense = 2},
+	{.item = ITEM_CACTUS_GREAVES,		.defense = 1},
 };
 
 const struct ItemPrefixData prefixes[PREFIX_COUNT] = {
