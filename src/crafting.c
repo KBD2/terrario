@@ -53,8 +53,11 @@ const struct Recipe recipes[] = {
 	{	TILE_NULL,			{ITEM_COIN_SILVER, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_COIN_COPPER, PREFIX_NONE, 100}																}	},
 	{	TILE_NULL,			{ITEM_COIN_GOLD, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_COIN_SILVER, PREFIX_NONE, 100}																}	},
 	{	TILE_NULL,			{ITEM_COIN_PLATINUM, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_COIN_GOLD, PREFIX_NONE, 100}																	}	},
-
-
+	{	TILE_WBENCH_L,		{ITEM_CACTUS_HELMET, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 20}																		}	},
+	{	TILE_WBENCH_L,		{ITEM_CACTUS_BREASTPLATE, PREFIX_NONE, 1},	1,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 30}																		}	},
+	{	TILE_WBENCH_L,		{ITEM_CACTUS_GREAVES, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 25}																		}	},
+	{	TILE_WBENCH_L,		{ITEM_CACTUS_SWORD, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 10}																		}	},
+	{	TILE_WBENCH_L,		{ITEM_CACTUS_PICK, PREFIX_NONE, 1},			2,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 15}																		}	},
 };
 
 const int numRecipes = sizeof(recipes) / sizeof(struct Recipe);
