@@ -38,7 +38,8 @@ img_tiles_cryst,
 img_tiles_mud,
 img_tiles_clay,
 img_tiles_copper_ore,
-img_tiles_tin_ore;
+img_tiles_tin_ore,
+img_tiles_mushroom;
 
 const TileData tiles[] = {
 //      Ptr to sprite       	Phys?			Render?	Type?			Support?		Friends (-1 to end)								   								Item			Name			Cmprs?	HP		Floodable?
@@ -72,8 +73,8 @@ const TileData tiles[] = {
 	{	&img_tiles_door_o_r_r,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NONE,	{-1},																			ITEM_DOOR,		"Door O R R",	false,	0.1,	true	},	// TILE_DOOR_O_R_R
 	{	&img_tiles_vine,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_TOP,	{-1},																			ITEM_NULL,		"Vine",			false,	0.1,	true	},	// TILE_VINE
 	{	&img_tiles_sand,		PHYS_SAND,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, -1},																ITEM_SAND,		"Sand",			true,	0.5,	false	},	// TILE_SAND
-	{	&img_tiles_cactus,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_CACTUS_BRANCH, -1},														ITEM_CACTUS,	"Cactus",		false,	3.0,	true	},	// TILE_CACTUS
-	{	&img_tiles_cactus,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_CACTUS, -1},																ITEM_CACTUS,	"Cactus",		false,	3.0,	true	},	// TILE_CACTUS_BRANCH
+	{	&img_tiles_cactus,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_CACTUS_BRANCH, -1},														ITEM_CACTUS,	"Cactus",		false,	0.5,	true	},	// TILE_CACTUS
+	{	&img_tiles_cactus,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_CACTUS, -1},																ITEM_CACTUS,	"Cactus",		false,	0.5,	true	},	// TILE_CACTUS_BRANCH
 	{	&img_tiles_water,		PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1},																			ITEM_NULL,		"Water",		true,	999,	false	},	// TILE_WATER
 	{	&img_tiles_cryst,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_CRYST,		"Life Crystal",	false,	1.0,	false	},	// TILE_CRYST_L
 	{	&img_tiles_cryst,		PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_CRYST,		"Life Crystal",	false,	1.0,	false	},	// TILE_CRYST_R
@@ -82,6 +83,7 @@ const TileData tiles[] = {
 	{   &img_tiles_clay,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_STONE, TILE_DIRT, TILE_MUD, -1},											ITEM_CLAY,		"Clay",			true,	0.5,	false	},	// TILE_CLAY
 	{	&img_tiles_copper_ore,	PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},													ITEM_COPPER_ORE,"Copper Ore",	false,	0.8,	false	},	// TILE_COPPER_ORE
 	{	&img_tiles_tin_ore,		PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},													ITEM_TIN_ORE,	"Tin Ore",		false,	0.8,	false	},	// TILE_TIN_ORE
+	{	&img_tiles_mushroom,	PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_MUSHROOM,	"Mushroom"	,	false,	0.1,	true	},	// TILE_MUSHROOM
 };
 
 tilePun group;

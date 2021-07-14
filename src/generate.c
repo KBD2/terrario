@@ -702,7 +702,17 @@ void generateWorld()
 	{
 		for(int y = 1; y < game.WORLD_HEIGHT; y++)
 		{
-			if((getTile(x, y).id == TILE_GRASS || getTile(x, y).id == TILE_MUD) && getTile(x, y - 1).id == TILE_NOTHING && rand() % 4 > 0) setTile(x, y - 1, TILE_PLANT);
+			if((getTile(x, y).id == TILE_GRASS || getTile(x, y).id == TILE_MUD) && getTile(x, y - 1).id == TILE_NOTHING && rand() % 4 > 0)
+			{
+				if(rand() % 6)
+				{
+					setTile(x, y - 1, TILE_MUSHROOM);
+				}
+				else
+				{
+					setTile(x, y - 1, TILE_PLANT);
+				}
+			}
 		}
 	}
 

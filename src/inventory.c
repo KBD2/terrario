@@ -67,6 +67,7 @@ const struct ItemData items[] = {
 	{	1,		0,		TILE_NULL,			"Cactus Sword",			TOOL_TYPE_SWORD		},	// ITEM_CACTUS_SWORD
 	{	1,		0,		TILE_NULL,			"Cactus Pick",			TOOL_TYPE_PICK		},	// ITEM_CACTUS_PICK
 	{	1,		0,		TILE_NULL,			"Zombie Arm",			TOOL_TYPE_SWORD		},	// ITEM_ZOMBIE_ARM
+	{	999,	0,		TILE_MUSHROOM,		"Mushroom",				TOOL_TYPE_NONE		},	// ITEM_MUSHROOM
 };
 
 extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick, img_swing_tin_pick, img_swing_cactus_pick;
