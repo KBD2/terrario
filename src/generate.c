@@ -7,7 +7,7 @@
 #include "world.h"
 #include "chest.h"
 
-#define NUM_WORLD_GEN_PARTS 22
+#define NUM_WORLD_GEN_PARTS 27
 #define WORLD_SMOOTH_PASSES 5
 
 GYRAM unsigned char yPositions[1000];
@@ -18,19 +18,19 @@ struct ChestLootTable undergroundLoot = {
 	.num = 3,
 	.loot = (const ChestLoot[]){
 //		 Num			   		 Items											Min	Max	Low	High
-		{2,	(const enum Items[]){ITEM_CLOUD_BOTTLE, ITEM_MAGIC_MIRROR},			1,	1,	1,	2},
+		{2,	(const enum Items[]){ITEM_CLOUD_BOTTLE, ITEM_MAGIC_MIRROR},			1,	1,	1,	5},
 		{3,	(const enum Items[]){ITEM_IRON_BAR, ITEM_COPPER_BAR, ITEM_TIN_BAR},	5,	14,	1,	2},
-		{1, (const enum Items[]){ITEM_COIN_SILVER},								0,  20,	1,	2},
+		{1, (const enum Items[]){ITEM_COIN_SILVER},								0,  20,	1,	1},
 	}
 };
 
 struct ChestLootTable surfaceLoot = {
 	.num = 3,
 	.loot = (const ChestLoot[]){
-//		 Num					 Items				Min	Max	Low	High
-		{1,	(const enum Items[]){ITEM_AGLET},		1,	1,	1,	1},
-		{1,	(const enum Items[]){ITEM_IRON_BAR},	3,	10,	1,	2},
-		{1, (const enum Items[]){ITEM_COIN_COPPER},	0,  20,	1,	2},
+//		 Num					 Items											Min	Max	Low	High
+		{1,	(const enum Items[]){ITEM_AGLET},									1,	1,	1,	2},
+		{3,	(const enum Items[]){ITEM_IRON_BAR, ITEM_COPPER_BAR, ITEM_TIN_BAR},	3,	10,	1,	2},
+		{1, (const enum Items[]){ITEM_COIN_COPPER},								0,  30,	1,	1},
 	}
 };
 

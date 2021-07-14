@@ -18,7 +18,8 @@
 extern bopti_image_t
 img_ents_slime,
 img_ents_zombie,
-img_ents_vulture;
+img_ents_vulture,
+img_ents_demoneye;
 
 bool checkEntitySubmerged(struct EntityPhysicsProps *props, int offsetY)
 {
@@ -150,9 +151,10 @@ bool zombieBehaviour(struct EntityBase *self, int frames)
 // VULTURES
 
 const struct EntityDrops vultureDrops = {
-	.num = 0,
+	.num = 1,
 	.dropList = (const Drop[]){
-//		 Item			Min Max Low Hi
+//		 Item				Min Max Low Hi
+		{ITEM_COIN_COPPER, 	60,	60,	1,	1	},
 	}
 };
 
@@ -222,13 +224,107 @@ bool vultureBehaviour(struct EntityBase *self, int frames)
 	return true;
 }
 
+// DEMONIC EYES
+
+const struct EntityDrops demoneyeDrops = {
+	.num = 2,
+	.dropList = (const Drop[]){
+//		 Item				Min Max Low Hi
+		{ITEM_LENS,			1,	1,	1,	3	},
+		{ITEM_COIN_COPPER, 	75,	75,	1,	1	},
+	}
+};
+
+void demoneyeInit(struct EntityBase *self)
+{
+	self->anim.direction = 0;
+	self->anim.animationFrame = 0;
+	self->props.xVel = self->props.yVel = 0;
+	self->props.dropping = true;
+	self->props.movingSelf = true;
+	self->mem[0] = self->mem[1] = 0;
+}
+
+#define DEMONEYE_MIN_DST 16
+#define DEMONEYE_MIN_VEL 0.1
+#define DEMONEYE_S_TICKS 30
+
+bool demoneyeBehaviour(struct EntityBase *self, int frames)
+{
+	int *mode = &self->mem[0];
+	int *tick = &self->mem[1];
+
+	handlePhysics(&self->props, frames, true, WATER_FRICTION);
+
+	if(!*mode)
+	{
+		// Go to player
+
+		float xOff = player.props.x - self->props.x;
+		float yOff = player.props.y - self->props.y;
+
+		float dist = sqrtf(xOff * xOff + yOff * yOff);
+
+		if(dist != 0)
+		{
+			xOff /= dist;
+			yOff /= dist;
+		}
+
+		self->props.xVel = xOff * 0.75;
+		self->props.yVel = yOff * 0.75;
+
+		// self->props.xVel = min(max(-0.6, self->props.xVel), 0.6);
+		// self->props.yVel = min(max(-0.6, self->props.yVel), 0.6);
+
+		if(dist < DEMONEYE_MIN_DST)
+		{
+			*tick = 0;
+			*mode = 1;
+		}
+	}
+	else
+	{
+		// Got too close, run away upwards, keeping the X velocity
+
+		self->props.yVel -= 0.01;
+		self->props.yVel = min(max(-0.6, self->props.yVel), 0.6);
+
+		if(*tick > DEMONEYE_S_TICKS)
+		{
+			*mode = 0;
+		}
+
+		(*tick)++;
+	}
+
+	int xDir = 1;
+	if(self->props.xVel >= DEMONEYE_MIN_VEL) xDir = 2;
+	else if(self->props.xVel <= -DEMONEYE_MIN_VEL) xDir = 0;
+
+	int yDir = 1;
+	if(self->props.yVel >= DEMONEYE_MIN_VEL) yDir = 2;
+	else if(self->props.yVel <= -DEMONEYE_MIN_VEL) yDir = 0;
+
+	const int dirTable[] = {
+		5, 6, 7,
+		4, 0, 0,
+		3, 2, 1
+	};
+
+	self->anim.direction = dirTable[xDir + 3 * yDir];
+
+	return true;
+}
+
 /* ---------- */
 
 const struct EntityBase entityTemplates[] = {
-//		ID			Props		Combat									Sprite				Drops			Off	Behaviour			Init
-	{	ENT_SLIME,	{16, 12},	{14, ALIGN_HOSTILE, 40, 6, 0, 0.15},	&img_ents_slime,		&slimeDrops,	0,	&slimeBehaviour,	&slimeInit	},	// ENT_SLIME
-	{	ENT_ZOMBIE,	{17, 23},	{45, ALIGN_HOSTILE, 40, 14, 6, 0.5}, 	&img_ents_zombie,	&zombieDrops,	0,	&zombieBehaviour,	NULL		},	// ENT_ZOMBIE
-	{	ENT_VULTURE,{18, 25},	{15, ALIGN_HOSTILE,	40, 15, 4, 0.25},	&img_ents_vulture,	&vultureDrops,	8,	&vultureBehaviour,	&vultureInit},	// ENT_VULTURE
+//		ID				Props		Combat									Sprite				Drops			Off	Behaviour			Init
+	{	ENT_SLIME,		{16, 12},	{14, ALIGN_HOSTILE, 40, 6, 0, 0.15},	&img_ents_slime,	&slimeDrops,	0,	&slimeBehaviour,	&slimeInit		},	// ENT_SLIME
+	{	ENT_ZOMBIE,		{17, 23},	{45, ALIGN_HOSTILE, 40, 14, 6, 0.5}, 	&img_ents_zombie,	&zombieDrops,	0,	&zombieBehaviour,	NULL			},	// ENT_ZOMBIE
+	{	ENT_VULTURE,	{18, 25},	{15, ALIGN_HOSTILE,	40, 15, 4, 0.25},	&img_ents_vulture,	&vultureDrops,	8,	&vultureBehaviour,	&vultureInit	},	// ENT_VULTURE
+	{	ENT_DEMONEYE,	{18, 18},	{60, ALIGN_HOSTILE,	40, 18, 2, 0.2},	&img_ents_demoneye,	&demoneyeDrops,	0,	&demoneyeBehaviour,	&demoneyeInit	},	// ENT_DEMONEYE
 };
 
 /* Having a generic physics property struct lets me have one function to handle
@@ -589,7 +685,7 @@ void doSpawningCycle()
 				spawnY++;
 				if(tiles[getTile(spawnX, spawnY).id].physics != PHYS_NON_SOLID)
 				{
-					if(!isDay()) chosen = ENT_ZOMBIE;
+					if(!isDay()) chosen = (rand() % 2) ? ENT_ZOMBIE : ENT_DEMONEYE;
 					else if(getTile(spawnX, spawnY).id == TILE_SAND && rand() % 4 > 0) chosen = ENT_VULTURE;
 					else chosen = ENT_SLIME;
 					

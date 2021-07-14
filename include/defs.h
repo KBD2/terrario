@@ -63,10 +63,10 @@ extern struct GameCompatibilityPresets game;
 #define DAY_TICKS 43200
 
 // Amount of entity slots
-#define MAX_ENTITIES 5
+#define MAX_ENTITIES 12
 
 // 1/<x> chance to spawn an entity each frame
-#define SPAWN_CHANCE 600
+#define SPAWN_CHANCE 800
 
 /*
 Must be even.
