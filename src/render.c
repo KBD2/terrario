@@ -32,6 +32,8 @@ const int swingHandleDeltaPositions[4][2] = {
 
 void renderItem(int x, int y, Item *item)
 {
+	if (item->id < 0 || item->id >= ITEMS_COUNT) return;
+
 	extern bopti_image_t img_items;
 	int subrectX = (item->id & 0xF) * 9 + 1;
 	int subrectY = (item->id >> 4) * 9 + 1;

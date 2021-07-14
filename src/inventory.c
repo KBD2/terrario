@@ -303,8 +303,12 @@ void inventoryMenu(struct Chest* chest)
 				prefix = item->prefix;
 			}
 
+			int prefixWidth;
+
 			dsize(items[item->id].name, NULL, &width, &height);
-			drect(0, 51, width, 52 + height, C_WHITE);
+			dsize(prefixes[prefix].name, NULL, &prefixWidth, NULL);
+
+			drect(0, 51, width + prefixWidth, 52 + height, C_WHITE);
 			dprint(0, 52, C_BLACK, "%s%s", prefixes[prefix].name, items[item->id].name);
 		}
 		dupdate();
@@ -410,7 +414,7 @@ void registerEquipment()
 	{
 		part = player.inventory.armour[slot].id;
 		armour[slot] = part;
-		if(part == ITEM_NULL) continue;
+		if(part == ITEM_NULL || part < 0 || part >= ITEMS_COUNT) continue;
 		for(int idx = 0; idx < NUM_ARMOUR; idx++)
 		{
 			if(armourData[idx].item == part)
