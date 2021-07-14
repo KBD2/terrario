@@ -15,22 +15,24 @@ GYRAM unsigned char yPositions[1000];
 GYRAM Coords checkCoords[CHECK_BUFFER_SIZE];
 
 struct ChestLootTable undergroundLoot = {
-	.num = 3,
+	.num = 4,
 	.loot = (const ChestLoot[]){
 //		 Num			   		 Items											Min	Max	Low	High
 		{2,	(const enum Items[]){ITEM_CLOUD_BOTTLE, ITEM_MAGIC_MIRROR},			1,	1,	1,	5},
 		{3,	(const enum Items[]){ITEM_IRON_BAR, ITEM_COPPER_BAR, ITEM_TIN_BAR},	5,	14,	1,	2},
 		{1, (const enum Items[]){ITEM_COIN_SILVER},								0,  20,	1,	1},
+		{1, (const enum Items[]){ITEM_LESSER_HEALING_POTION},					3,	5,	1,	2},
 	}
 };
 
 struct ChestLootTable surfaceLoot = {
-	.num = 3,
+	.num = 4,
 	.loot = (const ChestLoot[]){
 //		 Num					 Items											Min	Max	Low	High
 		{1,	(const enum Items[]){ITEM_AGLET},									1,	1,	1,	2},
 		{3,	(const enum Items[]){ITEM_IRON_BAR, ITEM_COPPER_BAR, ITEM_TIN_BAR},	3,	10,	1,	2},
 		{1, (const enum Items[]){ITEM_COIN_COPPER},								0,  30,	1,	1},
+		{1, (const enum Items[]){ITEM_LESSER_HEALING_POTION},					3,	5,	1,	2},
 	}
 };
 

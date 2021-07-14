@@ -16,48 +16,51 @@
 #include "render.h"
 
 const struct Recipe recipes[] = {
-//		Workbench			Result										N	Ingredient list
-	{	TILE_NULL,			{ITEM_PLATFORM, PREFIX_NONE, 2},			1,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 1}																			}	},
-	{	TILE_NULL,			{ITEM_WOOD, PREFIX_NONE, 1},				1,	(const Item[]){ {ITEM_PLATFORM, PREFIX_NONE, 2}																		}	},
-	{	TILE_NULL,			{ITEM_WBENCH, PREFIX_NONE, 1},				1,	(const Item[]){ {ITEM_WOOD,	PREFIX_NONE, 10}																		}	},
-	{	TILE_WBENCH_L,		{ITEM_CHAIR, PREFIX_NONE, 1},				1,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 4}																			}	},
-	{	TILE_NULL,			{ITEM_TORCH, PREFIX_NONE, 3},				2,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 1},		{ITEM_GEL, PREFIX_NONE, 1}										}	},
-	{	TILE_WBENCH_L,		{ITEM_FURNACE, PREFIX_NONE, 1},				3,	(const Item[]){ {ITEM_STONE, PREFIX_NONE, 20},		{ITEM_WOOD, PREFIX_NONE, 4},	{ITEM_TORCH, PREFIX_NONE, 3}	}	},
-	{	TILE_FURNACE_MID,	{ITEM_IRON_BAR, PREFIX_NONE, 1}, 			1,	(const Item[]){ {ITEM_IRON_ORE, PREFIX_NONE, 3}																		}	},
-	{	TILE_WBENCH_L,		{ITEM_ANVIL, PREFIX_NONE, 1},				1,	(const Item[]){ {ITEM_IRON_BAR, PREFIX_NONE, 5}																		}	},
-	{	TILE_WBENCH_L,		{ITEM_CHEST, PREFIX_NONE, 1},				2,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 8},		{ITEM_IRON_BAR, PREFIX_NONE, 2}									}	},
-	{	TILE_WBENCH_L,		{ITEM_DOOR, PREFIX_NONE, 1},				1,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 6}																			}	},
+//		Workbench			Result											N	Ingredient list
+	{	TILE_NULL,			{ITEM_PLATFORM, PREFIX_NONE, 2},				1,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 1}																			}	},
+	{	TILE_NULL,			{ITEM_WOOD, PREFIX_NONE, 1},					1,	(const Item[]){ {ITEM_PLATFORM, PREFIX_NONE, 2}																		}	},
+	{	TILE_NULL,			{ITEM_WBENCH, PREFIX_NONE, 1},					1,	(const Item[]){ {ITEM_WOOD,	PREFIX_NONE, 10}																		}	},
+	{	TILE_WBENCH_L,		{ITEM_CHAIR, PREFIX_NONE, 1},					1,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 4}																			}	},
+	{	TILE_NULL,			{ITEM_TORCH, PREFIX_NONE, 3},					2,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 1},		{ITEM_GEL, PREFIX_NONE, 1}										}	},
+	{	TILE_WBENCH_L,		{ITEM_FURNACE, PREFIX_NONE, 1},					3,	(const Item[]){ {ITEM_STONE, PREFIX_NONE, 20},		{ITEM_WOOD, PREFIX_NONE, 4},	{ITEM_TORCH, PREFIX_NONE, 3}	}	},
+	{	TILE_FURNACE_MID,	{ITEM_IRON_BAR, PREFIX_NONE, 1}, 				1,	(const Item[]){ {ITEM_IRON_ORE, PREFIX_NONE, 3}																		}	},
+	{	TILE_WBENCH_L,		{ITEM_ANVIL, PREFIX_NONE, 1},					1,	(const Item[]){ {ITEM_IRON_BAR, PREFIX_NONE, 5}																		}	},
+	{	TILE_WBENCH_L,		{ITEM_CHEST, PREFIX_NONE, 1},					2,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 8},		{ITEM_IRON_BAR, PREFIX_NONE, 2}									}	},
+	{	TILE_WBENCH_L,		{ITEM_DOOR, PREFIX_NONE, 1},					1,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 6}																			}	},
 // Iron armour cost is about 50% of original
-	{	TILE_ANVIL_L,		{ITEM_IRON_HELMET, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_IRON_BAR, PREFIX_NONE, 8}																		}	},//15
-	{	TILE_ANVIL_L,		{ITEM_IRON_CHAINMAIL, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_IRON_BAR, PREFIX_NONE, 16}																	}	},//25
-	{	TILE_ANVIL_L,		{ITEM_IRON_GREAVES, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_IRON_BAR, PREFIX_NONE, 10}																	}	},//20
-	{	TILE_WBENCH_L,		{ITEM_WOOD_HELMET, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 20}																		}	},
-	{	TILE_WBENCH_L,		{ITEM_WOOD_BREASTPLATE, PREFIX_NONE, 1},	1,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 30}																		}	},
-	{	TILE_WBENCH_L,		{ITEM_WOOD_GREAVES, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 25}																		}	},
-	{	TILE_ANVIL_L,		{ITEM_IRON_SWORD, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_IRON_BAR, PREFIX_NONE, 8}																		}	},
-	{	TILE_ANVIL_L,		{ITEM_IRON_PICK, PREFIX_NONE, 1},			2,	(const Item[]){ {ITEM_IRON_BAR, PREFIX_NONE, 12},	{ITEM_WOOD, PREFIX_NONE, 3}										}	},
-	{	TILE_ANVIL_L,		{ITEM_EMPTY_BUCKET, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_IRON_BAR, PREFIX_NONE, 3}																		}	},
+	{	TILE_ANVIL_L,		{ITEM_IRON_HELMET, PREFIX_NONE, 1},				1,	(const Item[]){ {ITEM_IRON_BAR, PREFIX_NONE, 8}																		}	},//15
+	{	TILE_ANVIL_L,		{ITEM_IRON_CHAINMAIL, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_IRON_BAR, PREFIX_NONE, 16}																	}	},//25
+	{	TILE_ANVIL_L,		{ITEM_IRON_GREAVES, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_IRON_BAR, PREFIX_NONE, 10}																	}	},//20
+	{	TILE_WBENCH_L,		{ITEM_WOOD_HELMET, PREFIX_NONE, 1},				1,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 20}																		}	},
+	{	TILE_WBENCH_L,		{ITEM_WOOD_BREASTPLATE, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 30}																		}	},
+	{	TILE_WBENCH_L,		{ITEM_WOOD_GREAVES, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_WOOD, PREFIX_NONE, 25}																		}	},
+	{	TILE_ANVIL_L,		{ITEM_IRON_SWORD, PREFIX_NONE, 1},				1,	(const Item[]){ {ITEM_IRON_BAR, PREFIX_NONE, 8}																		}	},
+	{	TILE_ANVIL_L,		{ITEM_IRON_PICK, PREFIX_NONE, 1},				2,	(const Item[]){ {ITEM_IRON_BAR, PREFIX_NONE, 12},	{ITEM_WOOD, PREFIX_NONE, 3}										}	},
+	{	TILE_ANVIL_L,		{ITEM_EMPTY_BUCKET, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_IRON_BAR, PREFIX_NONE, 3}																		}	},
 
-	{	TILE_FURNACE_MID,	{ITEM_COPPER_BAR, PREFIX_NONE, 1}, 			1,	(const Item[]){ {ITEM_COPPER_ORE, PREFIX_NONE, 3}																	}	},
-	{	TILE_FURNACE_MID,	{ITEM_TIN_BAR, PREFIX_NONE, 1}, 			1,	(const Item[]){ {ITEM_TIN_ORE, PREFIX_NONE, 3}																		}	},
-	{	TILE_ANVIL_L,		{ITEM_TIN_HELMET, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_TIN_BAR, PREFIX_NONE, 8}																		}	},//15
-	{	TILE_ANVIL_L,		{ITEM_TIN_CHAINMAIL, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_TIN_BAR, PREFIX_NONE, 16}																		}	},//25
-	{	TILE_ANVIL_L,		{ITEM_TIN_GREAVES, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_TIN_BAR, PREFIX_NONE, 10}																		}	},//20
-	{	TILE_ANVIL_L,		{ITEM_COPPER_SWORD, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_COPPER_BAR, PREFIX_NONE, 8}																	}	},
-	{	TILE_ANVIL_L,		{ITEM_COPPER_PICK, PREFIX_NONE, 1},			2,	(const Item[]){ {ITEM_COPPER_BAR, PREFIX_NONE, 12},	{ITEM_WOOD, PREFIX_NONE, 3}										}	},
-	{	TILE_ANVIL_L,		{ITEM_TIN_SWORD, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_TIN_BAR, PREFIX_NONE, 8}																		}	},
-	{	TILE_ANVIL_L,		{ITEM_TIN_PICK, PREFIX_NONE, 1},			2,	(const Item[]){ {ITEM_TIN_BAR, PREFIX_NONE, 12},	{ITEM_WOOD, PREFIX_NONE, 3}										}	},
-	{	TILE_NULL,			{ITEM_COIN_COPPER, PREFIX_NONE, 100},		1,	(const Item[]){ {ITEM_COIN_SILVER, PREFIX_NONE, 1}																	}	},
-	{	TILE_NULL,			{ITEM_COIN_SILVER, PREFIX_NONE, 100},		1,	(const Item[]){ {ITEM_COIN_GOLD, PREFIX_NONE, 1}																	}	},
-	{	TILE_NULL,			{ITEM_COIN_GOLD, PREFIX_NONE, 100},			1,	(const Item[]){ {ITEM_COIN_PLATINUM, PREFIX_NONE, 1}																}	},
-	{	TILE_NULL,			{ITEM_COIN_SILVER, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_COIN_COPPER, PREFIX_NONE, 100}																}	},
-	{	TILE_NULL,			{ITEM_COIN_GOLD, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_COIN_SILVER, PREFIX_NONE, 100}																}	},
-	{	TILE_NULL,			{ITEM_COIN_PLATINUM, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_COIN_GOLD, PREFIX_NONE, 100}																	}	},
-	{	TILE_WBENCH_L,		{ITEM_CACTUS_HELMET, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 20}																		}	},
-	{	TILE_WBENCH_L,		{ITEM_CACTUS_BREASTPLATE, PREFIX_NONE, 1},	1,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 30}																		}	},
-	{	TILE_WBENCH_L,		{ITEM_CACTUS_GREAVES, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 25}																		}	},
-	{	TILE_WBENCH_L,		{ITEM_CACTUS_SWORD, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 10}																		}	},
-	{	TILE_WBENCH_L,		{ITEM_CACTUS_PICK, PREFIX_NONE, 1},			2,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 15}																		}	},
+	{	TILE_FURNACE_MID,	{ITEM_COPPER_BAR, PREFIX_NONE, 1}, 				1,	(const Item[]){ {ITEM_COPPER_ORE, PREFIX_NONE, 3}																	}	},
+	{	TILE_FURNACE_MID,	{ITEM_TIN_BAR, PREFIX_NONE, 1}, 				1,	(const Item[]){ {ITEM_TIN_ORE, PREFIX_NONE, 3}																		}	},
+	{	TILE_ANVIL_L,		{ITEM_TIN_HELMET, PREFIX_NONE, 1},				1,	(const Item[]){ {ITEM_TIN_BAR, PREFIX_NONE, 8}																		}	},//15
+	{	TILE_ANVIL_L,		{ITEM_TIN_CHAINMAIL, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_TIN_BAR, PREFIX_NONE, 16}																		}	},//25
+	{	TILE_ANVIL_L,		{ITEM_TIN_GREAVES, PREFIX_NONE, 1},				1,	(const Item[]){ {ITEM_TIN_BAR, PREFIX_NONE, 10}																		}	},//20
+	{	TILE_ANVIL_L,		{ITEM_COPPER_SWORD, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_COPPER_BAR, PREFIX_NONE, 8}																	}	},
+	{	TILE_ANVIL_L,		{ITEM_COPPER_PICK, PREFIX_NONE, 1},				2,	(const Item[]){ {ITEM_COPPER_BAR, PREFIX_NONE, 12},	{ITEM_WOOD, PREFIX_NONE, 3}										}	},
+	{	TILE_ANVIL_L,		{ITEM_TIN_SWORD, PREFIX_NONE, 1},				1,	(const Item[]){ {ITEM_TIN_BAR, PREFIX_NONE, 8}																		}	},
+	{	TILE_ANVIL_L,		{ITEM_TIN_PICK, PREFIX_NONE, 1},				2,	(const Item[]){ {ITEM_TIN_BAR, PREFIX_NONE, 12},	{ITEM_WOOD, PREFIX_NONE, 3}										}	},
+	{	TILE_NULL,			{ITEM_COIN_COPPER, PREFIX_NONE, 100},			1,	(const Item[]){ {ITEM_COIN_SILVER, PREFIX_NONE, 1}																	}	},
+	{	TILE_NULL,			{ITEM_COIN_SILVER, PREFIX_NONE, 100},			1,	(const Item[]){ {ITEM_COIN_GOLD, PREFIX_NONE, 1}																	}	},
+	{	TILE_NULL,			{ITEM_COIN_GOLD, PREFIX_NONE, 100},				1,	(const Item[]){ {ITEM_COIN_PLATINUM, PREFIX_NONE, 1}																}	},
+	{	TILE_NULL,			{ITEM_COIN_SILVER, PREFIX_NONE, 1},				1,	(const Item[]){ {ITEM_COIN_COPPER, PREFIX_NONE, 100}																}	},
+	{	TILE_NULL,			{ITEM_COIN_GOLD, PREFIX_NONE, 1},				1,	(const Item[]){ {ITEM_COIN_SILVER, PREFIX_NONE, 100}																}	},
+	{	TILE_NULL,			{ITEM_COIN_PLATINUM, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_COIN_GOLD, PREFIX_NONE, 100}																	}	},
+	{	TILE_WBENCH_L,		{ITEM_CACTUS_HELMET, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 20}																		}	},
+	{	TILE_WBENCH_L,		{ITEM_CACTUS_BREASTPLATE, PREFIX_NONE, 1},		1,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 30}																		}	},
+	{	TILE_WBENCH_L,		{ITEM_CACTUS_GREAVES, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 25}																		}	},
+	{	TILE_WBENCH_L,		{ITEM_CACTUS_SWORD, PREFIX_NONE, 1},			1,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 10}																		}	},
+	{	TILE_WBENCH_L,		{ITEM_CACTUS_PICK, PREFIX_NONE, 1},				1,	(const Item[]){ {ITEM_CACTUS, PREFIX_NONE, 15}																		}	},
+	{	TILE_FURNACE_MID,	{ITEM_GLASS, PREFIX_NONE, 1}, 					1,	(const Item[]){ {ITEM_SAND, PREFIX_NONE, 2}																			}	},
+	{	TILE_FURNACE_MID,	{ITEM_BOTTLE, PREFIX_NONE, 2}, 					1,	(const Item[]){ {ITEM_GLASS, PREFIX_NONE, 1}																		}	},
+	{	TILE_BOTTLE,		{ITEM_LESSER_HEALING_POTION, PREFIX_NONE, 2},	3,	(const Item[]){ {ITEM_BOTTLE, PREFIX_NONE, 2}, {ITEM_GEL, PREFIX_NONE, 2}, {ITEM_MUSHROOM, PREFIX_NONE, 1}			}	},
 };
 
 const int numRecipes = sizeof(recipes) / sizeof(struct Recipe);

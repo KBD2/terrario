@@ -68,6 +68,10 @@ const struct ItemData items[] = {
 	{	1,		0,		TILE_NULL,			"Cactus Pick",			TOOL_TYPE_PICK		},	// ITEM_CACTUS_PICK
 	{	1,		0,		TILE_NULL,			"Zombie Arm",			TOOL_TYPE_SWORD		},	// ITEM_ZOMBIE_ARM
 	{	999,	0,		TILE_MUSHROOM,		"Mushroom",				TOOL_TYPE_NONE		},	// ITEM_MUSHROOM
+	{	999,	0,		TILE_NULL,			"Glass",				TOOL_TYPE_NONE		},	// ITEM_GLASS
+	{	999,	0,		TILE_NULL,			"Bottle",				TOOL_TYPE_NONE		},	// ITEM_BOTTLE
+	{	30,		0,		TILE_NULL,			"Lesser Healing Potion",TOOL_TYPE_NONE		},	// ITEM_LESSER_HEALING_POTION
+	{	30,		0,		TILE_NULL,			"Lesser Mana Potion",	TOOL_TYPE_NONE		},	// ITEM_LESSER_MANA_POTION
 };
 
 extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick, img_swing_tin_pick, img_swing_cactus_pick;
