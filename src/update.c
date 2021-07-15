@@ -134,6 +134,7 @@ enum UpdateReturnCodes keyboardUpdate()
 	struct Chest* chest;
 	int ret;
 	NPC *npc;
+	Item *item;
 	
 	player.inventory.ticksSinceInteracted++;
 
@@ -258,6 +259,42 @@ enum UpdateReturnCodes keyboardUpdate()
 					default:
 						break;
 				}
+
+				item = &player.inventory.items[player.inventory.hotbarSlot];
+
+				// Check consumables
+				// TODO: Make these changeable in a nice list in inventory.c like we do with tools and armor pieces
+				if(item->amount > 0)
+				{	
+					int consumed = 0;
+
+					switch(item->id)
+					{
+						case ITEM_LESSER_HEALING_POTION:
+							if(player.combat.health >= player.maxHealth) break;
+
+							player.combat.health = max(player.combat.health + 50, player.maxHealth);
+
+							consumed = 1;
+							break;
+						case ITEM_MUSHROOM:
+							if(player.combat.health >= player.maxHealth) break;
+
+							player.combat.health = max(player.combat.health + 15, player.maxHealth);
+
+							consumed = 1;
+							break;
+						default:
+							break;
+					}
+
+					if(consumed)
+					{
+						item->amount--;
+						if(item->amount == 0) *item = (Item){ITEM_NULL, PREFIX_NONE, 0};
+					}
+				}
+
 				break;
 			
 			case KEY_TAN:
