@@ -12,9 +12,9 @@ The inventory menu and API functions.
 #include "defs.h"
 #include "menu.h"
 
-#define NUM_PICKS 2
-#define NUM_SWORDS 2
-#define NUM_ARMOUR 6
+#define NUM_PICKS 4
+#define NUM_SWORDS 5
+#define NUM_ARMOUR 12
 
 enum Items {
 	ITEM_NULL,
@@ -50,12 +50,62 @@ enum Items {
 	ITEM_EMPTY_BUCKET,
 	ITEM_WATER_BUCKET,
 	ITEM_CRYST,
+	ITEM_TIN_HELMET,
+	ITEM_TIN_CHAINMAIL,
+	ITEM_TIN_GREAVES,
+	ITEM_TIN_SWORD,
+	ITEM_TIN_PICK,
+	ITEM_MUD,
+	ITEM_CLAY,
+	ITEM_COPPER_ORE,
+	ITEM_COPPER_BAR,
+	ITEM_TIN_ORE,
+	ITEM_TIN_BAR,
+	ITEM_COIN_COPPER,
+	ITEM_COIN_SILVER,
+	ITEM_COIN_GOLD,
+	ITEM_COIN_PLATINUM,
+	ITEM_LENS,
+	ITEM_CACTUS,
+	ITEM_CACTUS_HELMET,
+	ITEM_CACTUS_BREASTPLATE,
+	ITEM_CACTUS_GREAVES,
+	ITEM_CACTUS_SWORD,
+	ITEM_CACTUS_PICK,
+	ITEM_ZOMBIE_ARM,
+	ITEM_MUSHROOM,
+	ITEM_GLASS,
+	ITEM_BOTTLE,
+	ITEM_LESSER_HEALING_POTION,
+	ITEM_LESSER_MANA_POTION,
 
 	ITEMS_COUNT
 };
 
+enum ItemPrefixes {
+	PREFIX_NONE,
+
+	PREFIX_KEEN,
+	PREFIX_SUPERIOR,
+	PREFIX_FORCEFUL,
+	PREFIX_BROKEN,
+	PREFIX_DAMAGED,
+	PREFIX_SHODDY,
+	PREFIX_HURTFUL,
+	PREFIX_STRONG,
+	PREFIX_UNPLEASANT,
+	PREFIX_WEAK,
+	PREFIX_RUTHLESS,
+	PREFIX_GODLY,
+	PREFIX_DEMONIC,
+	PREFIX_ZEALOUS,
+
+	PREFIX_COUNT
+};
+
 typedef struct {
 	enum Items id;
+	enum ItemPrefixes prefix;
 	int amount;
 } Item;
 
@@ -130,12 +180,28 @@ enum ToolTypes {
 
 struct ItemData {
 	int maxStack;
+	int tier;
 	int tile;
 	char *name;
 	enum ToolTypes type;
 };
 
 extern const struct ItemData items[];
+
+// Warning: Using floats is usually slow
+struct ItemPrefixData {
+	char *name;
+	int tier;
+
+	float dmgdef; // Damage and Defense
+	float knockback;
+
+	// Only if pick
+	float speed;
+	float power;
+};
+
+extern const struct ItemPrefixData prefixes[];
 
 struct PlayerTool {
 	enum ToolTypes type;

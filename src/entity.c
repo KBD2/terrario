@@ -18,7 +18,8 @@
 extern bopti_image_t
 img_ents_slime,
 img_ents_zombie,
-img_ents_vulture;
+img_ents_vulture,
+img_ents_demoneye;
 
 bool checkEntitySubmerged(struct EntityPhysicsProps *props, int offsetY)
 {
@@ -34,10 +35,11 @@ bool checkEntitySubmerged(struct EntityPhysicsProps *props, int offsetY)
 // SLIMES
 
 const struct EntityDrops slimeDrops = {
+	.coinBaseValue = 25 * COPPER_VALUE,
 	.num = 1,
 	.dropList = (const Drop[]){
-//		 Item		Min Max Low Hi
-		{ITEM_GEL,	1,	2,	1,	1}
+//		 Item				Min Max Low Hi
+		{ITEM_GEL,			1,	2,	1,	1}
 	}
 };
 
@@ -92,10 +94,12 @@ bool slimeBehaviour(struct EntityBase *self, int frames)
 // ZOMBIES
 
 const struct EntityDrops zombieDrops = {
-	.num = 1,
+	.coinBaseValue = 60 * COPPER_VALUE,
+	.num = 2,
 	.dropList = (const Drop[]){
-//		 Item			Min Max Low Hi
-		{ITEM_SHACKLE,	1,	1,	1,	50}
+//		 Item				Min Max Low Hi
+		{ITEM_SHACKLE,		1,	1,	1,	50	},
+		{ITEM_ZOMBIE_ARM,	1,	1,	1,	100	} // Was originally 1/250, increased it
 	}
 };
 
@@ -148,9 +152,10 @@ bool zombieBehaviour(struct EntityBase *self, int frames)
 // VULTURES
 
 const struct EntityDrops vultureDrops = {
+	.coinBaseValue = 60 * COPPER_VALUE,
 	.num = 0,
 	.dropList = (const Drop[]){
-//		 Item			Min Max Low Hi
+//		 Item				Min Max Low Hi
 	}
 };
 
@@ -220,13 +225,105 @@ bool vultureBehaviour(struct EntityBase *self, int frames)
 	return true;
 }
 
+// DEMON EYES
+
+const struct EntityDrops demoneyeDrops = {
+	.coinBaseValue = 75 * COPPER_VALUE,
+	.num = 1,
+	.dropList = (const Drop[]){
+//		 Item				Min Max Low Hi
+		{ITEM_LENS,			1,	1,	1,	3	}
+	}
+};
+
+void demoneyeInit(struct EntityBase *self)
+{
+	self->anim.direction = 0;
+	self->anim.animationFrame = 0;
+	self->props.xVel = self->props.yVel = 0;
+	self->props.dropping = true;
+	self->props.movingSelf = true;
+	self->mem[0] = 0;
+	self->mem[1] = 0;
+}
+
+#define DEMONEYE_MIN_DST 256
+#define DEMONEYE_MIN_VEL 0.1
+#define DEMONEYE_S_TICKS 30
+
+bool demoneyeBehaviour(struct EntityBase *self, int frames)
+{
+	int *mode = &self->mem[0];
+	int *tick = &self->mem[1];
+	int xOff, yOff, dist;
+	int xDir, yDir;
+	const int dirTable[] = {
+		5, 6, 7,
+		4, 0, 0,
+		3, 2, 1
+	};
+
+	handlePhysics(&self->props, frames, true, WATER_FRICTION);
+
+	if(checkCollision(&self->props, &player.props)) self->props.xVel *= -1;
+
+	if(!*mode)
+	{
+		// Go to player
+
+		xOff = self->props.x - player.props.x;
+		yOff = self->props.y - player.props.y;
+
+//		Just do half the pythag calculation cause sqrtf takes ages to calculate
+		dist = xOff * xOff + yOff * yOff;
+
+		self->props.xVel -= 0.05 * sgn(xOff);
+		self->props.yVel = -0.5 * sgn(yOff);
+
+		self->props.xVel = min(max(-0.6, self->props.xVel), 0.6);
+
+		if(dist < DEMONEYE_MIN_DST)
+		{
+			*tick = 0;
+			*mode = 1;
+		}
+	}
+	else
+	{
+		// Got too close, run away upwards, keeping the X velocity
+
+		self->props.yVel -= 0.01;
+		self->props.yVel = min(max(-0.6, self->props.yVel), 0.6);
+
+		if(*tick > DEMONEYE_S_TICKS)
+		{
+			*mode = 0;
+		}
+
+		(*tick)++;
+	}
+	
+	xDir = 1;
+	if(self->props.xVel > DEMONEYE_MIN_VEL) xDir = 2;
+	else if(self->props.xVel < -DEMONEYE_MIN_VEL) xDir = 0;
+
+	yDir = 1;
+	if(self->props.yVel > DEMONEYE_MIN_VEL) yDir = 2;
+	else if(self->props.yVel < -DEMONEYE_MIN_VEL) yDir = 0;
+
+	self->anim.direction = dirTable[xDir + 3 * yDir];
+
+	return true;
+}
+
 /* ---------- */
 
 const struct EntityBase entityTemplates[] = {
-//		ID			Props		Combat									Sprite				Drops			Off	Behaviour			Init
-	{	ENT_SLIME,	{16, 12},	{14, ALIGN_HOSTILE, 40, 6, 0, 0.15},	&img_ents_slime,		&slimeDrops,	0,	&slimeBehaviour,	&slimeInit	},	// ENT_SLIME
-	{	ENT_ZOMBIE,	{17, 23},	{45, ALIGN_HOSTILE, 40, 14, 6, 0.5}, 	&img_ents_zombie,	&zombieDrops,	0,	&zombieBehaviour,	NULL		},	// ENT_ZOMBIE
-	{	ENT_VULTURE,{18, 25},	{15, ALIGN_HOSTILE,	40, 15, 4, 0.25},	&img_ents_vulture,	&vultureDrops,	8,	&vultureBehaviour,	&vultureInit},	// ENT_VULTURE
+//		ID				Props		Combat									Sprite				Drops			Off	Behaviour			Init
+	{	ENT_SLIME,		{16, 12},	{14, ALIGN_HOSTILE, 40, 6, 0, 0.15},	&img_ents_slime,	&slimeDrops,	0,	&slimeBehaviour,	&slimeInit		},	// ENT_SLIME
+	{	ENT_ZOMBIE,		{17, 23},	{45, ALIGN_HOSTILE, 40, 14, 6, 0.5}, 	&img_ents_zombie,	&zombieDrops,	0,	&zombieBehaviour,	NULL			},	// ENT_ZOMBIE
+	{	ENT_VULTURE,	{18, 25},	{15, ALIGN_HOSTILE,	40, 15, 4, 0.25},	&img_ents_vulture,	&vultureDrops,	8,	&vultureBehaviour,	&vultureInit	},	// ENT_VULTURE
+	{	ENT_DEMONEYE,	{18, 18},	{60, ALIGN_HOSTILE,	40, 18, 2, 0.2},	&img_ents_demoneye,	&demoneyeDrops,	0,	&demoneyeBehaviour,	&demoneyeInit	},	// ENT_DEMONEYE
 };
 
 /* Having a generic physics property struct lets me have one function to handle
@@ -444,26 +541,51 @@ void doEntityDrop(const struct EntityDrops *drops)
 	int amount;
 	const Drop *currDrop;
 	int freeSlot;
+	int numCurrentCoins;
+	int coinData[3][2] = {
+		{GOLD_VALUE, ITEM_COIN_GOLD},
+		{SILVER_VALUE, ITEM_COIN_SILVER},
+		{COPPER_VALUE, ITEM_COIN_COPPER}
+	};
+	float multiplier = (float)((rand() % 41) + 80) / 100.0f;
+	int coinAmountLeft = drops->coinBaseValue * multiplier;
 
 	for(int drop = 0; drop < drops->num; drop++)
+	{
+		currDrop = &drops->dropList[drop];
+		if(rand() % currDrop->ratioHigh <= currDrop->ratioLow - 1)
 		{
-			currDrop = &drops->dropList[drop];
-			if(rand() % currDrop->ratioHigh <= currDrop->ratioLow - 1)
-			{
-				amount = (rand() % (currDrop->amountMax - currDrop->amountMin + 1)) + currDrop->amountMin;
-				hold = (Item){currDrop->item, amount};
+			amount = (rand() % (currDrop->amountMax - currDrop->amountMin + 1)) + currDrop->amountMin;
+			hold = (Item){currDrop->item, rand() % PREFIX_COUNT, amount};
 
-				while(hold.id != ITEM_NULL)
+			while(hold.id != ITEM_NULL)
+			{
+				freeSlot = player.inventory.getFirstFreeSlot(currDrop->item);
+				if(freeSlot > -1)
 				{
-					freeSlot = player.inventory.getFirstFreeSlot(currDrop->item);
-					if(freeSlot > -1)
-					{
-						player.inventory.stackItem(&player.inventory.items[freeSlot], &hold);
-					}
-					else break;
+					player.inventory.stackItem(&player.inventory.items[freeSlot], &hold);
 				}
+				else break;
 			}
 		}
+	}
+
+	for(int coin = 0; coin < 3; coin++)
+	{
+		numCurrentCoins = coinAmountLeft / coinData[coin][0];
+		if(numCurrentCoins == 0) continue;
+		coinAmountLeft -= numCurrentCoins * coinData[coin][0];
+		hold = (Item){coinData[coin][1], PREFIX_NONE, numCurrentCoins};
+		while(hold.id != ITEM_NULL)
+		{
+			freeSlot = player.inventory.getFirstFreeSlot(coinData[coin][1]);
+			if(freeSlot > -1)
+			{
+				player.inventory.stackItem(&player.inventory.items[freeSlot], &hold);
+			}
+			else break;
+		}
+	}
 }
 
 void doEntityCycle(int frames)
@@ -587,7 +709,7 @@ void doSpawningCycle()
 				spawnY++;
 				if(tiles[getTile(spawnX, spawnY).id].physics != PHYS_NON_SOLID)
 				{
-					if(!isDay()) chosen = ENT_ZOMBIE;
+					if(!isDay()) chosen = (rand() % 2) ? ENT_ZOMBIE : ENT_DEMONEYE;
 					else if(getTile(spawnX, spawnY).id == TILE_SAND && rand() % 4 > 0) chosen = ENT_VULTURE;
 					else chosen = ENT_SLIME;
 					

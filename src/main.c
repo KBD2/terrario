@@ -8,6 +8,7 @@
 #include <gint/gray.h>
 #include <gint/gint.h>
 #include <gint/timer.h>
+#include <fxlibc/printf.h>
 
 #include "defs.h"
 #include "syscalls.h"
@@ -150,6 +151,8 @@ int main(void)
 	int mediaFree[2];
 	bool doSave;
 
+	__printf_enable_fixed();
+
 	switch(gint[HWCALC])
 	{
 		case HWCALC_FX9860G_SH4:
@@ -199,7 +202,7 @@ int main(void)
 	dclear(C_WHITE);
 	dimage(12, 4, &img_splash);
 	dupdate();
-	timer = timer_configure(TIMER_ANY, 1500 * 1000, GINT_CALL(NULL));
+	timer = timer_configure(TIMER_ANY, 3000 * 1000, GINT_CALL(NULL));
 	timer_start(timer);
 	timer_wait(timer);
 
@@ -234,7 +237,7 @@ int main(void)
 		.breath = 200
 	};
 
-	for(int slot = 0; slot < INVENTORY_SIZE; slot++) player.inventory.items[slot] = (Item){ITEM_NULL, 0};
+	for(int slot = 0; slot < INVENTORY_SIZE; slot++) player.inventory.items[slot] = (Item){ITEM_NULL, PREFIX_NONE, 0};
 
 	world = (struct World)
 	{
@@ -272,12 +275,15 @@ int main(void)
 	{
 		generateWorld();
 		memset(save.regionData, 1, save.regionsX * save.regionsY);
-		player.inventory.items[0] = (Item){ITEM_COPPER_SWORD, 1};
-		player.inventory.items[1] = (Item){ITEM_COPPER_PICK, 1};
+		player.inventory.items[0] = (Item){ITEM_COPPER_SWORD, rand() % PREFIX_COUNT, 1};
+		player.inventory.items[1] = (Item){ITEM_COPPER_PICK, rand() % PREFIX_COUNT, 1};
 		player.maxHealth = 100;
 		world.timeTicks = timeToTicks(8, 15);
 		setPlayerSpawn();
 		addNPC(NPC_GUIDE);
+
+		player.props.x = player.spawn.x;
+		player.props.y = player.spawn.y;
 	} 
 	else if(menuSelect == 1) // Load game
 	{
@@ -306,9 +312,6 @@ int main(void)
 	dupdate();
 
 	dfont(&font_smalltext);
-
-	player.props.x = player.spawn.x;
-	player.props.y = player.spawn.y;
 
 	timer = timer_configure(TIMER_ANY, (1000 / 60) * 1000, GINT_CALL(&frameCallback, &flag));
 	timer_start(timer);
@@ -354,9 +357,6 @@ int main(void)
 		gint_world_switch(GINT_CALL(&JumpOptimising));
 #endif
 	}
-
-//	Return to the main menu by restarting the addin
-	//gint_world_switch((void (*)())0x00300200);
 
 	return 1;
 }

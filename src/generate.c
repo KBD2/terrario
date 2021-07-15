@@ -7,7 +7,7 @@
 #include "world.h"
 #include "chest.h"
 
-#define NUM_WORLD_GEN_PARTS 22
+#define NUM_WORLD_GEN_PARTS 24
 #define WORLD_SMOOTH_PASSES 5
 
 GYRAM unsigned char yPositions[1000];
@@ -15,20 +15,24 @@ GYRAM unsigned char yPositions[1000];
 GYRAM Coords checkCoords[CHECK_BUFFER_SIZE];
 
 struct ChestLootTable undergroundLoot = {
-	.num = 2,
+	.num = 4,
 	.loot = (const ChestLoot[]){
-//		 Num			   		 Items									Min	Max	Low	High
-		{2,	(const enum Items[]){ITEM_CLOUD_BOTTLE, ITEM_MAGIC_MIRROR},	1,	1,	1,	2},
-		{1,	(const enum Items[]){ITEM_IRON_BAR},						5,	14,	1,	2}
+//		 Num			   		 Items											Min	Max	Low	High
+		{2,	(const enum Items[]){ITEM_CLOUD_BOTTLE, ITEM_MAGIC_MIRROR},			1,	1,	1,	5},
+		{3,	(const enum Items[]){ITEM_IRON_BAR, ITEM_COPPER_BAR, ITEM_TIN_BAR},	5,	14,	1,	2},
+		{1, (const enum Items[]){ITEM_COIN_SILVER},								0,  20,	1,	1},
+		{1, (const enum Items[]){ITEM_LESSER_HEALING_POTION},					3,	5,	1,	2},
 	}
 };
 
 struct ChestLootTable surfaceLoot = {
-	.num = 2,
+	.num = 4,
 	.loot = (const ChestLoot[]){
-//		 Num					 Items				Min	Max	Low	High
-		{1,	(const enum Items[]){ITEM_AGLET},		1,	1,	1,	1},
-		{1,	(const enum Items[]){ITEM_IRON_BAR},	3,	10,	1,	2}
+//		 Num					 Items											Min	Max	Low	High
+		{1,	(const enum Items[]){ITEM_AGLET},									1,	1,	1,	2},
+		{3,	(const enum Items[]){ITEM_IRON_BAR, ITEM_COPPER_BAR, ITEM_TIN_BAR},	3,	10,	1,	2},
+		{1, (const enum Items[]){ITEM_COIN_COPPER},								0,  30,	1,	1},
+		{1, (const enum Items[]){ITEM_LESSER_HEALING_POTION},					3,	5,	1,	2},
 	}
 };
 
@@ -194,6 +198,9 @@ void parabola(int x, int y, int width, int depth, enum Tiles material)
 	}
 }
 
+/*
+Keeping generation step names the same as Terraria just to make it easier to follow its world gen process
+*/
 void generateWorld()
 {
 	int x, y;
@@ -246,15 +253,15 @@ void generateWorld()
 
 //	Sand
 	middleText("Sand", updateProgress());
-	for(int i = 0; i < 60 * game.WORLDGEN_MULTIPLIER; i++)
+	for(int i = 0; i < 40 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
 		y = randRange(game.WORLD_HEIGHT / 3.5, game.WORLD_HEIGHT / 2);
-		clump(x, y, poisson(50), TILE_SAND, true, 0, 0);
+		clump(x, y, poisson(40), TILE_SAND, true, 0, 0);
 	}
 	for(int i = 0; i < max(2, poisson(3)); i++)
 	{
-		width = poisson(75) * game.WORLDGEN_MULTIPLIER;
+		width = poisson(60) * game.WORLDGEN_MULTIPLIER;
 		mul = -60 / width;
 		x = randRange(0, game.WORLD_WIDTH - width);
 		for(int dX = 0; dX < width; dX++)
@@ -279,7 +286,7 @@ void generateWorld()
 	{
 		x = rand() % game.WORLD_WIDTH;
 		y = rand() % (int)(game.WORLD_HEIGHT / 2.8);
-		if(getTile(x, y).id == TILE_DIRT)
+		if(getTile(x, y).id == TILE_DIRT || getTile(x, y).id == TILE_MUD)
 		{
 			clump(x, y, poisson(10), TILE_STONE, true, 0, 0);
 		}
@@ -294,6 +301,18 @@ void generateWorld()
 		if(getTile(x, y).id == TILE_STONE)
 		{
 			clump(x, y, poisson(10), TILE_DIRT, true, 0, 0);
+		}
+	}
+
+//	Clay
+	middleText("Clay", updateProgress());
+	for(int i = 0; i < 1000 * game.WORLDGEN_MULTIPLIER; i++)
+	{
+		x = rand() % game.WORLD_WIDTH;
+		y = rand() % (int)(game.WORLD_HEIGHT / 4.2);
+		if(getTile(x, y).id == TILE_DIRT)
+		{
+			clump(x, y, poisson(10), TILE_CLAY, true, 0, 0);
 		}
 	}
 
@@ -353,15 +372,58 @@ void generateWorld()
 		}
 	}
 
+//	Jungle
+	middleText("Jungle", updateProgress());
+	for(int i = 0; i < max(2, poisson(3)); i++)
+	{
+		width = poisson(60) * game.WORLDGEN_MULTIPLIER;
+		mul = -60 / width;
+		x = randRange(0, game.WORLD_WIDTH - width);
+		for(int dX = 0; dX < width; dX++)
+		{
+			left = min(20, mul * abs(dX - width / 2) + 30);
+			y = 0;
+			while(left > 0)
+			{
+				if(getTile(x + dX, y).id != TILE_NOTHING)
+				{
+					setTile(x + dX, y, TILE_MUD);
+					left--;
+				}
+				y++;
+			}
+		}
+	}
+
 //	Shinies
 	middleText("Shinies", updateProgress());
+	for(int i = 0; i < 500 * game.WORLDGEN_MULTIPLIER; i++)
+	{
+		x = rand() % game.WORLD_WIDTH;
+		y = rand() % game.WORLD_HEIGHT;
+		if(getTile(x, y).id != TILE_SAND)
+		{
+			clump(x, y, poisson(6), TILE_IRON_ORE, true, 0, 0);
+		}
+	}
+
 	for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
 	{
 		x = rand() % game.WORLD_WIDTH;
 		y = rand() % game.WORLD_HEIGHT;
 		if(getTile(x, y).id != TILE_SAND)
 		{
-			clump(x, y, poisson(10), TILE_IRON_ORE, true, 0, 0);
+			clump(x, y, poisson(8), TILE_COPPER_ORE, true, 0, 0);
+		}
+	}
+
+	for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
+	{
+		x = rand() % game.WORLD_WIDTH;
+		y = rand() % game.WORLD_HEIGHT;
+		if(getTile(x, y).id != TILE_SAND)
+		{
+			clump(x, y, poisson(10), TILE_TIN_ORE, true, 0, 0);
 		}
 	}
 
@@ -422,8 +484,32 @@ void generateWorld()
 		}
 	}
 
+//	Wetting mud
+	middleText("Wet Jungle", updateProgress());
+	for(int x = 0; x < game.WORLD_WIDTH; x++)
+	{
+		for(int y = 0; y < game.WORLD_HEIGHT / 2; y++)
+		{
+			if (getTile(x, y).id == TILE_MUD)
+			{
+				if(getTile(x + 1, y).id == TILE_NOTHING && randRange(0, 3) > 0)
+				{
+					setTile(x + 1, y, TILE_WATER);
+				}
+				if(getTile(x - 1, y).id == TILE_NOTHING && randRange(0, 3) > 0)
+				{
+					setTile(x - 1, y, TILE_WATER);
+				}
+				if(getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 3) > 0)
+				{
+					setTile(x, y + 1, TILE_WATER);
+				}
+			}
+		}
+	}
+
 //	Smooth World
-	middleText("Smooth World", updateProgress());
+	middleText("Smoothing", updateProgress());
 	for(int i = 0; i < WORLD_SMOOTH_PASSES; i++)
 	{
 //		Forward and reverse pass
@@ -465,7 +551,7 @@ void generateWorld()
 	middleText("Life Crystals", updateProgress());
 	for(int i = 0; i < 40 * game.WORLDGEN_MULTIPLIER; i++)
 	{
-		check = (Item){ITEM_CRYST, 1};
+		check = (Item){ITEM_CRYST, PREFIX_NONE, 1};
 		for(int try = 0; try < 50; try++)
 		{
 			x = randRange(25, game.WORLD_WIDTH - 25);
@@ -512,7 +598,7 @@ void generateWorld()
 				if(randRange(0, num) == 0 || room == num - 1)
 				{
 					tries = 0;
-					check = (Item){ITEM_CHEST, 1};
+					check = (Item){ITEM_CHEST, PREFIX_NONE, 1};
 					do
 					{
 						tempX = randRange(x, x + width - 2);
@@ -529,7 +615,7 @@ void generateWorld()
 			}
 			tempX = randFloat() < 0.5 ? x : x + width - 1;
 			for(int dY = 2; dY < 5; dY++) setTile(tempX, y + dY, TILE_NOTHING);
-			check = (Item){ITEM_DOOR, 1};
+			check = (Item){ITEM_DOOR, PREFIX_NONE, 1};
 			placeTile(tempX, y + 2, &check);
 			y += 7;
 			x += randRange(-(width - 3), width - 3);
@@ -548,7 +634,7 @@ void generateWorld()
 			{
 				if(rand() % 35 == 0)
 				{
-					check = (Item){ITEM_CHEST, 1};
+					check = (Item){ITEM_CHEST, PREFIX_NONE, 1};
 					while(getTile(x, y + 2).id == TILE_NOTHING) y++;
 					placeTile(x, y, &check);
 					if(check.amount == 0)
@@ -583,24 +669,6 @@ void generateWorld()
 		}
 	}
 
-//	Cacti
-	middleText("Moss", updateProgress());
-	for(int x = 0; x < game.WORLD_WIDTH; x++)
-	{
-		for(int y = 0; y < game.WORLD_HEIGHT; y++)
-		{
-			if(getTile(x, y).id == TILE_NOTHING) continue;
-			else if(getTile(x, y).id == TILE_SAND)
-			{
-				y--;
-				height = randRange(3, 7);
-				if(checkArea(x - 2, y - height, 5, height + 1, false)) generateCactus(x, y, height);
-				break;
-			}
-			else break;
-		}
-	}
-
 //	Trees
 	middleText("Planting Trees", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
@@ -618,19 +686,49 @@ void generateWorld()
 						generateTree(x, y - 1, copseHeight);
 						break;
 					}
+					else if(tile.id == TILE_MUD)
+					{
+						generateTree(x, y - 1, copseHeight + 4);
+						break;
+					}
 					else if(tile.id != TILE_NOTHING) break;
 				}
 			}
 		}
 	}
 
-//	Weeds
+//	Weeds and cacti
 	middleText("Weeds", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
 		for(int y = 1; y < game.WORLD_HEIGHT; y++)
 		{
-			if(getTile(x, y).id == TILE_GRASS && getTile(x, y - 1).id == TILE_NOTHING && rand() % 4 > 0) setTile(x, y - 1, TILE_PLANT);
+			if((getTile(x, y).id == TILE_GRASS || getTile(x, y).id == TILE_MUD) && getTile(x, y - 1).id == TILE_NOTHING && rand() % 4 > 0)
+			{
+				if(rand() % 6)
+				{
+					setTile(x, y - 1, TILE_MUSHROOM);
+				}
+				else
+				{
+					setTile(x, y - 1, TILE_PLANT);
+				}
+			}
+		}
+	}
+	for(int x = 0; x < game.WORLD_WIDTH; x++)
+	{
+		for(int y = 0; y < game.WORLD_HEIGHT; y++)
+		{
+			if(getTile(x, y).id == TILE_NOTHING) continue;
+			else if(getTile(x, y).id == TILE_SAND)
+			{
+				y--;
+				height = randRange(3, 7);
+				if(checkArea(x - 2, y - height, 5, height + 1, false)) generateCactus(x, y, height);
+				break;
+			}
+			else break;
 		}
 	}
 
@@ -638,9 +736,9 @@ void generateWorld()
 	middleText("Vines", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
-		for(int y = 0; y < game.WORLD_WIDTH / 4.5; y++)
+		for(int y = 0; y < game.WORLD_HEIGHT / 4.5; y++)
 		{
-			if(getTile(x, y).id == TILE_GRASS && getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 3) > 0)
+			if((getTile(x, y).id == TILE_GRASS || getTile(x, y).id == TILE_MUD) && getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 3) > 0)
 			{
 				for(int dY = 1; dY < randRange(3, 11) && getTile(x, y + dY).id == TILE_NOTHING; dY++) setTile(x, y + dY, TILE_VINE);
 			}
@@ -676,7 +774,7 @@ void addLoot(struct Chest *chest, enum LootTables table)
 		{
 			amount = (rand() % (currLoot->amountMax - currLoot->amountMin + 1)) + currLoot->amountMin;
 			item = currLoot->items[rand() % currLoot->num];
-			chest->items[slot] = (Item){item, amount};
+			chest->items[slot] = (Item){item, rand() % PREFIX_COUNT, amount};
 			slot++;
 		}
 	}

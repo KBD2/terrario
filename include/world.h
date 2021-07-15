@@ -16,7 +16,7 @@ World API functions.
 #include "save.h"
 #include "npc.h"
 
-#define MAX_FRIENDS 4
+#define MAX_FRIENDS 8
 
 enum SupportTypes {
 	SUPPORT_NONE,
@@ -79,6 +79,15 @@ enum Tiles {
 	TILE_WATER,
 	TILE_CRYST_L,
 	TILE_CRYST_R,
+
+	TILE_MUD,
+	TILE_CLAY,
+	TILE_COPPER_ORE,
+	TILE_TIN_ORE,
+	TILE_MUSHROOM,
+	TILE_BOTTLE,
+	TILE_LESSER_HEALING_POTION,
+	TILE_LESSER_MANA_POTION,
 
 	TILES_COUNT
 };
