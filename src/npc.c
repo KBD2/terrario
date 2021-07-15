@@ -4,6 +4,7 @@
 #include <gint/gray.h>
 #include <gint/defs/util.h>
 #include <gint/keyboard.h>
+#include <gint/gint.h>
 
 #include "npc.h"
 #include "world.h"
@@ -335,6 +336,11 @@ bool npcTalk(int numDialogue, char **dialogue, enum MenuTypes type)
 
 			case KEY_F2:
 				return false;
+
+			case KEY_OPTN:
+				dupdate();
+				gint_world_switch(GINT_CALL(&takeVRAMCapture));
+				dupdate();
 
 			default:
 				break;
