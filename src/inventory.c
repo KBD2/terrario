@@ -43,7 +43,6 @@ const struct ItemData items[] = {
 	{	99,		0,		TILE_NULL,			"Empty Bucket",			TOOL_TYPE_NONE		},	// ITEM_EMPTY_BUCKET
 	{	1,		0,		TILE_WATER,			"Water Bucket",			TOOL_TYPE_NONE		},	// ITEM_WATER_BUCKET
 	{	99,		0,		TILE_CRYST_L,		"Life Crystal",			TOOL_TYPE_OTHER		},	// ITEM_CRYST
-
 	{	1,		0,		TILE_NULL,			"Tin Helmet",			TOOL_TYPE_HELMET	},	// ITEM_TIN_HELMET
 	{	1,		0,		TILE_NULL,			"Tin Chainmail",		TOOL_TYPE_TORSO		},	// ITEM_TIN_CHAINMAIL
 	{	1,		0,		TILE_NULL,			"Tin Greaves",			TOOL_TYPE_PANTS		},	// ITEM_TIN_GREAVES
@@ -133,6 +132,23 @@ enum InventoryTabs {
 	TAB_CHEST
 };
 
+void coinStackHandler(enum Items lowerValue, enum Items higherValue)
+{
+	Item item;
+	int freeSlot;
+
+	for(int slot = 0; slot < INVENTORY_SIZE; slot++)
+	{
+		if(player.inventory.items[slot].id == lowerValue && player.inventory.items[slot].amount == 100)
+		{
+			player.inventory.items[slot] = (Item){ITEM_NULL, PREFIX_NONE, 0};
+			item = (Item){higherValue, PREFIX_NONE, 1};
+			freeSlot = player.inventory.getFirstFreeSlot(higherValue);
+			if(freeSlot != -1) player.inventory.stackItem(&player.inventory.items[freeSlot], &item);
+		}
+	}
+}
+
 int getFirstFreeSlot(enum Items item)
 {
 	Item check;
@@ -173,6 +189,8 @@ void removeItem(Item *item)
 
 void stackItem(Item *dest, Item *source)
 {
+	bool handleCoinStacks = (source->id == ITEM_COIN_COPPER || source->id == ITEM_COIN_SILVER || source->id == ITEM_COIN_GOLD);
+
 	if(dest->id == ITEM_NULL)
 	{
 		*dest = *source;
@@ -191,6 +209,13 @@ void stackItem(Item *dest, Item *source)
 	{
 		source->amount -= (items[dest->id].maxStack - dest->amount);
 		dest->amount = items[dest->id].maxStack;
+	}
+
+	if(handleCoinStacks)
+	{
+		coinStackHandler(ITEM_COIN_COPPER, ITEM_COIN_SILVER);
+		coinStackHandler(ITEM_COIN_SILVER, ITEM_COIN_GOLD);
+		coinStackHandler(ITEM_COIN_GOLD, ITEM_COIN_PLATINUM);
 	}
 }
 

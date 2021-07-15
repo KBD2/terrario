@@ -35,11 +35,11 @@ bool checkEntitySubmerged(struct EntityPhysicsProps *props, int offsetY)
 // SLIMES
 
 const struct EntityDrops slimeDrops = {
-	.num = 2,
+	.coinBaseValue = 25 * COPPER_VALUE,
+	.num = 1,
 	.dropList = (const Drop[]){
 //		 Item				Min Max Low Hi
-		{ITEM_GEL,			1,	2,	1,	1},
-		{ITEM_COIN_COPPER,	3,	3,	1,	1},
+		{ITEM_GEL,			1,	2,	1,	1}
 	}
 };
 
@@ -94,12 +94,12 @@ bool slimeBehaviour(struct EntityBase *self, int frames)
 // ZOMBIES
 
 const struct EntityDrops zombieDrops = {
-	.num = 3,
+	.coinBaseValue = 60 * COPPER_VALUE,
+	.num = 2,
 	.dropList = (const Drop[]){
 //		 Item				Min Max Low Hi
 		{ITEM_SHACKLE,		1,	1,	1,	50	},
-		{ITEM_ZOMBIE_ARM,	1,	1,	1,	100	}, // Was originally 1/250, increased it
-		{ITEM_COIN_COPPER, 	60,	60,	1,	1	},
+		{ITEM_ZOMBIE_ARM,	1,	1,	1,	100	} // Was originally 1/250, increased it
 	}
 };
 
@@ -152,10 +152,10 @@ bool zombieBehaviour(struct EntityBase *self, int frames)
 // VULTURES
 
 const struct EntityDrops vultureDrops = {
-	.num = 1,
+	.coinBaseValue = 60 * COPPER_VALUE,
+	.num = 0,
 	.dropList = (const Drop[]){
 //		 Item				Min Max Low Hi
-		{ITEM_COIN_COPPER, 	60,	60,	1,	1	},
 	}
 };
 
@@ -225,14 +225,14 @@ bool vultureBehaviour(struct EntityBase *self, int frames)
 	return true;
 }
 
-// DEMONIC EYES
+// DEMON EYES
 
 const struct EntityDrops demoneyeDrops = {
-	.num = 2,
+	.coinBaseValue = 75 * COPPER_VALUE,
+	.num = 1,
 	.dropList = (const Drop[]){
 //		 Item				Min Max Low Hi
-		{ITEM_LENS,			1,	1,	1,	3	},
-		{ITEM_COIN_COPPER, 	75,	75,	1,	1	},
+		{ITEM_LENS,			1,	1,	1,	3	}
 	}
 };
 
@@ -243,10 +243,11 @@ void demoneyeInit(struct EntityBase *self)
 	self->props.xVel = self->props.yVel = 0;
 	self->props.dropping = true;
 	self->props.movingSelf = true;
-	self->mem[0] = self->mem[1] = 0;
+	self->mem[0] = 0;
+	self->mem[1] = 0;
 }
 
-#define DEMONEYE_MIN_DST 16
+#define DEMONEYE_MIN_DST 256
 #define DEMONEYE_MIN_VEL 0.1
 #define DEMONEYE_S_TICKS 30
 
@@ -254,29 +255,32 @@ bool demoneyeBehaviour(struct EntityBase *self, int frames)
 {
 	int *mode = &self->mem[0];
 	int *tick = &self->mem[1];
+	int xOff, yOff, dist;
+	int xDir, yDir;
+	const int dirTable[] = {
+		5, 6, 7,
+		4, 0, 0,
+		3, 2, 1
+	};
 
 	handlePhysics(&self->props, frames, true, WATER_FRICTION);
+
+	if(checkCollision(&self->props, &player.props)) self->props.xVel *= -1;
 
 	if(!*mode)
 	{
 		// Go to player
 
-		float xOff = player.props.x - self->props.x;
-		float yOff = player.props.y - self->props.y;
+		xOff = self->props.x - player.props.x;
+		yOff = self->props.y - player.props.y;
 
-		float dist = sqrtf(xOff * xOff + yOff * yOff);
+//		Just do half the pythag calculation cause sqrtf takes ages to calculate
+		dist = xOff * xOff + yOff * yOff;
 
-		if(dist != 0)
-		{
-			xOff /= dist;
-			yOff /= dist;
-		}
+		self->props.xVel -= 0.05 * sgn(xOff);
+		self->props.yVel = -0.5 * sgn(yOff);
 
-		self->props.xVel = xOff * 0.75;
-		self->props.yVel = yOff * 0.75;
-
-		// self->props.xVel = min(max(-0.6, self->props.xVel), 0.6);
-		// self->props.yVel = min(max(-0.6, self->props.yVel), 0.6);
+		self->props.xVel = min(max(-0.6, self->props.xVel), 0.6);
 
 		if(dist < DEMONEYE_MIN_DST)
 		{
@@ -298,20 +302,14 @@ bool demoneyeBehaviour(struct EntityBase *self, int frames)
 
 		(*tick)++;
 	}
+	
+	xDir = 1;
+	if(self->props.xVel > DEMONEYE_MIN_VEL) xDir = 2;
+	else if(self->props.xVel < -DEMONEYE_MIN_VEL) xDir = 0;
 
-	int xDir = 1;
-	if(self->props.xVel >= DEMONEYE_MIN_VEL) xDir = 2;
-	else if(self->props.xVel <= -DEMONEYE_MIN_VEL) xDir = 0;
-
-	int yDir = 1;
-	if(self->props.yVel >= DEMONEYE_MIN_VEL) yDir = 2;
-	else if(self->props.yVel <= -DEMONEYE_MIN_VEL) yDir = 0;
-
-	const int dirTable[] = {
-		5, 6, 7,
-		4, 0, 0,
-		3, 2, 1
-	};
+	yDir = 1;
+	if(self->props.yVel > DEMONEYE_MIN_VEL) yDir = 2;
+	else if(self->props.yVel < -DEMONEYE_MIN_VEL) yDir = 0;
 
 	self->anim.direction = dirTable[xDir + 3 * yDir];
 
@@ -543,26 +541,51 @@ void doEntityDrop(const struct EntityDrops *drops)
 	int amount;
 	const Drop *currDrop;
 	int freeSlot;
+	int numCurrentCoins;
+	int coinData[3][2] = {
+		{GOLD_VALUE, ITEM_COIN_GOLD},
+		{SILVER_VALUE, ITEM_COIN_SILVER},
+		{COPPER_VALUE, ITEM_COIN_COPPER}
+	};
+	float multiplier = (float)((rand() % 41) + 80) / 100.0f;
+	int coinAmountLeft = drops->coinBaseValue * multiplier;
 
 	for(int drop = 0; drop < drops->num; drop++)
+	{
+		currDrop = &drops->dropList[drop];
+		if(rand() % currDrop->ratioHigh <= currDrop->ratioLow - 1)
 		{
-			currDrop = &drops->dropList[drop];
-			if(rand() % currDrop->ratioHigh <= currDrop->ratioLow - 1)
-			{
-				amount = (rand() % (currDrop->amountMax - currDrop->amountMin + 1)) + currDrop->amountMin;
-				hold = (Item){currDrop->item, rand() % PREFIX_COUNT, amount};
+			amount = (rand() % (currDrop->amountMax - currDrop->amountMin + 1)) + currDrop->amountMin;
+			hold = (Item){currDrop->item, rand() % PREFIX_COUNT, amount};
 
-				while(hold.id != ITEM_NULL)
+			while(hold.id != ITEM_NULL)
+			{
+				freeSlot = player.inventory.getFirstFreeSlot(currDrop->item);
+				if(freeSlot > -1)
 				{
-					freeSlot = player.inventory.getFirstFreeSlot(currDrop->item);
-					if(freeSlot > -1)
-					{
-						player.inventory.stackItem(&player.inventory.items[freeSlot], &hold);
-					}
-					else break;
+					player.inventory.stackItem(&player.inventory.items[freeSlot], &hold);
 				}
+				else break;
 			}
 		}
+	}
+
+	for(int coin = 0; coin < 3; coin++)
+	{
+		numCurrentCoins = coinAmountLeft / coinData[coin][0];
+		if(numCurrentCoins == 0) continue;
+		coinAmountLeft -= numCurrentCoins * coinData[coin][0];
+		hold = (Item){coinData[coin][1], PREFIX_NONE, numCurrentCoins};
+		while(hold.id != ITEM_NULL)
+		{
+			freeSlot = player.inventory.getFirstFreeSlot(coinData[coin][1]);
+			if(freeSlot > -1)
+			{
+				player.inventory.stackItem(&player.inventory.items[freeSlot], &hold);
+			}
+			else break;
+		}
+	}
 }
 
 void doEntityCycle(int frames)

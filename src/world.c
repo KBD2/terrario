@@ -81,7 +81,6 @@ const TileData tiles[] = {
 	{	&img_tiles_water,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1},																			ITEM_NULL,					"Water",					true,	999,	false	},	// TILE_WATER
 	{	&img_tiles_cryst,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_CRYST,					"Life Crystal",				false,	1.0,	false	},	// TILE_CRYST_L
 	{	&img_tiles_cryst,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_CRYST,					"Life Crystal",				false,	1.0,	false	},	// TILE_CRYST_R
-
 	{   &img_tiles_mud,						PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_STONE, TILE_DIRT, TILE_CLAY, -1},											ITEM_MUD,					"Mud",						true,	0.5,	false	},	// TILE_MUD
 	{   &img_tiles_clay,					PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_STONE, TILE_DIRT, TILE_MUD, -1},											ITEM_CLAY,					"Clay",						true,	0.5,	false	},	// TILE_CLAY
 	{	&img_tiles_copper_ore,				PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},													ITEM_COPPER_ORE,			"Copper Ore",				false,	0.8,	false	},	// TILE_COPPER_ORE
