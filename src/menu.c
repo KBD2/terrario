@@ -450,6 +450,7 @@ void aboutMenu()
 		"[SHIFT]: Inventory",
 		"[ALPHA]: Crafting",
 		"[MENU]: Exit",
+		"[TAN]: Place Marker",
 		" ",
 		"Inventory:",
 		"Arrows: Cursor",
