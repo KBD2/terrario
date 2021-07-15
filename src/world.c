@@ -43,7 +43,13 @@ img_tiles_mushroom,
 img_tiles_bottle,
 img_tiles_lesser_healing_potion,
 img_tiles_lesser_mana_potion,
-img_tiles_glass;
+img_tiles_glass
+img_tiles_amethyst,
+img_tiles_diamond,
+img_tiles_emerald,
+img_tiles_ruby,
+img_tiles_sapphire,
+img_tiles_topaz;
 
 const TileData tiles[] = {
 //      Ptr to sprite       				Phys?			Render?	Type?			Support?		Friends (-1 to end)								   								Item						Name						Cmprs?	HP		Floodable?
@@ -91,6 +97,12 @@ const TileData tiles[] = {
 	{	&img_tiles_lesser_healing_potion,	PHYS_NON_SOLID,	true,	TYPE_TILE,		SUPPORT_NEED,	{-1},																			ITEM_LESSER_HEALING_POTION,	"Lesser Healing Potion"	,	false,	0.1,	true	},	// TILE_LESSER_HEALING_POTION
 	{	&img_tiles_lesser_mana_potion,		PHYS_NON_SOLID,	true,	TYPE_TILE,		SUPPORT_NEED,	{-1},																			ITEM_LESSER_MANA_POTION,	"Lesser Mana Potion",		false,	0.1,	true	},	// TILE_LESSER_MANA_POTION
 	{   &img_tiles_glass,					PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1},																			ITEM_GLASS,					"Glass",					true,	1.0,	false	},	// TILE_GLASS
+	{	&img_tiles_amethyst,				PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_AMETHYST,				"Amethyst",					false,	0.2,	true	},	// TILE_AMETHYST
+	{	&img_tiles_diamond,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_DIAMOND,				"Diamond",					false,	0.2,	true	},	// TILE_DIAMOND
+	{	&img_tiles_emerald,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_EMERALD,				"Emerald",					false,	0.2,	true	},	// TILE_EMERALD
+	{	&img_tiles_ruby,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_RUBY,					"Ruby",						false,	0.2,	true	},	// TILE_RUBY
+	{	&img_tiles_sapphire,				PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_SAPPHIRE,				"Sapphire",					false,	0.2,	true	},	// TILE_SAPPHIRE
+	{	&img_tiles_topaz,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_TOPAZ,					"Topaz",					false,	0.2,	true	},	// TILE_TOPAZ
 };
 
 tilePun group;

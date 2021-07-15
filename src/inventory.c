@@ -71,6 +71,12 @@ const struct ItemData items[] = {
 	{	999,	0,		TILE_NULL,			"Bottle",				TOOL_TYPE_NONE		},	// ITEM_BOTTLE
 	{	30,		0,		TILE_NULL,			"Lesser Healing Potion",TOOL_TYPE_NONE		},	// ITEM_LESSER_HEALING_POTION
 	{	30,		0,		TILE_NULL,			"Lesser Mana Potion",	TOOL_TYPE_NONE		},	// ITEM_LESSER_MANA_POTION
+	{	999,	0,		TILE_AMETHYST,		"Amethyst",				TOOL_TYPE_NONE		},	// ITEM_AMETHYST
+	{	999,	0,		TILE_DIAMOND,		"Diamond",				TOOL_TYPE_NONE		},	// ITEM_DIAMOND
+	{	999,	0,		TILE_EMERALD,		"Emerald",				TOOL_TYPE_NONE		},	// ITEM_EMERALD
+	{	999,	0,		TILE_RUBY,			"Ruby",					TOOL_TYPE_NONE		},	// ITEM_RUBY
+	{	999,	0,		TILE_SAPPHIRE,		"Sapphire",				TOOL_TYPE_NONE		},	// ITEM_SAPPHIRE
+	{	999,	0,		TILE_TOPAZ,			"Topaz",				TOOL_TYPE_NONE		},	// ITEM_TOPAZ
 };
 
 extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick, img_swing_tin_pick, img_swing_cactus_pick;
