@@ -426,6 +426,25 @@ void generateWorld()
 			clump(x, y, poisson(10), TILE_TIN_ORE, true, 0, 0);
 		}
 	}
+	for(int x = 0; x < game.WORLD_WIDTH; x++)
+	{
+		for(int y = game.WORLD_HEIGHT / 3.2; y < game.WORLD_HEIGHT; y++)
+		{
+			if(rand() % 100 == 0)
+			{
+				// Warning: This relies on gem IDs being next to each other, bad idea
+				int gemID = TILE_AMETHYST + (rand() % 6);
+
+				if(getTile(x, y).id == TILE_NOTHING || getTile(x, y).id == TILE_WATER)
+				{
+					if(getTile(x, y + 1).id == TILE_STONE || getTile(x - 1, y).id == TILE_STONE || getTile(x + 1, y).id == TILE_STONE)
+					{
+						setTile(x, y, gemID);
+					}
+				}
+			}
+		}
+	}
 
 //	Lakes
 	middleText("Lakes", updateProgress());
