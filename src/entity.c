@@ -712,7 +712,7 @@ void doSpawningCycle()
 					if(!isDay())
 					{
 						chosen = (rand() % 2) ? ENT_ZOMBIE : ENT_DEMONEYE;
-						if(spawnY > WORLD_HEIGHT / 3.2) chosen = ENT_ZOMBIE;
+						if(spawnY > game.WORLD_HEIGHT / 3.2) chosen = ENT_ZOMBIE;
 					}
 					else if(getTile(spawnX, spawnY).id == TILE_SAND && rand() % 4 > 0) chosen = ENT_VULTURE;
 					else chosen = ENT_SLIME;
