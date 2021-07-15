@@ -29,6 +29,7 @@ typedef struct {
 } Drop;
 
 struct EntityDrops {
+	int coinBaseValue;
 	int num;
 
 	const Drop *dropList;

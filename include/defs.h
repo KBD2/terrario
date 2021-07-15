@@ -77,5 +77,10 @@ before doing so!
 
 #define MARKER_CHECK_DISTANCE 30
 
+#define COPPER_VALUE 1
+#define SILVER_VALUE 100
+#define GOLD_VALUE 10000
+#define PLAT_VALUE 1000000
+
 // Callback used to govern loops that have a framerate
 int frameCallback(volatile int *flag);

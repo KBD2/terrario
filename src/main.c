@@ -8,6 +8,7 @@
 #include <gint/gray.h>
 #include <gint/gint.h>
 #include <gint/timer.h>
+#include <fxlibc/printf.h>
 
 #include "defs.h"
 #include "syscalls.h"
@@ -149,6 +150,8 @@ int main(void)
 	volatile int flag = 0;
 	int mediaFree[2];
 	bool doSave;
+
+	__printf_enable_fixed();
 
 	switch(gint[HWCALC])
 	{
@@ -354,9 +357,6 @@ int main(void)
 		gint_world_switch(GINT_CALL(&JumpOptimising));
 #endif
 	}
-
-//	Return to the main menu by restarting the addin
-	//gint_world_switch((void (*)())0x00300200);
 
 	return 1;
 }

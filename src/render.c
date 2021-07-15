@@ -252,7 +252,7 @@ void render(bool renderHUD)
 
 			entX = ent->props.x - (camX - (SCREEN_WIDTH >> 1));
 			entY = ent->props.y - (camY - (SCREEN_HEIGHT >> 1));
-			entSubrectX = ent->anim.direction ? ent->props.width + 2 * ent->spriteOffset : 0;
+			entSubrectX = ent->anim.direction * ent->props.width + ent->anim.direction * ent->spriteOffset + ent->spriteOffset;
 			entSubrectY = ent->anim.animationFrame * (ent->props.height + 1) + 1;
 			dsubimage(entX - ent->spriteOffset, entY, ent->sprite, entSubrectX, entSubrectY, ent->props.width + 2 * ent->spriteOffset, ent->props.height, DIMAGE_NONE);
 		}
