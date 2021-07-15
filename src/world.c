@@ -42,7 +42,8 @@ img_tiles_tin_ore,
 img_tiles_mushroom,
 img_tiles_bottle,
 img_tiles_lesser_healing_potion,
-img_tiles_lesser_mana_potion;
+img_tiles_lesser_mana_potion,
+img_tiles_glass;
 
 const TileData tiles[] = {
 //      Ptr to sprite       				Phys?			Render?	Type?			Support?		Friends (-1 to end)								   								Item						Name						Cmprs?	HP		Floodable?
@@ -89,6 +90,7 @@ const TileData tiles[] = {
 	{	&img_tiles_bottle,					PHYS_NON_SOLID,	true,	TYPE_TILE,		SUPPORT_NEED,	{-1},																			ITEM_BOTTLE,				"Bottle",					false,	0.1,	true	},	// TILE_BOTTLE
 	{	&img_tiles_lesser_healing_potion,	PHYS_NON_SOLID,	true,	TYPE_TILE,		SUPPORT_NEED,	{-1},																			ITEM_LESSER_HEALING_POTION,	"Lesser Healing Potion"	,	false,	0.1,	true	},	// TILE_LESSER_HEALING_POTION
 	{	&img_tiles_lesser_mana_potion,		PHYS_NON_SOLID,	true,	TYPE_TILE,		SUPPORT_NEED,	{-1},																			ITEM_LESSER_MANA_POTION,	"Lesser Mana Potion",		false,	0.1,	true	},	// TILE_LESSER_MANA_POTION
+	{   &img_tiles_glass,					PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1},																			ITEM_GLASS,					"Glass",					true,	1.0,	false	},	// TILE_GLASS
 };
 
 tilePun group;
