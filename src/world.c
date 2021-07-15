@@ -43,7 +43,7 @@ img_tiles_mushroom,
 img_tiles_bottle,
 img_tiles_lesser_healing_potion,
 img_tiles_lesser_mana_potion,
-img_tiles_glass
+img_tiles_glass,
 img_tiles_amethyst,
 img_tiles_diamond,
 img_tiles_emerald,
