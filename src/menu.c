@@ -34,17 +34,48 @@ struct {
 int mainMenu()
 {
 	extern bopti_image_t img_mainmenu, img_ui_mainmenuselect, img_ents_slime, img_sunmoon;
-	int selectPositions[] = {13, 30, 47};
 	bool validSave = getSave();
 	int selected = validSave ? 1 : 0;
 	key_event_t key;
 	volatile int flag = 0;
 	int timer;
 	unsigned int frames = 300;
-	int bunnyBlink = 0;
 
 	int orbX, orbY;
 	float dayPolarAngle;
+
+	const char *titleMessages[] = {
+		"Debug edition!",
+		"Shut up and Dig Gaiden!",
+		"Sand is Overpowered",
+		"A Bunnies Tale",
+		"There is No Cow Layer",
+		"Purple Grass!",
+		"Dig Peon, Dig!",
+		"Epic Dirt",
+		"Also try Casio Kart!",
+		"Terrario: Terrario:",
+		"Press Shift+AC",
+		"Dividing by zero",
+		"FA-124? What's That?",
+		"Now with 4 COLORS",
+		"A good day to dig hard",
+		"Now in a calc near you!",
+		"You sand bro?",
+		"Legend of Maxx",
+		"NOT THE BEES!!!",
+		"Officially Duck-free!",
+		"9 + 1 = 11",
+		"Hey Guys!",
+		"Totally not Terraria!"
+	};
+	int messageIndex = (rand() % 22) + 1;
+
+	extern font_t font_smalltext;
+
+#ifdef DEBUGMODE
+	message_index = 0;
+#endif
 
 	timer = timer_configure(TIMER_ANY, (1000 / 30) * 1000, GINT_CALL(&frameCallback, &flag));
 	timer_start(timer);
@@ -64,20 +95,11 @@ int mainMenu()
 		dsubimage(orbX, orbY, &img_sunmoon, 16, 0, 16, 16, DIMAGE_NONE);
 
 		dimage(0, 0, &img_mainmenu);
-		dimage(65, selectPositions[selected], &img_ui_mainmenuselect);
+		dimage(65, 17 * selected + 20, &img_ui_mainmenuselect);
 		dsubimage(43, 52, &img_ents_slime, 0, (frames & 16) ? 14 : 1, 16, 12, DIMAGE_NONE);
-		if(bunnyBlink == 0)
-		{
-			if(rand() % 30 == 0) bunnyBlink = 3;
-		}
-		else
-		{
-			dline(91, 57, 91, 58, C_WHITE);
-			bunnyBlink--;
-		}
-		#ifdef DEBUGMODE
-		dtext_opt(0, 0, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, "DEBUG BUILD");
-		#endif
+		dfont(&font_smalltext);
+		dprint_opt(0, 0, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, "Terrario: %s", titleMessages[messageIndex]);
+		dfont(NULL);
 		dupdate();
 
 		key = pollevent();
@@ -304,7 +326,7 @@ void itemMenu()
 {
 	key_event_t key;
 	extern bopti_image_t img_ui_slots;
-	Item item = {ITEM_STONE, 1};
+	Item item = {ITEM_STONE, PREFIX_NONE, 1};
 	int slot;
 
 	while(1)
@@ -612,7 +634,7 @@ void lowSpaceMenu(int mediaFree)
 	key_event_t key;
 
 	dclear(C_WHITE);
-	dprint(0, 0, C_BLACK, "Only %.1jkB", (int)((float)mediaFree/100));
+	dprint(0, 0, C_BLACK, "Only %.1DkB", (int)((float)mediaFree/100));
 	dtext(0, 8, C_BLACK, "of SMEM free!");
 	dtext(0, 16, C_BLACK, "Please ensure");
 	dtext(0, 24, C_BLACK, "350kB free.");

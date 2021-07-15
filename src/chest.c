@@ -12,7 +12,7 @@ bool addChest(int x, int y)
 	world.chests.number++;
 
 	world.chests.chests[last] = (struct Chest){.topX = x, .topY = y};
-	for(int slot = 0; slot < INVENTORY_SIZE; slot++) world.chests.chests[last].items[slot] = (Item){ITEM_NULL, 0};
+	for(int slot = 0; slot < INVENTORY_SIZE; slot++) world.chests.chests[last].items[slot] = (Item){ITEM_NULL, PREFIX_NONE, 0};
 
 	return true;
 }
