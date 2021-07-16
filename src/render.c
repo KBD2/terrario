@@ -320,9 +320,28 @@ void render(bool renderHUD)
 //	Render the hotbar if the player has recently interacted with their inventory
 	if(renderHUD && player.inventory.ticksSinceInteracted < 120)
 	{
-		if(player.cursor.x < 82 && player.cursor.y < 19) hotbarY = 47;
-		else hotbarY = 0;
+		item = player.inventory.items[player.inventory.hotbarSlot];
+
+		int prefix = PREFIX_NONE;
+
+		if (items[item.id].type != TOOL_TYPE_NONE)
+		{
+			prefix = item.prefix;
+		}
+
+		if(player.cursor.x < 82 && player.cursor.y < 19)
+		{
+			hotbarY = 47;
+			if(item.id != ITEM_NULL) dprint_opt(0, 47, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_BOTTOM, "%s%s", prefixes[prefix].name, items[item.id].name);
+		}
+		else
+		{
+			hotbarY = 0;
+			if(item.id != ITEM_NULL) dprint_opt(0, 17, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, "%s%s", prefixes[prefix].name, items[item.id].name);
+		}
+
 		dsubimage(0, hotbarY, &img_ui_slots, 0, 0, 80, 17, DIMAGE_NOCLIP);
+		
 		dimage(16 * player.inventory.hotbarSlot, hotbarY, &img_ui_slot_highlight);
 		for(int slot = 0; slot < 5; slot++)
 		{
