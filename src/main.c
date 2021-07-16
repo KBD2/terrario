@@ -22,6 +22,7 @@
 #include "generate.h"
 #include "optimise.h"
 #include "npc.h"
+#include "chat.h"
 
 // Fixes implicit declaration warning (feature is not meant for use in normal addins)
 void spu_zero();
@@ -128,6 +129,8 @@ bool gameLoop(volatile int *flag)
 			renderThisFrame = false;
 		}
 		else renderThisFrame = true;
+
+		updateChat();
 
 		frames++;
 		#ifndef DEBUGMODE

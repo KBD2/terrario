@@ -82,5 +82,9 @@ before doing so!
 #define GOLD_VALUE 10000
 #define PLAT_VALUE 1000000
 
+#define CHAT_MESSAGE_TICKS 240
+#define MAX_MESSAGES_DISPLAYED 5
+#define MESSAGE_MAX_LENGTH 20
+
 // Callback used to govern loops that have a framerate
 int frameCallback(volatile int *flag);
