@@ -7,34 +7,12 @@
 #include "world.h"
 #include "chest.h"
 
-#define NUM_WORLD_GEN_PARTS 25
+#define NUM_WORLD_GEN_PARTS 26
 #define WORLD_SMOOTH_PASSES 5
 
 GYRAM unsigned char yPositions[1000];
 
 GYRAM Coords checkCoords[CHECK_BUFFER_SIZE];
-
-struct ChestLootTable undergroundLoot = {
-	.num = 4,
-	.loot = (const ChestLoot[]){
-//		 Num			   		 Items											Min	Max	Low	High
-		{2,	(const enum Items[]){ITEM_CLOUD_BOTTLE, ITEM_MAGIC_MIRROR},			1,	1,	1,	5},
-		{3,	(const enum Items[]){ITEM_IRON_BAR, ITEM_COPPER_BAR, ITEM_TIN_BAR},	5,	14,	1,	2},
-		{1, (const enum Items[]){ITEM_COIN_SILVER},								0,  20,	1,	1},
-		{1, (const enum Items[]){ITEM_LESSER_HEALING_POTION},					3,	5,	1,	2},
-	}
-};
-
-struct ChestLootTable surfaceLoot = {
-	.num = 4,
-	.loot = (const ChestLoot[]){
-//		 Num					 Items											Min	Max	Low	High
-		{1,	(const enum Items[]){ITEM_AGLET},									1,	1,	1,	2},
-		{3,	(const enum Items[]){ITEM_IRON_BAR, ITEM_COPPER_BAR, ITEM_TIN_BAR},	3,	10,	1,	2},
-		{1, (const enum Items[]){ITEM_COIN_COPPER},								0,  30,	1,	1},
-		{1, (const enum Items[]){ITEM_LESSER_HEALING_POTION},					3,	5,	1,	2},
-	}
-};
 
 int updateProgress()
 {
@@ -670,6 +648,31 @@ void generateWorld()
 		}
 	}
 
+//	Pots
+	middleText("Pots", updateProgress());
+	for(int x = 0; x < game.WORLD_WIDTH - 1; x++)
+	{
+		for(int y = 1; y < game.WORLD_HEIGHT; y++)
+		{
+			if (checkArea(x, y, 2, 2, true) && rand() % 4 == 0)
+			{
+				int canPlace = 0;
+
+				for(int i = 0; i < y; i++)
+				{
+					if(tiles[getTile(x, i).id].physics != PHYS_NON_SOLID)
+					{
+						canPlace = 1;
+						break;
+					}
+				}
+
+				if(canPlace) placeTile(x, y, &(Item){ITEM_POT, PREFIX_NONE, 1});
+				y += 3;
+			}
+		}
+	}
+
 //	Spreading grass
 	middleText("Spreading Grass", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
@@ -764,40 +767,6 @@ void generateWorld()
 			{
 				for(int dY = 1; dY < randRange(3, 11) && getTile(x, y + dY).id == TILE_NOTHING; dY++) setTile(x, y + dY, TILE_VINE);
 			}
-		}
-	}
-}
-
-void addLoot(struct Chest *chest, enum LootTables table)
-{
-	struct ChestLootTable *lootTable;
-	int amount;
-	const ChestLoot *currLoot;
-	int slot = 0;
-	enum Items item;
-
-	switch(table) {
-		case TABLE_UNDERGROUND:
-			lootTable = &undergroundLoot;
-			break;
-		
-		case TABLE_SURFACE:
-			lootTable = &surfaceLoot;
-			break;
-		
-		default:
-			return;
-	}
-
-	for(int idx = 0; idx < lootTable->num; idx++)
-	{
-		currLoot = &lootTable->loot[idx];
-		if(rand() % currLoot->ratioHigh >= currLoot->ratioLow - 1)
-		{
-			amount = (rand() % (currLoot->amountMax - currLoot->amountMin + 1)) + currLoot->amountMin;
-			item = currLoot->items[rand() % currLoot->num];
-			chest->items[slot] = (Item){item, rand() % PREFIX_COUNT, amount};
-			slot++;
 		}
 	}
 }
