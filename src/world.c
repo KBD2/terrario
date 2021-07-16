@@ -67,7 +67,7 @@ const TileData tiles[] = {
 	{	&img_tiles_plant,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_NULL,					"Plant"	,					false,	0.1,	true	},	// TILE_PLANT
 	{	&img_tiles_wbench,					PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_WBENCH,				"Workbench",				false,	0.1,	true	},	// TILE_WBENCH_L
 	{	&img_tiles_wbench,					PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_WBENCH,				"Workbench R",				false,	0.1,	true	},	// TILE_WBENCH_R
-	{	&img_tiles_platform,				PHYS_PLATFORM,	true,	TYPE_SHEET,		SUPPORT_NONE,	{-1},																			ITEM_PLATFORM,				"Platform",					false,	0.1,	true	},	// TILE_PLATFORM
+	{	&img_tiles_platform,				PHYS_PLATFORM,	true,	TYPE_SHEET,		SUPPORT_NONE,	{-1},																			ITEM_PLATFORM,				"Platform",					false,	0.1,	false	},	// TILE_PLATFORM
 	{	&img_tiles_chair,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_CHAIR,					"Chair L",					false,	0.1,	true	},	// TILE_CHAIR_L
 	{	&img_tiles_chair,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_CHAIR,					"Chair R",					false,	0.1,	true	},	// TILE_CHAIR_R
 	{	&img_tiles_torch,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_TORCH,					"Torch",					false,	0.1,	true	},	// TILE_TORCH
@@ -76,8 +76,8 @@ const TileData tiles[] = {
 	{	&img_tiles_iron_ore,				PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},													ITEM_IRON_ORE,				"Iron Ore",					false,	1.0,	false	},	// TILE_IRON_ORE
 	{	&img_tiles_anvil,					PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_ANVIL,					"Anvil",					false,	0.1,	true	},	// TILE_ANVIL_L
 	{	&img_tiles_anvil,					PHYS_PLATFORM,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_ANVIL,					"Anvil R",					false,	0.1,	true	},	// TILE_ANVIL_R
-	{	&img_tiles_chest,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},																			ITEM_CHEST,					"Chest L",					false,	0.1,	true	},	// TILE_CHEST_L
-	{	&img_tiles_chest,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},																			ITEM_CHEST,					"Chest R",					false,	0.1,	true	},	// TILE_CHEST_R
+	{	&img_tiles_chest,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},																			ITEM_CHEST,					"Chest L",					false,	0.1,	false	},	// TILE_CHEST_L
+	{	&img_tiles_chest,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},																			ITEM_CHEST,					"Chest R",					false,	0.1,	false	},	// TILE_CHEST_R
 	{	&img_tiles_door_c,					PHYS_SOLID,		true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_DOOR,					"Door C",					false,	0.1,	false	},	// TILE_DOOR_C
 	{	&img_tiles_door_o_l_l,				PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NONE,	{-1},																			ITEM_DOOR,					"Door O L L",				false,	0.1,	true	},	// TILE_DOOR_O_L_L
 	{	&img_tiles_door_o_l_r,				PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_DOOR,					"Door O L R",				false,	0.1,	true	},	// TILE_DOOR_O_L_R
@@ -85,8 +85,8 @@ const TileData tiles[] = {
 	{	&img_tiles_door_o_r_r,				PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NONE,	{-1},																			ITEM_DOOR,					"Door O R R",				false,	0.1,	true	},	// TILE_DOOR_O_R_R
 	{	&img_tiles_vine,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_TOP,	{-1},																			ITEM_NULL,					"Vine",						false,	0.1,	true	},	// TILE_VINE
 	{	&img_tiles_sand,					PHYS_SAND,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, -1},																ITEM_SAND,					"Sand",						true,	0.5,	false	},	// TILE_SAND
-	{	&img_tiles_cactus,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_CACTUS_BRANCH, -1},														ITEM_CACTUS,				"Cactus",					false,	0.5,	true	},	// TILE_CACTUS
-	{	&img_tiles_cactus,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_CACTUS, -1},																ITEM_CACTUS,				"Cactus",					false,	0.5,	true	},	// TILE_CACTUS_BRANCH
+	{	&img_tiles_cactus,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_CACTUS_BRANCH, -1},														ITEM_CACTUS,				"Cactus",					false,	0.5,	false	},	// TILE_CACTUS
+	{	&img_tiles_cactus,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_CACTUS, -1},																ITEM_CACTUS,				"Cactus",					false,	0.5,	false	},	// TILE_CACTUS_BRANCH
 	{	&img_tiles_water,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1},																			ITEM_NULL,					"Water",					true,	999,	false	},	// TILE_WATER
 	{	&img_tiles_cryst,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_CRYST,					"Life Crystal",				false,	1.0,	false	},	// TILE_CRYST_L
 	{	&img_tiles_cryst,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_CRYST,					"Life Crystal",				false,	1.0,	false	},	// TILE_CRYST_R
@@ -105,8 +105,8 @@ const TileData tiles[] = {
 	{	&img_tiles_ruby,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_RUBY,					"Ruby",						false,	0.2,	true	},	// TILE_RUBY
 	{	&img_tiles_sapphire,				PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_SAPPHIRE,				"Sapphire",					false,	0.2,	true	},	// TILE_SAPPHIRE
 	{	&img_tiles_topaz,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_TOPAZ,					"Topaz",					false,	0.2,	true	},	// TILE_TOPAZ
-	{	&img_tiles_pot,						PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_POT,					"Pot",						false,	0.2,	true	},	// TILE_POT_L
-	{	&img_tiles_pot,						PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_POT,					"Pot",						false,	0.2,	true	},	// TILE_POT_R
+	{	&img_tiles_pot,						PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_POT,					"Pot",						false,	0.2,	false	},	// TILE_POT_L
+	{	&img_tiles_pot,						PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_POT,					"Pot",						false,	0.2,	false	},	// TILE_POT_R
 };
 
 struct ItemLootTable loots[] = {

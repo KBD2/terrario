@@ -7,7 +7,7 @@
 #include "world.h"
 #include "chest.h"
 
-#define NUM_WORLD_GEN_PARTS 26
+#define NUM_WORLD_GEN_PARTS 27
 #define WORLD_SMOOTH_PASSES 5
 
 GYRAM unsigned char yPositions[1000];
@@ -318,6 +318,15 @@ void generateWorld()
 		clump(x, y, poisson(200), TILE_NOTHING, true, 0, 0);
 	}
 
+//	Surface Caves
+	middleText("Surface Caves", updateProgress());
+	for(int i = 0; i < 150 * game.WORLDGEN_MULTIPLIER; i++)
+	{
+		x = rand() % game.WORLD_WIDTH;
+		y = randRange(game.WORLD_HEIGHT / 4, game.WORLD_HEIGHT / 2.8);
+		clump(x, y, poisson(125), TILE_NOTHING, true, 0, 0);
+	}
+
 //	Grass
 	middleText("Grass", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
@@ -470,15 +479,15 @@ void generateWorld()
 		{
 			if (getTile(x, y).id == TILE_MUD)
 			{
-				if(getTile(x + 1, y).id == TILE_NOTHING && randRange(0, 3) > 0)
+				if(getTile(x + 1, y).id == TILE_NOTHING && randRange(0, 4) == 0)
 				{
 					setTile(x + 1, y, TILE_WATER);
 				}
-				if(getTile(x - 1, y).id == TILE_NOTHING && randRange(0, 3) > 0)
+				if(getTile(x - 1, y).id == TILE_NOTHING && randRange(0, 4) == 0)
 				{
 					setTile(x - 1, y, TILE_WATER);
 				}
-				if(getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 3) > 0)
+				if(getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 4) == 0)
 				{
 					setTile(x, y + 1, TILE_WATER);
 				}
@@ -654,7 +663,7 @@ void generateWorld()
 	{
 		for(int y = 1; y < game.WORLD_HEIGHT; y++)
 		{
-			if (checkArea(x, y, 2, 2, true) && rand() % 4 == 0)
+			if (checkArea(x, y, 2, 2, true) && rand() % 15 == 0)
 			{
 				int canPlace = 0;
 
