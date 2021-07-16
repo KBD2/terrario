@@ -16,11 +16,11 @@ GYRAM Coords checkCoords[CHECK_BUFFER_SIZE];
 
 int updateProgress()
 {
-	static int progress = 0;
+	static float progress = 0;
 
-	progress += 100 / NUM_WORLD_GEN_PARTS;
+	progress += 100.0 / NUM_WORLD_GEN_PARTS;
 
-	return progress;
+	return (int)(progress);
 }
 
 float interpolate(float a, float b, float x){
