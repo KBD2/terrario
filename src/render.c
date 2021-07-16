@@ -457,11 +457,14 @@ void setVar(int x, int y)
 			if(tile.id == TILE_CHEST_R) var += 2;
 		case TILE_CRYST_R:
 			if(tile.id == TILE_CRYST_R) var += 2;
+		case TILE_POT_R:
+			if(tile.id == TILE_POT_R) var += 2;
 		case TILE_CHAIR_R:
 		case TILE_FURNACE_MID:
 		case TILE_CHEST_L:
 		case TILE_DOOR_C:
 		case TILE_CRYST_L:
+		case TILE_POT_L:
 		case TILE_DOOR_O_L_L: case TILE_DOOR_O_L_R:
 		case TILE_DOOR_O_R_L: case TILE_DOOR_O_R_R:
 		while(y - dY - 1 >= 0 && getTile(x, y - dY - 1).id == tile.id) dY++;

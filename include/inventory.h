@@ -84,6 +84,7 @@ enum Items {
 	ITEM_RUBY,
 	ITEM_SAPPHIRE,
 	ITEM_TOPAZ,
+	ITEM_POT,
 
 	ITEMS_COUNT
 };

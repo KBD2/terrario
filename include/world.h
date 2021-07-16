@@ -95,6 +95,8 @@ enum Tiles {
 	TILE_RUBY,
 	TILE_SAPPHIRE,
 	TILE_TOPAZ,
+	TILE_POT_L,
+	TILE_POT_R,
 
 	TILES_COUNT
 };
@@ -125,6 +127,28 @@ typedef union {
 } tilePun;
 
 extern tilePun group;
+
+typedef struct {
+	int num;
+	const enum Items *items;
+	int amountMin;
+	int amountMax;
+	int ratioLow;
+	int ratioHigh;
+} ItemLoot;
+
+struct ItemLootTable {
+	int num;
+	const ItemLoot *loot;
+};
+
+enum LootTables {
+	TABLE_UNDERGROUND,
+	TABLE_SURFACE,
+	TABLE_POT
+};
+
+extern struct ItemLootTable loots[];
 
 static inline Tile getTile(int x, int y)
 {
@@ -204,6 +228,13 @@ Breaks a cactus, starting from the given stem coordinates.
 x, y: Coordinates of a cactus tile.
 */
 void breakCactus(int x, int y);
+
+/* breakPot
+Breaks a pot, dropping the corresponding items.
+
+x, y: Coordinates of a pot tile.
+*/
+void breakPot(int x, int y);
 
 /* findState
 Returns the appropriate state for the given tile, given its surroundings.
@@ -302,3 +333,18 @@ bool checkArea(int x, int y, int width, int height, bool support);
 Returns true if it's currently daytime.
 */
 bool isDay();
+
+/* addLoot
+Adds loot to a chest from the given loot table.
+
+chest: Pointer to the chest.
+table: The table to use.
+*/
+void addLoot(struct Chest *chest, enum LootTables table);
+
+/* dropLoot
+Gives loot to the player from the given loot table.
+
+table: The table to use.
+*/
+void dropLoot(enum LootTables table);

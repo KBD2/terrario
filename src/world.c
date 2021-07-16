@@ -7,6 +7,7 @@
 #include "world.h"
 #include "defs.h"
 #include "save.h"
+#include "chest.h"
 
 #define PI 3.14159265358979323846
 
@@ -49,7 +50,8 @@ img_tiles_diamond,
 img_tiles_emerald,
 img_tiles_ruby,
 img_tiles_sapphire,
-img_tiles_topaz;
+img_tiles_topaz,
+img_tiles_pot;
 
 const TileData tiles[] = {
 //      Ptr to sprite       				Phys?			Render?	Type?			Support?		Friends (-1 to end)								   								Item						Name						Cmprs?	HP		Floodable?
@@ -103,6 +105,39 @@ const TileData tiles[] = {
 	{	&img_tiles_ruby,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_RUBY,					"Ruby",						false,	0.2,	true	},	// TILE_RUBY
 	{	&img_tiles_sapphire,				PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_SAPPHIRE,				"Sapphire",					false,	0.2,	true	},	// TILE_SAPPHIRE
 	{	&img_tiles_topaz,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_TOPAZ,					"Topaz",					false,	0.2,	true	},	// TILE_TOPAZ
+	{	&img_tiles_pot,						PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_POT,					"Pot",						false,	0.2,	true	},	// TILE_POT_L
+	{	&img_tiles_pot,						PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_POT,					"Pot",						false,	0.2,	true	},	// TILE_POT_R
+};
+
+struct ItemLootTable loots[] = {
+	{ // TABLE_UNDERGROUND
+		.num = 4,
+		.loot = (const ItemLoot[]){
+//			 Num			   		 Items											Min	Max	Low	High
+			{2,	(const enum Items[]){ITEM_CLOUD_BOTTLE, ITEM_MAGIC_MIRROR},			1,	1,	1,	5},
+			{3,	(const enum Items[]){ITEM_IRON_BAR, ITEM_COPPER_BAR, ITEM_TIN_BAR},	5,	14,	1,	2},
+			{1, (const enum Items[]){ITEM_COIN_SILVER},								0,  20,	1,	1},
+			{1, (const enum Items[]){ITEM_LESSER_HEALING_POTION},					3,	5,	1,	2},
+		}
+	},
+	{ // TABLE_SURFACE
+		.num = 4,
+		.loot = (const ItemLoot[]){
+//			 Num					 Items											Min	Max	Low	High
+			{1,	(const enum Items[]){ITEM_AGLET},									1,	1,	1,	2},
+			{3,	(const enum Items[]){ITEM_IRON_BAR, ITEM_COPPER_BAR, ITEM_TIN_BAR},	3,	10,	1,	2},
+			{1, (const enum Items[]){ITEM_COIN_COPPER},								0,  30,	1,	1},
+			{1, (const enum Items[]){ITEM_LESSER_HEALING_POTION},					3,	5,	1,	2},
+		}
+	},
+	{ // TABLE_POT
+		.num = 2,
+		.loot = (const ItemLoot[]){
+//			 Num					 Items											Min	Max	Low	High
+			{1, (const enum Items[]){ITEM_COIN_COPPER},								30, 60,	1,	1},
+			{1, (const enum Items[]){ITEM_LESSER_HEALING_POTION},					1,	2,	1,	3},
+		}
+	},
 };
 
 tilePun group;
@@ -126,6 +161,113 @@ void getTime(int *hour, int *minute)
 unsigned char makeVar()
 {
 	return rand() % 3;
+}
+
+// Specifically for 3-wide objects
+bool place3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle, bool support)
+{
+	int xTemp;
+
+	if(!checkArea(x, y, 3, height, support)) return false;
+//	Place the middle
+	for(int dY = 0; dY < height; dY++)
+	{
+		setTile(x + 1, y + dY, middle);
+		setVar(x + 1, y + dY);
+	}
+//	Place the edges
+	for(int side = 0; side != 2; side++)
+	{
+		for(int dY = 0; dY < height; dY++)
+		{
+			xTemp = side ? x + 2 : x;
+			setTile(xTemp, y + dY, edge);
+			regionChange(xTemp, y + dY);
+			setVar(xTemp, y + dY);
+		}
+	}
+	return true;
+}
+
+// Does not have to be given the top-left tile
+// Doesn't do bounds checking, make sure you are giving a valid object
+void break3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle)
+{
+//	Find the top left tile
+	if(getTile(x, y).id == edge)
+	{
+		if(getTile(x - 1, y).id == middle) x -= 2;
+	}
+	else x--;
+	while(getTile(x, y - 1).id == edge) y--;
+
+	for(int dY = 0; dY < height; dY++)
+	{
+		for(int dX = 0; dX < 3; dX++)
+		{
+			setTile(x + dX, y + dY, TILE_NOTHING);
+			regionChange(x + dX, y + dY);
+		}
+	}
+}
+
+bool place2Wide(int x, int y, int height, enum Tiles left, enum Tiles right, bool support)
+{
+	if(!checkArea(x, y, 2, height, support)) return false;
+
+	for(int dY = 0; dY < height; dY++)
+	{
+		setTile(x, y + dY, left);
+		regionChange(x, y + dY);
+		setVar(x, y + dY);
+	}
+
+	for(int dY = 0; dY < height; dY++)
+	{
+		setTile(x + 1, y + dY, right);
+		regionChange(x + 1, y + dY);
+		setVar(x + 1, y + dY);
+	}
+
+	return true;
+}
+
+// Doesn't do bounds checking, make sure you give a valid object
+void break2Wide(int x, int y, int height, enum Tiles left)
+{
+	if(getTile(x, y).id != left) x--;
+	while(getTile(x, y - 1).id == left) y--;
+	for(int dY = 0; dY < height; dY++)
+	{
+		setTile(x, y + dY, TILE_NOTHING);
+		regionChange(x, y + dY);
+		setTile(x + 1, y + dY, TILE_NOTHING);
+		regionChange(x + 1, y + dY);
+	}
+}
+
+bool place1Wide(int x, int y, int height, enum Tiles tile, bool support)
+{
+	if(!checkArea(x, y, 1, height, support)) return false;
+
+	for(int dY = 0; dY < height; dY++)
+	{
+		setTile(x, y + dY, tile);
+		setVar(x, y + dY);
+	}
+	regionChange(x, y);
+
+	return true;
+}
+
+void break1Wide(int x, int y, int height, enum Tiles tile)
+{
+	while(getTile(x, y - 1).id == tile) y--;
+	for(int dY = 0; dY < height; dY++)
+	{
+		setTile(x, y + dY, TILE_NOTHING);
+		regionChange(x, y + dY);
+	}
 }
 
 void generateTree(int x, int y, int baseHeight)
@@ -248,6 +390,12 @@ void breakCactus(int x, int y)
 	}
 }
 
+void breakPot(int x, int y)
+{
+	break2Wide(x, y, 2, TILE_POT_L);
+	dropLoot(TABLE_POT);
+}
+
 bool isSameOrFriend(int x, int y, unsigned char idx)
 {
 	Tile tile;
@@ -317,113 +465,6 @@ bool checkArea(int x, int y, int width, int height, bool support)
 	return true;
 }
 
-// Specifically for 3-wide objects
-bool place3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle, bool support)
-{
-	int xTemp;
-
-	if(!checkArea(x, y, 3, height, support)) return false;
-//	Place the middle
-	for(int dY = 0; dY < height; dY++)
-	{
-		setTile(x + 1, y + dY, middle);
-		setVar(x + 1, y + dY);
-	}
-//	Place the edges
-	for(int side = 0; side != 2; side++)
-	{
-		for(int dY = 0; dY < height; dY++)
-		{
-			xTemp = side ? x + 2 : x;
-			setTile(xTemp, y + dY, edge);
-			regionChange(xTemp, y + dY);
-			setVar(xTemp, y + dY);
-		}
-	}
-	return true;
-}
-
-// Does not have to be given the top-left tile
-// Doesn't do bounds checking, make sure you are giving a valid object
-void break3Wide(int x, int y, int height, enum Tiles edge, enum Tiles middle)
-{
-//	Find the top left tile
-	if(getTile(x, y).id == edge)
-	{
-		if(getTile(x - 1, y).id == middle) x -= 2;
-	}
-	else x--;
-	while(getTile(x, y - 1).id == edge) y--;
-
-	for(int dY = 0; dY < height; dY++)
-	{
-		for(int dX = 0; dX < 3; dX++)
-		{
-			setTile(x + dX, y + dY, TILE_NOTHING);
-			regionChange(x + dX, y + dY);
-		}
-	}
-}
-
-bool place2Wide(int x, int y, int height, enum Tiles left, enum Tiles right, bool support)
-{
-	if(!checkArea(x, y, 2, height, support)) return false;
-
-	for(int dY = 0; dY < height; dY++)
-	{
-		setTile(x, y + dY, left);
-		regionChange(x, y + dY);
-		setVar(x, y + dY);
-	}
-
-	for(int dY = 0; dY < height; dY++)
-	{
-		setTile(x + 1, y + dY, right);
-		regionChange(x + 1, y + dY);
-		setVar(x + 1, y + dY);
-	}
-
-	return true;
-}
-
-// Doesn't do bounds checking, make sure you give a valid object
-void break2Wide(int x, int y, int height, enum Tiles left)
-{
-	if(getTile(x, y).id != left) x--;
-	while(getTile(x, y - 1).id == left) y--;
-	for(int dY = 0; dY < height; dY++)
-	{
-		setTile(x, y + dY, TILE_NOTHING);
-		regionChange(x, y + dY);
-		setTile(x + 1, y + dY, TILE_NOTHING);
-		regionChange(x + 1, y + dY);
-	}
-}
-
-bool place1Wide(int x, int y, int height, enum Tiles tile, bool support)
-{
-	if(!checkArea(x, y, 1, height, support)) return false;
-
-	for(int dY = 0; dY < height; dY++)
-	{
-		setTile(x, y + dY, tile);
-		setVar(x, y + dY);
-	}
-	regionChange(x, y);
-
-	return true;
-}
-
-void break1Wide(int x, int y, int height, enum Tiles tile)
-{
-	while(getTile(x, y - 1).id == tile) y--;
-	for(int dY = 0; dY < height; dY++)
-	{
-		setTile(x, y + dY, TILE_NOTHING);
-		regionChange(x, y + dY);
-	}
-}
-
 void placeTile(int x, int y, Item *item)
 {
 	if(x < 0 || x >= game.WORLD_WIDTH || y < 0 || y >= game.WORLD_HEIGHT) return;
@@ -448,6 +489,10 @@ void placeTile(int x, int y, Item *item)
 				
 				case ITEM_CRYST:
 					if(!place2Wide(x, y, 2, TILE_CRYST_L, TILE_CRYST_R,	true)) success = false;
+					break;
+
+				case ITEM_POT:
+					if(!place2Wide(x, y, 2, TILE_POT_L, TILE_POT_R,	true)) success = false;
 					break;
 				
 				case ITEM_CHEST:
@@ -517,6 +562,12 @@ void removeTile(int x, int y)
 	else if(tile.id == TILE_CACTUS || tile.id == TILE_CACTUS_BRANCH)
 	{
 		breakCactus(x, y);
+		return;
+	}
+	else if (tile.id == TILE_POT_L || tile.id == TILE_POT_R)
+	{
+		// This is in a special case because of the random loot it gives (:
+		breakPot(x, y);
 		return;
 	}
 	if(getTile(x, y - 1).id == tile.id || tiles[getTile(x, y - 1).id].support != SUPPORT_KEEP)
@@ -669,4 +720,52 @@ bool checkFreeEntitySlot()
 bool isDay()
 {
 	return world.timeTicks >= timeToTicks(4, 30) && world.timeTicks <= timeToTicks(19, 30);
+}
+
+void addLoot(struct Chest *chest, enum LootTables table)
+{
+	struct ItemLootTable *lootTable = &loots[table];
+	int amount;
+	const ItemLoot *currLoot;
+	int slot = 0;
+	enum Items item;
+
+	for(int idx = 0; idx < lootTable->num; idx++)
+	{
+		currLoot = &lootTable->loot[idx];
+		if(rand() % currLoot->ratioHigh >= currLoot->ratioLow - 1)
+		{
+			amount = (rand() % (currLoot->amountMax - currLoot->amountMin + 1)) + currLoot->amountMin;
+			item = currLoot->items[rand() % currLoot->num];
+			chest->items[slot] = (Item){item, rand() % PREFIX_COUNT, amount};
+			slot++;
+		}
+	}
+}
+
+void dropLoot(enum LootTables table)
+{
+	struct ItemLootTable *lootTable = &loots[table];
+	int amount;
+	const ItemLoot *currLoot;
+	int freeSlot;
+	enum Items item;
+
+	for(int idx = 0; idx < lootTable->num; idx++)
+	{
+		currLoot = &lootTable->loot[idx];
+		if(rand() % currLoot->ratioHigh >= currLoot->ratioLow - 1)
+		{
+			amount = (rand() % (currLoot->amountMax - currLoot->amountMin + 1)) + currLoot->amountMin;
+			item = currLoot->items[rand() % currLoot->num];
+			
+			// Surely there must be a better way of doing this, but at least I'm 100% sure it works...
+			while(amount)
+			{
+				freeSlot = player.inventory.getFirstFreeSlot(item);
+				if(freeSlot > -1) player.inventory.stackItem(&player.inventory.items[freeSlot], &((Item){item, rand() % PREFIX_COUNT, 1}));
+				amount--;
+			}
+		}
+	}
 }

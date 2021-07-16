@@ -77,6 +77,7 @@ const struct ItemData items[] = {
 	{	999,	0,		TILE_RUBY,			"Ruby",					TOOL_TYPE_NONE		},	// ITEM_RUBY
 	{	999,	0,		TILE_SAPPHIRE,		"Sapphire",				TOOL_TYPE_NONE		},	// ITEM_SAPPHIRE
 	{	999,	0,		TILE_TOPAZ,			"Topaz",				TOOL_TYPE_NONE		},	// ITEM_TOPAZ
+	{	1,		0,		TILE_POT_L,			"Pot",					TOOL_TYPE_NONE		},	// ITEM_POT(should never be obtained)
 };
 
 extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick, img_swing_tin_pick, img_swing_cactus_pick;
