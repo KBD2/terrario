@@ -15,6 +15,7 @@
 #include "entity.h"
 #include "inventory.h"
 #include "menu.h"
+#include "chat.h"
 
 Coords varBufferPos = {0, 0};
 
@@ -43,6 +44,19 @@ void renderItem(int x, int y, Item *item)
 		dsubimage(x + 3, y, &img_items, subrectX, subrectY, 8, 8, DIMAGE_NONE);
 	}
 	else dsubimage(x + 3, y + 3, &img_items, subrectX, subrectY, 8, 8, DIMAGE_NONE);
+}
+
+void renderChat()
+{
+	ChatMessage *currMessage = lastMessage;
+	int messageIdx = 0;
+
+	while(currMessage != NULL && messageIdx < MAX_MESSAGES_DISPLAYED)
+	{
+		dtext_opt(0, 57 - 7 * messageIdx, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, currMessage->message);
+		currMessage = currMessage->previous;
+		messageIdx++;
+	}
 }
 
 void render(bool renderHUD)
@@ -374,6 +388,9 @@ void render(bool renderHUD)
 			dimage(32, 26, &img_ui_deathtext);
 		}
 	}
+
+//	Render the chat
+	renderChat();
 }
 
 void takeVRAMCapture()
