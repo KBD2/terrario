@@ -78,6 +78,11 @@ const struct ItemData items[] = {
 	{	999,	0,		TILE_SAPPHIRE,		"Sapphire",				TOOL_TYPE_NONE		},	// ITEM_SAPPHIRE
 	{	999,	0,		TILE_TOPAZ,			"Topaz",				TOOL_TYPE_NONE		},	// ITEM_TOPAZ
 	{	1,		0,		TILE_POT_L,			"Pot",					TOOL_TYPE_NONE		},	// ITEM_POT(should never be obtained)
+	{	999,	0,		TILE_COBWEB,		"Cobweb",				TOOL_TYPE_NONE		},	// ITEM_COBWEB
+	{	999,	0,		TILE_NULL,			"Chain",				TOOL_TYPE_NONE		},	// ITEM_CHAIN
+	{	99,		0,		TILE_NULL,			"Silk",					TOOL_TYPE_NONE		},	// ITEM_SILK
+	{	99,		0,		TILE_SAWMILL_L,		"Sawmill",				TOOL_TYPE_NONE		},	// ITEM_SAWMILL
+	{	99,		0,		TILE_LOOM_L,		"Loom",					TOOL_TYPE_NONE		},	// ITEM_LOOM
 };
 
 extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick, img_swing_tin_pick, img_swing_cactus_pick;
