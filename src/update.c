@@ -256,6 +256,15 @@ enum UpdateReturnCodes keyboardUpdate()
 						closeDoor(x, y);
 						break;
 
+					case TILE_BED_EDGE:
+						if(getTile(x - 1, y).id == TILE_BED_EDGE) x--;
+						else if(getTile(x + 1, y).id == TILE_BED_EDGE) x++;
+					case TILE_BED_MID:
+						if(getTile(x, y - 1).id == TILE_BED_MID) y--;
+						if(!checkArea(x - 1, y - 1, 2, 1, false)) break;
+						player.spawn.x = x, player.spawn.y = y;
+						break;
+
 					default:
 						break;
 				}

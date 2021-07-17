@@ -534,6 +534,36 @@ void generateWorld()
 		}
 	}
 
+//  Cobwebs
+	middleText("Cobwebs", updateProgress());
+	for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
+	{
+		for(int tries = 0; tries < 1000; tries++)
+		{
+			x = rand() % game.WORLD_WIDTH;
+			y = randRange(game.WORLD_HEIGHT / 4, game.WORLD_HEIGHT);
+
+			if(getTile(x, y).id != TILE_NOTHING && getTile(x, y).id != TILE_VINE && getTile(x, y).id != TILE_COBWEB) continue;
+
+			int canPlace = 0;
+
+			for(int j = 0; j < y; j++)
+			{
+				if(tiles[getTile(x, j).id].physics != PHYS_NON_SOLID)
+				{
+					canPlace = 1;
+					break;
+				}
+			}
+
+			if(canPlace)
+			{
+				clump(x, y, poisson(6), TILE_COBWEB, false, 0, 0);
+				break;
+			}
+		}
+	}
+
 //	Gems(had to do it in a separate step for... ummmm... reasons?)
 	middleText("Gems", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)

@@ -494,6 +494,8 @@ void setVar(int x, int y)
 		
 		case TILE_FURNACE_EDGE:
 			if(x == game.WORLD_WIDTH - 1 || getTile(x + 1 , y).id != TILE_FURNACE_MID) var += 2;
+		case TILE_BED_EDGE:
+			if(x == game.WORLD_WIDTH - 1 || getTile(x + 1 , y).id != TILE_BED_MID) var += 2;
 		case TILE_CHAIR_L:
 			if(tile.id == TILE_CHAIR_L) var += 2;
 		case TILE_CHEST_R:
@@ -508,6 +510,7 @@ void setVar(int x, int y)
 			if(tile.id == TILE_LOOM_R) var += 2;
 		case TILE_CHAIR_R:
 		case TILE_FURNACE_MID:
+		case TILE_BED_MID:
 		case TILE_CHEST_L:
 		case TILE_DOOR_C:
 		case TILE_CRYST_L:

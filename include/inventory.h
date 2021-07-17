@@ -90,6 +90,7 @@ enum Items {
 	ITEM_SILK,
 	ITEM_SAWMILL,
 	ITEM_LOOM,
+	ITEM_BED,
 
 	ITEMS_COUNT
 };
