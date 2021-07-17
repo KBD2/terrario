@@ -86,5 +86,7 @@ before doing so!
 #define MAX_MESSAGES_DISPLAYED 5
 #define MESSAGE_MAX_LENGTH 20
 
+#define EXPLOSION_NUM_PARTICLES 50
+
 // Callback used to govern loops that have a framerate
 int frameCallback(volatile int *flag);

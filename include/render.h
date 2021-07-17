@@ -61,7 +61,7 @@ explosion: Pointer to an explosion struct. NOTE: The particles variable *MUST*
 have been allocated to `50 * sizeof Particle` bytes!
 x, y: Pixel coordinates of the explosion's origin.
 */
-void resetExplosion(int x, int y);
+void createExplosion(int x, int y);
 
 /* renderAndUpdateExplosion
 Updates the given explosion by one frame.

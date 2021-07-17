@@ -91,12 +91,9 @@ bool gameLoop(volatile int *flag)
 		if(updateRet == UPDATE_EXIT) return true;
 		else if(updateRet == UPDATE_EXIT_NOSAVE) return false;
 
-		if(frames & 1) updateExplosion();
+		if(frames & 1 && world.explosion.numParticles > 0) updateExplosion();
 		if(frames % 8 == 0) worldUpdate();
 		if(frames % 3600 == 0) doMarkerChecks();
-
-		// Only bother rendering 30 frames (60 updates)
-		if(world.explosion.deltaTicks == 30) world.explosion.numParticles = 0;
 
 		doEntityCycle(frames);
 		doSpawningCycle();
@@ -118,7 +115,7 @@ bool gameLoop(volatile int *flag)
 			else if(respawnCounter > 0) respawnCounter--;
 			else
 			{
-				resetExplosion(player.props.x + (player.props.width >> 1), player.props.y + (player.props.height >> 1));
+				createExplosion(player.props.x + (player.props.width >> 1), player.props.y + (player.props.height >> 1));
 				respawnCounter = 300;
 			}
 		}
@@ -249,8 +246,7 @@ int main(void)
 		.entities = malloc(MAX_ENTITIES * sizeof(Entity)),
 
 		.explosion = {
-			.numParticles = 50,
-			.particles = malloc(50 * sizeof(Particle))
+			.particles = malloc(EXPLOSION_NUM_PARTICLES * sizeof(Particle))
 		},
 
 		.chests = {
@@ -343,6 +339,8 @@ int main(void)
 
 	free(world.entities);
 	free(world.explosion.particles);
+
+	if(lastMessage != NULL) clearMessage(lastMessage);
 
 	if(doSave) gint_world_switch(GINT_CALL(&saveGame));
 	free(world.chests.chests);

@@ -183,7 +183,7 @@ enum UpdateReturnCodes keyboardUpdate()
 						if(!player.props.touchingTileTop && player.bonuses.doubleJump)
 						{
 							player.bonuses.hasDoubleJumped = true;
-							resetExplosion(player.props.x + (player.props.width >> 1), player.props.y + player.props.height);
+							createExplosion(player.props.x + (player.props.width >> 1), player.props.y + player.props.height);
 						}
 					}
 				}
@@ -318,11 +318,6 @@ enum UpdateReturnCodes keyboardUpdate()
 			default:
 				break;
 		}
-/*
-		char buf[20];
-		sprintf(buf, "Pressed %d", key.key);
-		sendMessage(buf);
-*/
 
 		key = pollevent();
 	}
