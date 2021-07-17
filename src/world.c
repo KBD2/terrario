@@ -51,7 +51,10 @@ img_tiles_emerald,
 img_tiles_ruby,
 img_tiles_sapphire,
 img_tiles_topaz,
-img_tiles_pot;
+img_tiles_pot,
+img_tiles_cobweb,
+img_tiles_sawmill,
+img_tiles_loom;
 
 const TileData tiles[] = {
 //      Ptr to sprite       				Phys?			Render?	Type?			Support?		Friends (-1 to end)								   								Item						Name						Cmprs?	HP		Floodable?
@@ -107,6 +110,11 @@ const TileData tiles[] = {
 	{	&img_tiles_topaz,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_TOPAZ,					"Topaz",					false,	0.2,	true	},	// TILE_TOPAZ
 	{	&img_tiles_pot,						PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_POT,					"Pot",						false,	0.2,	false	},	// TILE_POT_L
 	{	&img_tiles_pot,						PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_POT,					"Pot",						false,	0.2,	false	},	// TILE_POT_R
+	{   &img_tiles_cobweb,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1},																			ITEM_COBWEB,				"Cobweb",					true,	0.6,	false	},	// TILE_COBWEB
+	{	&img_tiles_sawmill,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_SAWMILL,				"Sawmill",					false,	0.2,	false	},	// TILE_SAWMILL_L
+	{	&img_tiles_sawmill,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_SAWMILL,				"Sawmill",					false,	0.2,	false	},	// TILE_SAWMILL_R
+	{	&img_tiles_loom,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_LOOM,					"Loom",						false,	0.2,	false	},	// TILE_LOOM_L
+	{	&img_tiles_loom,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_LOOM,					"Loom",						false,	0.2,	false	},	// TILE_LOOM_R
 };
 
 struct ItemLootTable loots[] = {
@@ -494,6 +502,14 @@ void placeTile(int x, int y, Item *item)
 				case ITEM_POT:
 					if(!place2Wide(x, y, 2, TILE_POT_L, TILE_POT_R,	true)) success = false;
 					break;
+
+				case ITEM_SAWMILL:
+					if(!place2Wide(x, y, 2, TILE_SAWMILL_L, TILE_SAWMILL_R,	true)) success = false;
+					break;
+
+				case ITEM_LOOM:
+					if(!place2Wide(x, y, 2, TILE_LOOM_L, TILE_LOOM_R,	true)) success = false;
+					break;
 				
 				case ITEM_CHEST:
 					if(!checkArea(x, y, 2, 2, true) || !world.chests.addChest(x, y))
@@ -581,6 +597,14 @@ void removeTile(int x, int y)
 		{
 			case TILE_WBENCH_L: case TILE_WBENCH_R:
 				break2Wide(x, y, 1, TILE_WBENCH_L);
+				break;
+
+			case TILE_SAWMILL_L: case TILE_SAWMILL_R:
+				break2Wide(x, y, 2, TILE_SAWMILL_L);
+				break;
+
+			case TILE_LOOM_L: case TILE_LOOM_R:
+				break2Wide(x, y, 2, TILE_LOOM_L);
 				break;
 
 			case TILE_ANVIL_L: case TILE_ANVIL_R:
