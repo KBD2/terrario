@@ -54,7 +54,8 @@ img_tiles_topaz,
 img_tiles_pot,
 img_tiles_cobweb,
 img_tiles_sawmill,
-img_tiles_loom;
+img_tiles_loom,
+img_tiles_bed_edge, img_tiles_bed_mid;
 
 const TileData tiles[] = {
 //      Ptr to sprite       				Phys?			Render?	Type?			Support?		Friends (-1 to end)								   								Item						Name						Cmprs?	HP		Floodable?
@@ -97,17 +98,17 @@ const TileData tiles[] = {
 	{   &img_tiles_clay,					PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_STONE, TILE_DIRT, TILE_MUD, -1},											ITEM_CLAY,					"Clay",						true,	0.5,	false	},	// TILE_CLAY
 	{	&img_tiles_copper_ore,				PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},													ITEM_COPPER_ORE,			"Copper Ore",				false,	0.8,	false	},	// TILE_COPPER_ORE
 	{	&img_tiles_tin_ore,					PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},													ITEM_TIN_ORE,				"Tin Ore",					false,	0.8,	false	},	// TILE_TIN_ORE
-	{	&img_tiles_mushroom,				PHYS_NON_SOLID,	true,	TYPE_TILE,		SUPPORT_NEED,	{-1},																			ITEM_MUSHROOM,				"Mushroom",					false,	0.1,	true	},	// TILE_MUSHROOM
-	{	&img_tiles_bottle,					PHYS_NON_SOLID,	true,	TYPE_TILE,		SUPPORT_NEED,	{-1},																			ITEM_BOTTLE,				"Bottle",					false,	0.1,	true	},	// TILE_BOTTLE
-	{	&img_tiles_lesser_healing_potion,	PHYS_NON_SOLID,	true,	TYPE_TILE,		SUPPORT_NEED,	{-1},																			ITEM_LESSER_HEALING_POTION,	"Lesser Healing Potion"	,	false,	0.1,	true	},	// TILE_LESSER_HEALING_POTION
-	{	&img_tiles_lesser_mana_potion,		PHYS_NON_SOLID,	true,	TYPE_TILE,		SUPPORT_NEED,	{-1},																			ITEM_LESSER_MANA_POTION,	"Lesser Mana Potion",		false,	0.1,	true	},	// TILE_LESSER_MANA_POTION
+	{	&img_tiles_mushroom,				PHYS_NON_SOLID,	true,	TYPE_TILE,		SUPPORT_NEED,	{-1},																			ITEM_MUSHROOM,				"Mushroom",					false,	0.1,	false	},	// TILE_MUSHROOM
+	{	&img_tiles_bottle,					PHYS_NON_SOLID,	true,	TYPE_TILE,		SUPPORT_NEED,	{-1},																			ITEM_BOTTLE,				"Bottle",					false,	0.1,	false	},	// TILE_BOTTLE
+	{	&img_tiles_lesser_healing_potion,	PHYS_NON_SOLID,	true,	TYPE_TILE,		SUPPORT_NEED,	{-1},																			ITEM_LESSER_HEALING_POTION,	"Lesser Healing Potion"	,	false,	0.1,	false	},	// TILE_LESSER_HEALING_POTION
+	{	&img_tiles_lesser_mana_potion,		PHYS_NON_SOLID,	true,	TYPE_TILE,		SUPPORT_NEED,	{-1},																			ITEM_LESSER_MANA_POTION,	"Lesser Mana Potion",		false,	0.1,	false	},	// TILE_LESSER_MANA_POTION
 	{   &img_tiles_glass,					PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1},																			ITEM_GLASS,					"Glass",					true,	1.0,	false	},	// TILE_GLASS
-	{	&img_tiles_amethyst,				PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_AMETHYST,				"Amethyst",					false,	0.2,	true	},	// TILE_AMETHYST
-	{	&img_tiles_diamond,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_DIAMOND,				"Diamond",					false,	0.2,	true	},	// TILE_DIAMOND
-	{	&img_tiles_emerald,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_EMERALD,				"Emerald",					false,	0.2,	true	},	// TILE_EMERALD
-	{	&img_tiles_ruby,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_RUBY,					"Ruby",						false,	0.2,	true	},	// TILE_RUBY
-	{	&img_tiles_sapphire,				PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_SAPPHIRE,				"Sapphire",					false,	0.2,	true	},	// TILE_SAPPHIRE
-	{	&img_tiles_topaz,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_TOPAZ,					"Topaz",					false,	0.2,	true	},	// TILE_TOPAZ
+	{	&img_tiles_amethyst,				PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_AMETHYST,				"Amethyst",					false,	0.2,	false	},	// TILE_AMETHYST
+	{	&img_tiles_diamond,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_DIAMOND,				"Diamond",					false,	0.2,	false	},	// TILE_DIAMOND
+	{	&img_tiles_emerald,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_EMERALD,				"Emerald",					false,	0.2,	false	},	// TILE_EMERALD
+	{	&img_tiles_ruby,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_RUBY,					"Ruby",						false,	0.2,	false	},	// TILE_RUBY
+	{	&img_tiles_sapphire,				PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_SAPPHIRE,				"Sapphire",					false,	0.2,	false	},	// TILE_SAPPHIRE
+	{	&img_tiles_topaz,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_NOTHING, -1},																ITEM_TOPAZ,					"Topaz",					false,	0.2,	false	},	// TILE_TOPAZ
 	{	&img_tiles_pot,						PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_POT,					"Pot",						false,	0.2,	false	},	// TILE_POT_L
 	{	&img_tiles_pot,						PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_POT,					"Pot",						false,	0.2,	false	},	// TILE_POT_R
 	{   &img_tiles_cobweb,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1},																			ITEM_COBWEB,				"Cobweb",					true,	0.6,	false	},	// TILE_COBWEB
@@ -115,6 +116,8 @@ const TileData tiles[] = {
 	{	&img_tiles_sawmill,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_SAWMILL,				"Sawmill",					false,	0.2,	false	},	// TILE_SAWMILL_R
 	{	&img_tiles_loom,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_LOOM,					"Loom",						false,	0.2,	false	},	// TILE_LOOM_L
 	{	&img_tiles_loom,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_LOOM,					"Loom",						false,	0.2,	false	},	// TILE_LOOM_R
+	{	&img_tiles_bed_edge,				PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_BED,					"Bed",						false,	0.1,	false	},	// TILE_BED_EDGE
+	{	&img_tiles_bed_mid,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_BED,					"Bed",						false,	0.1,	false	},	// TILE_BED_MID
 };
 
 struct ItemLootTable loots[] = {
@@ -527,6 +530,10 @@ void placeTile(int x, int y, Item *item)
 				case ITEM_FURNACE:
 					if(!place3Wide(x, y, 2, TILE_FURNACE_EDGE, TILE_FURNACE_MID, true)) success = false;
 					break;
+
+				case ITEM_BED:
+					if(!place3Wide(x, y, 2, TILE_BED_EDGE, TILE_BED_MID, true)) success = false;
+					break;
 				
 				case ITEM_DOOR:
 					if(!place1Wide(x, y, 3, TILE_DOOR_C, true)) success = false;
@@ -629,6 +636,10 @@ void removeTile(int x, int y)
 			
 			case TILE_FURNACE_EDGE: case TILE_FURNACE_MID:
 				break3Wide(x, y, 2, TILE_FURNACE_EDGE, TILE_FURNACE_MID);
+				break;
+
+			case TILE_BED_EDGE: case TILE_BED_MID:
+				break3Wide(x, y, 2, TILE_BED_EDGE, TILE_BED_MID);
 				break;
 			
 			case TILE_DOOR_O_L_L: case TILE_DOOR_O_L_R:

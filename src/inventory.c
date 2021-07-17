@@ -83,6 +83,7 @@ const struct ItemData items[] = {
 	{	99,		0,		TILE_NULL,			"Silk",					TOOL_TYPE_NONE		},	// ITEM_SILK
 	{	99,		0,		TILE_SAWMILL_L,		"Sawmill",				TOOL_TYPE_NONE		},	// ITEM_SAWMILL
 	{	99,		0,		TILE_LOOM_L,		"Loom",					TOOL_TYPE_NONE		},	// ITEM_LOOM
+	{	99,		0,		TILE_BED_EDGE,		"Bed",					TOOL_TYPE_NONE		},	// ITEM_BED
 };
 
 extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick, img_swing_tin_pick, img_swing_cactus_pick;
