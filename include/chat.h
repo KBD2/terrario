@@ -24,6 +24,13 @@ message: The message to send.
 */
 void sendMessage(char *message);
 
+/* clearMessage
+Clears the given message and any previous messages.
+
+message: Pointer to the message to clear
+*/
+void clearMessage(ChatMessage *message);
+
 /* updateChat
 Updates chat, should be called every engine tick.
 */

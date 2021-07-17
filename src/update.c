@@ -272,11 +272,6 @@ enum UpdateReturnCodes keyboardUpdate()
 			default:
 				break;
 		}
-/*
-		char buf[20];
-		sprintf(buf, "Pressed %d", key.key);
-		sendMessage(buf);
-*/
 
 		key = pollevent();
 	}

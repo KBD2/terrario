@@ -344,6 +344,8 @@ int main(void)
 	free(world.entities);
 	free(world.explosion.particles);
 
+	if(lastMessage != NULL) clearMessage(lastMessage);
+
 	if(doSave) gint_world_switch(GINT_CALL(&saveGame));
 	free(world.chests.chests);
 //	Nothing is allocated if there are no NPCs
