@@ -634,7 +634,7 @@ void doEntityCycle(int frames)
 				{
 					player.inventory.ticksSinceInteracted = 0;
 					doEntityDrop(ent->drops);
-					resetExplosion(ent->props.x + (ent->props.width >> 1), ent->props.y + (ent->props.height >> 1));
+					createExplosion(ent->props.x + (ent->props.width >> 1), ent->props.y + (ent->props.height >> 1));
 					world.removeEntity(idx);
 				}
 			}

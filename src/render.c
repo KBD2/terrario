@@ -53,7 +53,7 @@ void renderChat()
 
 	while(currMessage != NULL && messageIdx < MAX_MESSAGES_DISPLAYED)
 	{
-		dtext_opt(0, 57 - 7 * messageIdx, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, currMessage->message);
+		dtext_opt(0, 58 - 7 * messageIdx, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, currMessage->message);
 		currMessage = currMessage->previous;
 		messageIdx++;
 	}
@@ -391,9 +391,11 @@ void takeVRAMCapture()
 	BFile_Close(descriptor);
 }
 
-void resetExplosion(int x, int y)
+void createExplosion(int x, int y)
 {
 	world.explosion.deltaTicks = 0;
+
+	world.explosion.numParticles = EXPLOSION_NUM_PARTICLES;
 
 	for(int i = 0; i < world.explosion.numParticles; i++)
 	{
@@ -411,6 +413,12 @@ void updateExplosion()
 {
 	Particle* particle;
 	
+	world.explosion.deltaTicks++;
+	if(world.explosion.deltaTicks == 30)
+	{
+		world.explosion.numParticles = 0;
+		return;
+	}
 	for(int i = 0; i < world.explosion.numParticles; i++)
 	{
 		particle = &world.explosion.particles[i];
@@ -421,7 +429,6 @@ void updateExplosion()
 		particle->yVel += 0.2;
 		particle->xVel *= 0.95;
 	}
-	world.explosion.deltaTicks++;
 }
 
 void middleText(char *text, int progress)
