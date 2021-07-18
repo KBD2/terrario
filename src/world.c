@@ -55,14 +55,15 @@ img_tiles_pot,
 img_tiles_cobweb,
 img_tiles_sawmill,
 img_tiles_loom,
-img_tiles_bed_edge, img_tiles_bed_mid;
+img_tiles_bed_edge, img_tiles_bed_mid,
+img_tiles_junglegrass;
 
 const TileData tiles[] = {
 //      Ptr to sprite       				Phys?			Render?	Type?			Support?		Friends (-1 to end)								   								Item						Name						Cmprs?	HP		Floodable?
 	{	&img_tiles_nothing,					PHYS_NON_SOLID,	false,	TYPE_TILE,		SUPPORT_NONE,	{-1},																			ITEM_NULL,					"Nothing",					true,	999,	true	},	// TILE_NOTHING
 	{   &img_tiles_stone,					PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_IRON_ORE, TILE_CLAY, TILE_MUD, -1},							ITEM_STONE,					"Stone",					true,	1.0,	false	},	// TILE_STONE
 	{   &img_tiles_dirt ,					PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_STONE, TILE_GRASS, TILE_IRON_ORE, TILE_SAND, TILE_CLAY, TILE_MUD, -1},	ITEM_DIRT,					"Dirt",						true,	0.5,	false	},	// TILE_DIRT
-	{	&img_tiles_grass,					PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, -1},																ITEM_NULL,					"Grass",					false,	0.1,	false	},	// TILE_GRASS
+	{	&img_tiles_grass,					PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_MUD, -1},														ITEM_NULL,					"Grass",					false,	0.1,	false	},	// TILE_GRASS
 	{	&img_tiles_wood,					PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1},																			ITEM_WOOD,					"Wood",						false,	1.0,	false	},	// TILE_WOOD
 	{	&img_tiles_trunk,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_KEEP,	{TILE_ROOT_L, TILE_ROOT_R, TILE_LEAVES, -1},									ITEM_WOOD,					"Tree Trunk",				false,	5.0,	false	},	// TILE_TRUNK
 	{	&img_tiles_root_l,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_KEEP,	{-1},																			ITEM_WOOD,					"Tree Root",				false,	5.0,	false	},	// TILE_ROOT_L
@@ -94,7 +95,7 @@ const TileData tiles[] = {
 	{	&img_tiles_water,					PHYS_NON_SOLID,	true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{-1},																			ITEM_NULL,					"Water",					true,	999,	false	},	// TILE_WATER
 	{	&img_tiles_cryst,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_CRYST,					"Life Crystal",				false,	1.0,	false	},	// TILE_CRYST_L
 	{	&img_tiles_cryst,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_CRYST,					"Life Crystal",				false,	1.0,	false	},	// TILE_CRYST_R
-	{   &img_tiles_mud,						PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_STONE, TILE_DIRT, TILE_CLAY, -1},											ITEM_MUD,					"Mud",						true,	0.5,	false	},	// TILE_MUD
+	{   &img_tiles_mud,						PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_STONE, TILE_DIRT, TILE_CLAY, TILE_GRASS_JUNGLE, -1},						ITEM_MUD,					"Mud",						true,	0.5,	false	},	// TILE_MUD
 	{   &img_tiles_clay,					PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_STONE, TILE_DIRT, TILE_MUD, -1},											ITEM_CLAY,					"Clay",						true,	0.5,	false	},	// TILE_CLAY
 	{	&img_tiles_copper_ore,				PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},													ITEM_COPPER_ORE,			"Copper Ore",				false,	0.8,	false	},	// TILE_COPPER_ORE
 	{	&img_tiles_tin_ore,					PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_DIRT, TILE_STONE, -1},													ITEM_TIN_ORE,				"Tin Ore",					false,	0.8,	false	},	// TILE_TIN_ORE
@@ -118,6 +119,7 @@ const TileData tiles[] = {
 	{	&img_tiles_loom,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_LOOM,					"Loom",						false,	0.2,	false	},	// TILE_LOOM_R
 	{	&img_tiles_bed_edge,				PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_BED,					"Bed",						false,	0.1,	false	},	// TILE_BED_EDGE
 	{	&img_tiles_bed_mid,					PHYS_NON_SOLID,	true,	TYPE_TILE_VAR,	SUPPORT_NEED,	{-1},																			ITEM_BED,					"Bed",						false,	0.1,	false	},	// TILE_BED_MID
+    {	&img_tiles_junglegrass,				PHYS_SOLID,		true,	TYPE_SHEET_VAR,	SUPPORT_NONE,	{TILE_MUD, -1},																	ITEM_NULL,					"Jungle Grass",				false,	0.1,	false	},	// TILE_GRASS_JUNGLE
 };
 
 struct ItemLootTable loots[] = {
@@ -657,6 +659,9 @@ void removeTile(int x, int y)
 			case TILE_GRASS:
 				setTile(x, y, TILE_DIRT);
 				break;
+			
+			case TILE_GRASS_JUNGLE:
+				setTile(x, y, TILE_MUD);
 
 			default:
 				setTile(x, y, TILE_NOTHING);

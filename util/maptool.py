@@ -15,18 +15,25 @@ WORLD_HEIGHT = 250
 WORLD_SMOOTH_PASSES = 5
 
 class Tiles(Enum):
-    NOTHING = (123, 152, 254)
+    NOTHING = (132, 170, 248)
     STONE = (128, 128, 128)
-    DIRT = (152, 106, 76)
-    GRASS = (38, 127, 0)
-    IRON = (140,101,80)
-    WOOD = (151, 107, 75)
-    PLATFORM = (191, 141, 111)
-    VINE = (23, 177, 76)
+    DIRT = (151, 107, 75)
+    GRASS = (28, 216, 94)
+    IRON = (181, 164, 149)
+    WOOD = (169, 125, 93)
+    PLATFORM = (177, 133, 103)
+    VINE = (30, 150, 72)
     TREE = (151, 107, 75)
-    SAND = (186, 168, 84)
+    SAND = (211, 198, 111)
     WATER = (9, 61, 191)
     COBWEB = (191, 191, 191)
+    MUD = (92, 68, 73)
+    CLAY = (146, 81, 68)
+    COPPER = (150, 67, 22)
+    TIN = (129, 125, 93)
+    CRYSTAL = (182, 18, 57)
+    CHEST = (161, 134, 160)
+    JUNGLEGRASS = (143, 215, 29)
 
 # Call whenever you want to see the world
 def show():
@@ -159,15 +166,18 @@ def parabola(x, y, width, depth, material):
             for dY in range(int(multiplier * (dX - width / 2) ** 2 + depth)):
                 setTile(x + dX, y + dY, material)
 
+def rect(x, y, width, height, material):
+    for dY in range(height):
+        for dX in range(width):
+            setTile(x + dX, y + dY, material)
+
 def generate():
     
-    print("Generating dirt...")
+    print("Terrain")
     perlin(10, 30, WORLD_HEIGHT // 5, Tiles.DIRT, 3)
-    
-    print("Generating stone...")
     perlin(6, 20, WORLD_HEIGHT // 2.8, Tiles.STONE, 1)
 
-    print("Tunnels...")
+    print("Tunnels")
     x = 100
     while x < WORLD_WIDTH - 100:
         if random.random() < 0.01:
@@ -181,17 +191,17 @@ def generate():
             x += 100
         else: x += 1
 
-    print("Sand...")
-    for i in range(60):
+    print("Sand")
+    for i in range(40):
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT // 3.5, WORLD_HEIGHT // 2)
-        clump(x, y, poisson(50), Tiles.SAND, True, 0, 0)
+        clump(x, y, poisson(40), Tiles.SAND, True, 0, 0)
     for i in range(max(2, poisson(3))):
-        width = poisson(75)
-        mul = -30 / width
+        width = poisson(60)
+        mul = -60 / width
         x = random.randrange(0, WORLD_WIDTH - width)
         for dX in range(width):
-            left = min(10, mul * abs(dX - width / 2) + 15)
+            left = min(20, mul * abs(dX - width / 2) + 30)
             y = 0
             while left > 0 :
                 if getTile(x + dX, y) != Tiles.NOTHING:
@@ -199,21 +209,28 @@ def generate():
                     left -= 1
                 y += 1
             
-    print("Rocks in dirt...")
+    print("Rocks in dirt")
     for i in range(1000):
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(0, WORLD_HEIGHT // 2.8)
         if getTile(x, y) == Tiles.DIRT:
             clump(x, y, poisson(10), Tiles.STONE, True, 0, 0)
 
-    print("Dirt in rocks...")
+    print("Dirt in rocks")
     for i in range(3000):
         x = random.randrange(0, WORLD_WIDTH)
-        y = random.randrange(WORLD_HEIGHT // 2.8, WORLD_HEIGHT)
+        y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
         if getTile(x, y) == Tiles.STONE:
             clump(x, y, poisson(10), Tiles.DIRT, True, 0, 0)
 
-    print("Small holes...")
+    print("Clay")
+    for i in range(1000):
+        x = random.randrange(0, WORLD_WIDTH)
+        y = random.randrange(0, WORLD_HEIGHT // 4.2)
+        if getTile(x, y) == Tiles.DIRT:
+            clump(x, y, poisson(10), Tiles.CLAY, True, 0, 0)
+
+    print("Small holes")
     for i in range(250):
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
@@ -224,7 +241,7 @@ def generate():
         clump(x, y, poisson(50), Tiles.NOTHING, True, 0, 0)
 
     # A 500-length coord array should be enough for this
-    print("Caves...")
+    print("Caves")
     for i in range(150):
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
@@ -236,7 +253,7 @@ def generate():
         y = random.randrange(WORLD_HEIGHT // 4, WORLD_HEIGHT // 2.8)
         clump(x, y, poisson(125), Tiles.NOTHING, True, 0, 0)
     
-    print("Generating grass...")
+    print("Grass")
     for x in range(WORLD_WIDTH):
         for y in range(int(WORLD_HEIGHT // 2.8)):
             if getTile(x, y) == Tiles.DIRT:
@@ -246,6 +263,7 @@ def generate():
                 break
             elif getTile(x, y) != Tiles.NOTHING:
                 break
+            
     for x in range(WORLD_WIDTH):
         for y in range(int(WORLD_HEIGHT // 2.8)):
             if getTile(x, y) == Tiles.DIRT and (
@@ -255,14 +273,55 @@ def generate():
                 or getTile(x, y + 1) == Tiles.NOTHING):
                 setTile(x, y, Tiles.GRASS)
 
-    print("Shinies...")
+    print("Jungle")
+    width = poisson(150)
+    x = random.choice([WORLD_WIDTH // 5, WORLD_WIDTH - WORLD_WIDTH // 5 - width])
+    for y in range(WORLD_HEIGHT):
+        dX = 0
+        while getTile(x + dX, y) == Tiles.NOTHING:
+            dX += 1
+        while dX < width:
+            tile = getTile(x + dX, y)
+            if dX < 20 or width - dX < 20:
+                num = (20 - dX) if dX < 20 else (20 - (width - dX))
+                if random.randrange(num) > 5:
+                    dX += 1
+                    continue
+            if tile == Tiles.DIRT or tile == Tiles.STONE or tile == Tiles.SAND:
+                setTile(x + dX, y, Tiles.MUD)
+            elif tile == Tiles.GRASS:
+                setTile(x + dX, y, Tiles.JUNGLEGRASS)
+            dX += 1
+    for dX in range(width):
+        for y in range(WORLD_HEIGHT):
+            if getTile(x + dX, y) == Tiles.MUD and (
+                getTile(x + dX - 1, y) == Tiles.NOTHING
+                or getTile(x + dX + 1, y) == Tiles.NOTHING
+                or getTile(x + dX, y - 1) == Tiles.NOTHING
+                or getTile(x + dX, y + 1) == Tiles.NOTHING):
+                setTile(x + dX, y, Tiles.JUNGLEGRASS)
+
+    print("Shinies")
     for i in range(750):
         x = random.randrange(WORLD_WIDTH)
-        y = random.randrange(0, WORLD_HEIGHT)
+        y = random.randrange(WORLD_HEIGHT)
         if getTile(x, y) != Tiles.SAND:
-            clump(x, y, poisson(10), Tiles.IRON, True, 0, 0)
+            clump(x, y, poisson(6), Tiles.IRON, True, 0, 0)
 
-    print("Lakes...")
+    if random.randrange(0, 2) == 0:
+        for i in range(750):
+            x = random.randrange(WORLD_WIDTH)
+            y = random.randrange(WORLD_HEIGHT)
+            if getTile(x, y) != Tiles.SAND:
+                clump(x, y, poisson(8), Tiles.COPPER, True, 0, 0)
+    else:
+        for i in range(750):
+            x = random.randrange(WORLD_WIDTH)
+            y = random.randrange(WORLD_HEIGHT)
+            if getTile(x, y) != Tiles.SAND:
+                clump(x, y, poisson(10), Tiles.TIN, True, 0, 0)
+
+    print("Lakes")
     for i in range(max(2, poisson(3))):
         x = random.randrange(75, WORLD_WIDTH - 75)
         width = max(15, poisson(15))
@@ -270,17 +329,15 @@ def generate():
         leftY = WORLD_HEIGHT // 5
         while getTile(x, leftY) == Tiles.NOTHING:
             leftY += 1
-            if getTile(x, leftY + 6) == Tiles.NOTHING:
-                leftY += 6
+            if getTile(x, leftY + 6) == Tiles.NOTHING: leftY += 6
         rightY = WORLD_HEIGHT // 5
         while getTile(x + width, rightY) == Tiles.NOTHING:
             rightY += 1
-            if getTile(x + width, rightY + 6) == Tiles.NOTHING:
-                rightY += 6
+            if getTile(x + width, rightY + 6) == Tiles.NOTHING: rightY += 6
         y = max(leftY, rightY)
         parabola(x, y, width, depth, Tiles.WATER)
 
-    print("Beaches...")
+    print("Beaches")
     leftY = 0
     while getTile(60, leftY) == Tiles.NOTHING:
         leftY += 1
@@ -296,7 +353,7 @@ def generate():
     parabola(WORLD_WIDTH - 60, rightY, 120, 30, Tiles.SAND)
     parabola(WORLD_WIDTH - 50, rightY + 2, 100, 20, Tiles.WATER)
             
-    print("Gravitating Sand...")
+    print("Gravitating Sand")
     for x in range(WORLD_WIDTH):
         for y in range(WORLD_HEIGHT, 0, -1):
             if getTile(x, y) == Tiles.SAND and getTile(x, y + 1) == Tiles.NOTHING:
@@ -306,7 +363,18 @@ def generate():
                 setTile(x, tempY, Tiles.SAND)
                 setTile(x, y, Tiles.NOTHING)
 
-    print("Smooth World...")
+    print("Wet Jungle")
+    for x in range(1, WORLD_WIDTH):
+        for y in range(WORLD_HEIGHT // 6, WORLD_HEIGHT // 2):
+            if getTile(x, y) == Tiles.MUD:
+                if getTile(x + 1, y) == Tiles.NOTHING and random.randrange(0, 3) == 0:
+                    setTile(x + 1, y, Tiles.WATER)
+                if getTile(x - 1, y) == Tiles.NOTHING and random.randrange(0, 3) == 0:
+                    setTile(x - 1, y, Tiles.WATER)
+                if getTile(x, y - 1) == Tiles.NOTHING and random.randrange(0, 3) == 0:
+                    setTile(x , y - 1, Tiles.WATER)
+
+    print("Smooth World")
     for i in range(WORLD_SMOOTH_PASSES):
         for passDir in range(2):
             for y in range(WORLD_HEIGHT):
@@ -319,11 +387,7 @@ def generate():
                     y += 1
                 deltaY = ySave - y
                 tile = getTile(x, y)
-                if tile == Tiles.WATER and deltaY > 0:
-                    for dY in range(deltaY):
-                        setTile(x, y + dY, Tiles.NOTHING)
-                    ySave = y + deltaY - 1
-                elif deltaY > (2 if tile != Tiles.SAND else 1) and getTile(x, y + 6) != Tiles.NOTHING:
+                if deltaY > (2 if tile != Tiles.SAND else 1) and getTile(x, y + 6) != Tiles.NOTHING:
                     for dY in range(min(deltaY - 1, 2)):
                         setTile(x, y + dY, Tiles.NOTHING)
                     ySave = y + deltaY - 1
@@ -353,7 +417,17 @@ def generate():
                 clump(x, new_y, poisson(9), Tiles.COBWEB, False, 0, 0)
                 break
 
-    print("Buried Chests...")
+    print("Life Crystals")
+    for i in range(40):
+        for place in range(50):
+            x = random.randrange(25, WORLD_WIDTH - 25)
+            y = random.randrange(WORLD_HEIGHT // 2.8, WORLD_HEIGHT - 10)
+            if getTile(x, y) == Tiles.NOTHING:
+                rect(x, y, 2, 2, Tiles.CRYSTAL)
+                rect(x, y + 2, 2, 1, Tiles.STONE)
+                break
+
+    print("Buried Chests")
     for i in range(30):
         num = min(max(1, round(poisson(1.25))), 3)
         x = random.randrange(25, WORLD_WIDTH - 25)
@@ -361,6 +435,7 @@ def generate():
         while getTile(x, y) != Tiles.NOTHING:
             x = random.randrange(25, WORLD_WIDTH - 25)
             y = random.randrange(int(WORLD_HEIGHT / 2.8), WORLD_HEIGHT)
+        placed = False
         for room in range(num):
             width = random.randrange(10, 20)
             box(x, y, width, 6, Tiles.WOOD, 0.9, Tiles.NOTHING)
@@ -369,8 +444,24 @@ def generate():
                 setTile(platformX + dX, y, Tiles.PLATFORM)
             y += 7
             x += random.randrange(-(width - 3), width - 3)
+            if not placed:
+                if random.randrange(0, num) or room == num - 1:
+                    tempX = random.randrange(x, x + width - 2)
+                    rect(tempX, y + 3, 2, 2, Tiles.CHEST)
+                    placed = True
 
-    print("Spreading grass...")
+    print("Surface Chests")
+    for x in range(WORLD_WIDTH):
+        stage = 0
+        for y in range(WORLD_HEIGHT // 4):
+            if getTile(x, y) != Tiles.NOTHING: stage = 1
+            elif stage == 1:
+                if random.randrange(0, 35) == 0:
+                    while getTile(x, y + 2) == Tiles.NOTHING: y += 1
+                    rect(x, y - 1, 2, 2, Tiles.CHEST)
+                break
+
+    print("Spreading grass")
     for x in range(WORLD_WIDTH):
         for y in range(int(WORLD_HEIGHT // 2.8)):
             if getTile(x, y) == Tiles.DIRT:
@@ -378,10 +469,15 @@ def generate():
                 if getTile(x - 1, y) == Tiles.NOTHING or getTile(x + 1, y) == Tiles.NOTHING:
                     setTile(x, y + 1, Tiles.GRASS)
                 break
+            if getTile(x, y) == Tiles.MUD:
+                setTile(x, y, Tiles.JUNGLEGRASS)
+                if getTile(x - 1, y) == Tiles.NOTHING or getTile(x + 1, y) == Tiles.NOTHING:
+                    setTile(x, y + 1, Tiles.JUNGLEGRASS)
+                break
             elif getTile(x, y) != Tiles.NOTHING:
                 break
 
-    print("Planting Trees...")
+    print("Planting Trees")
     x = 0
     while x < WORLD_WIDTH:
         if random.randrange(0, 40) == 0:
@@ -393,20 +489,28 @@ def generate():
                     if tile == Tiles.GRASS:
                         generateTree(x, y - 1, copseHeight)
                         break
+                    elif tile == Tiles.JUNGLEGRASS:
+                        generateTree(x, y - 1, copseHeight + 4)
+                        break
                     elif tile != Tiles.NOTHING: break   
         x += 1
 
-    print("Vines...")
+    print("Vines")
     for x in range(WORLD_WIDTH):
-        for y in range(int(WORLD_WIDTH // 4.5)):
-            if getTile(x, y) == Tiles.GRASS and getTile(x, y + 1) == Tiles.NOTHING and random.randrange(0, 3) > 0:
+        for y in range(int(WORLD_WIDTH)):
+            tile = getTile(x, y)
+            if tile == Tiles.GRASS and y < WORLD_HEIGHT // 3.2 and getTile(x, y + 1) == Tiles.NOTHING and random.randrange(0, 3) > 0:
+                for dY in range(1, random.randrange(3, 11)):
+                    if getTile(x, y + dY) != Tiles.NOTHING: break;
+                    setTile(x, y + dY, Tiles.VINE)
+            elif tile == Tiles.JUNGLEGRASS and getTile(x, y + 1) == Tiles.NOTHING and random.randrange(0, 3) > 0:
                 for dY in range(1, random.randrange(3, 11)):
                     if getTile(x, y + dY) != Tiles.NOTHING: break;
                     setTile(x, y + dY, Tiles.VINE)
 
 ##### END ALGORITHM #####
 
-image = Image.new("RGB", (WORLD_WIDTH, WORLD_HEIGHT), (123, 152, 254))
+image = Image.new("RGB", (WORLD_WIDTH, WORLD_HEIGHT), Tiles.NOTHING.value)
 generate()
 show()
 if input("Save image? ").lower() in ('y', 'yes'):
