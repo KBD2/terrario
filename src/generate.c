@@ -286,7 +286,7 @@ void generateWorld()
 	{
 		x = rand() % game.WORLD_WIDTH;
 		y = rand() % (int)(game.WORLD_HEIGHT / 2.8);
-		if(getTile(x, y).id == TILE_DIRT || getTile(x, y).id == TILE_MUD)
+		if(getTile(x, y).id == TILE_DIRT)
 		{
 			clump(x, y, poisson(10), TILE_STONE, true, 0, 0);
 		}
@@ -407,23 +407,28 @@ void generateWorld()
 		}
 	}
 
-	for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
+	if(rand() % 2)
 	{
-		x = rand() % game.WORLD_WIDTH;
-		y = rand() % game.WORLD_HEIGHT;
-		if(getTile(x, y).id != TILE_SAND)
+		for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
 		{
-			clump(x, y, poisson(8), TILE_COPPER_ORE, true, 0, 0);
+			x = rand() % game.WORLD_WIDTH;
+			y = rand() % game.WORLD_HEIGHT;
+			if(getTile(x, y).id != TILE_SAND)
+			{
+				clump(x, y, poisson(8), TILE_COPPER_ORE, true, 0, 0);
+			}
 		}
 	}
-
-	for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
+	else
 	{
-		x = rand() % game.WORLD_WIDTH;
-		y = rand() % game.WORLD_HEIGHT;
-		if(getTile(x, y).id != TILE_SAND)
+		for(int i = 0; i < 750 * game.WORLDGEN_MULTIPLIER; i++)
 		{
-			clump(x, y, poisson(10), TILE_TIN_ORE, true, 0, 0);
+			x = rand() % game.WORLD_WIDTH;
+			y = rand() % game.WORLD_HEIGHT;
+			if(getTile(x, y).id != TILE_SAND)
+			{
+				clump(x, y, poisson(10), TILE_TIN_ORE, true, 0, 0);
+			}
 		}
 	}
 
@@ -486,30 +491,30 @@ void generateWorld()
 
 //	Wetting mud
 	middleText("Wet Jungle", updateProgress());
-	for(int x = 0; x < game.WORLD_WIDTH; x++)
+	for(int x = 1; x < game.WORLD_WIDTH - 1; x++)
 	{
-		for(int y = 0; y < game.WORLD_HEIGHT / 2; y++)
+		for(int y = game.WORLD_HEIGHT / 6; y < game.WORLD_HEIGHT / 2; y++)
 		{
 			if (getTile(x, y).id == TILE_MUD)
 			{
-				if(getTile(x + 1, y).id == TILE_NOTHING && randRange(0, 3) > 0)
+				if(getTile(x + 1, y).id == TILE_NOTHING && randRange(0, 3) == 0)
 				{
 					setTile(x + 1, y, TILE_WATER);
 				}
-				if(getTile(x - 1, y).id == TILE_NOTHING && randRange(0, 3) > 0)
+				if(getTile(x - 1, y).id == TILE_NOTHING && randRange(0, 3) == 0)
 				{
 					setTile(x - 1, y, TILE_WATER);
 				}
-				if(getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 3) > 0)
+				if(getTile(x, y - 1).id == TILE_NOTHING && randRange(0, 3) == 0)
 				{
-					setTile(x, y + 1, TILE_WATER);
+					setTile(x, y - 1, TILE_WATER);
 				}
 			}
 		}
 	}
 
 //	Smooth World
-	middleText("Smoothing", updateProgress());
+	middleText("Smooth World", updateProgress());
 	for(int i = 0; i < WORLD_SMOOTH_PASSES; i++)
 	{
 //		Forward and reverse pass
@@ -529,12 +534,7 @@ void generateWorld()
 				while(getTile(x, tempY).id == TILE_NOTHING) tempY++;
 				deltaY = ySave - tempY;
 				tile = getTile(x, tempY);
-				if(tile.id == TILE_WATER && deltaY > 0)
-				{
-					for(int dY = 0; dY < deltaY; dY++) setTile(x, tempY + dY, TILE_NOTHING);
-					ySave = tempY + deltaY - 1;
-				}
-				else if(deltaY > ((tile.id != TILE_SAND) ? 2 : 1) && getTile(x, tempY + 6).id != TILE_NOTHING)
+				if(deltaY > ((tile.id != TILE_SAND) ? 2 : 1) && getTile(x, tempY + 6).id != TILE_NOTHING)
 				{
 					for(int dY = 0; dY < min(deltaY - 1, 2); dY++)
 					{
@@ -567,8 +567,8 @@ void generateWorld()
 					setTile(x + 1, y + 2, TILE_STONE);
 				}
 				placeTile(x, y, &check);
+				break;
 			}
-			if(check.amount == 0) break;
 		}
 	}
 
@@ -705,13 +705,13 @@ void generateWorld()
 		{
 			if((getTile(x, y).id == TILE_GRASS || getTile(x, y).id == TILE_MUD) && getTile(x, y - 1).id == TILE_NOTHING && rand() % 4 > 0)
 			{
-				if(rand() % 6)
+				if(rand() % 10)
 				{
-					setTile(x, y - 1, TILE_MUSHROOM);
+					setTile(x, y - 1, TILE_PLANT);
 				}
 				else
 				{
-					setTile(x, y - 1, TILE_PLANT);
+					setTile(x, y - 1, TILE_MUSHROOM);
 				}
 			}
 		}
