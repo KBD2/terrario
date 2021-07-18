@@ -532,12 +532,22 @@ void worldUpdate()
 //			Grass spread
 			else if(tile == TILE_DIRT)
 			{
-				if(findState(x, y) != 0xf
+				if(rand() % 275 == 0 && findState(x, y) != 0xf
 				&& (getTile(x - 1, y).id == TILE_GRASS 
 					|| getTile(x + 1, y).id == TILE_GRASS
 					|| getTile(x, y + 1).id == TILE_GRASS
 					|| getTile(x, y - 1).id == TILE_GRASS)
-				&& rand() % 275 == 0) setTile(x, y, TILE_GRASS);
+				) setTile(x, y, TILE_GRASS);
+			}
+//			Jungle grass spread
+			else if(tile == TILE_MUD)
+			{
+				if(rand() % 275 == 0 && findState(x, y) != 0xf
+				&& (getTile(x - 1, y).id == TILE_GRASS_JUNGLE 
+					|| getTile(x + 1, y).id == TILE_GRASS_JUNGLE
+					|| getTile(x, y + 1).id == TILE_GRASS_JUNGLE
+					|| getTile(x, y - 1).id == TILE_GRASS_JUNGLE)
+				) setTile(x, y, TILE_GRASS_JUNGLE);
 			}
 //			Torch animation
 			else if(tile == TILE_TORCH)

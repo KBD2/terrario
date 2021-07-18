@@ -32,6 +32,7 @@ class Tiles(Enum):
     TIN = (129, 125, 93)
     CRYSTAL = (182, 18, 57)
     CHEST = (161, 134, 160)
+    JUNGLEGRASS = (143, 215, 29)
 
 # Call whenever you want to see the world
 def show():
@@ -266,18 +267,32 @@ def generate():
                 setTile(x, y, Tiles.GRASS)
 
     print("Jungle")
-    for i in range(max(2, poisson(3))):
-        width = poisson(60)
-        mul = -60 / width
-        x = random.randrange(0, WORLD_WIDTH - width)
-        for dX in range(width):
-            left = min(20, mul * abs(dX - width / 2) + 30)
-            y = 0
-            while left > 0:
-                if getTile(x + dX, y) != Tiles.NOTHING:
-                    setTile(x + dX, y, Tiles.MUD)
-                    left -= 1
-                y += 1
+    width = poisson(150)
+    x = random.choice([WORLD_WIDTH // 5, WORLD_WIDTH - WORLD_WIDTH // 5 - width])
+    for y in range(WORLD_HEIGHT):
+        dX = 0
+        while getTile(x + dX, y) == Tiles.NOTHING:
+            dX += 1
+        while dX < width:
+            tile = getTile(x + dX, y)
+            if dX < 20 or width - dX < 20:
+                num = (20 - dX) if dX < 20 else (20 - (width - dX))
+                if random.randrange(num) > 5:
+                    dX += 1
+                    continue
+            if tile == Tiles.DIRT or tile == Tiles.STONE or tile == Tiles.SAND:
+                setTile(x + dX, y, Tiles.MUD)
+            elif tile == Tiles.GRASS:
+                setTile(x + dX, y, Tiles.JUNGLEGRASS)
+            dX += 1
+    for dX in range(width):
+        for y in range(WORLD_HEIGHT):
+            if getTile(x + dX, y) == Tiles.MUD and (
+                getTile(x + dX - 1, y) == Tiles.NOTHING
+                or getTile(x + dX + 1, y) == Tiles.NOTHING
+                or getTile(x + dX, y - 1) == Tiles.NOTHING
+                or getTile(x + dX, y + 1) == Tiles.NOTHING):
+                setTile(x + dX, y, Tiles.JUNGLEGRASS)
 
     print("Shinies")
     for i in range(750):
@@ -424,6 +439,11 @@ def generate():
                 if getTile(x - 1, y) == Tiles.NOTHING or getTile(x + 1, y) == Tiles.NOTHING:
                     setTile(x, y + 1, Tiles.GRASS)
                 break
+            if getTile(x, y) == Tiles.MUD:
+                setTile(x, y, Tiles.JUNGLEGRASS)
+                if getTile(x - 1, y) == Tiles.NOTHING or getTile(x + 1, y) == Tiles.NOTHING:
+                    setTile(x, y + 1, Tiles.JUNGLEGRASS)
+                break
             elif getTile(x, y) != Tiles.NOTHING:
                 break
 
@@ -439,7 +459,7 @@ def generate():
                     if tile == Tiles.GRASS:
                         generateTree(x, y - 1, copseHeight)
                         break
-                    elif tile == Tiles.MUD:
+                    elif tile == Tiles.JUNGLEGRASS:
                         generateTree(x, y - 1, copseHeight + 4)
                         break
                     elif tile != Tiles.NOTHING: break   
@@ -447,8 +467,13 @@ def generate():
 
     print("Vines")
     for x in range(WORLD_WIDTH):
-        for y in range(int(WORLD_WIDTH // 4.5)):
-            if getTile(x, y) == Tiles.GRASS and getTile(x, y + 1) == Tiles.NOTHING and random.randrange(0, 3) > 0:
+        for y in range(int(WORLD_WIDTH)):
+            tile = getTile(x, y)
+            if tile == Tiles.GRASS and y < WORLD_HEIGHT // 3.2 and getTile(x, y + 1) == Tiles.NOTHING and random.randrange(0, 3) > 0:
+                for dY in range(1, random.randrange(3, 11)):
+                    if getTile(x, y + dY) != Tiles.NOTHING: break;
+                    setTile(x, y + dY, Tiles.VINE)
+            elif tile == Tiles.JUNGLEGRASS and getTile(x, y + 1) == Tiles.NOTHING and random.randrange(0, 3) > 0:
                 for dY in range(1, random.randrange(3, 11)):
                     if getTile(x, y + dY) != Tiles.NOTHING: break;
                     setTile(x, y + dY, Tiles.VINE)

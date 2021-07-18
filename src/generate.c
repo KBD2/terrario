@@ -214,7 +214,7 @@ void generateWorld()
 	int left;
 	float mul;
 	int ySave = 0;
-	int deltaY;
+	int deltaX, deltaY;
 	int depth, leftY, rightY;
 
 	middleText("Reset", updateProgress());
@@ -374,24 +374,35 @@ void generateWorld()
 
 //	Jungle
 	middleText("Jungle", updateProgress());
-	for(int i = 0; i < max(2, poisson(3)); i++)
+	width = poisson(150) * game.WORLDGEN_MULTIPLIER;
+	x = (rand() % 2) ? game.WORLD_WIDTH / 5 : game.WORLD_WIDTH - game.WORLD_WIDTH / 5 - width;
+	for(int y = 0; y < game.WORLD_HEIGHT; y++)
 	{
-		width = poisson(60) * game.WORLDGEN_MULTIPLIER;
-		mul = -60 / width;
-		x = randRange(0, game.WORLD_WIDTH - width);
-		for(int dX = 0; dX < width; dX++)
+		deltaX = 0;
+		while(getTile(x + deltaX, y).id == TILE_NOTHING) deltaX++;
+		while(deltaX < width)
 		{
-			left = min(20, mul * abs(dX - width / 2) + 30);
-			y = 0;
-			while(left > 0)
+			tile = getTile(x + deltaX, y);
+			if(deltaX < 20 || width - deltaX < 20)
 			{
-				if(getTile(x + dX, y).id != TILE_NOTHING)
+				num = (deltaX < 20) ? (20 - deltaX) : (20 - (20 - width - deltaX));
+				if(randRange(0, num) > 5)
 				{
-					setTile(x + dX, y, TILE_MUD);
-					left--;
+					deltaX++;
+					continue;
 				}
-				y++;
 			}
+			if(tile.id == TILE_DIRT || tile.id == TILE_STONE || tile.id == TILE_SAND) setTile(x + deltaX, y, TILE_MUD);
+			else if(tile.id == TILE_GRASS) setTile(x + deltaX, y, TILE_GRASS_JUNGLE);
+			deltaX++;
+		}
+	}
+	for(int dX = 0; dX < width; dX++)
+	{
+		for(int y = 0; y < game.WORLD_HEIGHT; y++)
+		{
+			tile = getTile(x + dX, y);
+			if(tile.id == TILE_MUD && findState(x, y != 0xf)) setTile(x, y, TILE_GRASS_JUNGLE);
 		}
 	}
 
@@ -665,7 +676,16 @@ void generateWorld()
 				}
 				break;
 			}
-			else if(tile.id != TILE_NOTHING) break;
+			else if(tile.id == TILE_MUD)
+			{
+				setTile(x, y, TILE_GRASS_JUNGLE);
+				if(x == 0 || x == game.WORLD_WIDTH - 1 || y == game.WORLD_HEIGHT) break;
+				if(getTile(x - 1, y).id == TILE_NOTHING || getTile(x + 1, y).id == TILE_NOTHING)
+				{
+					setTile(x, y + 1, TILE_GRASS_JUNGLE);
+				}
+				break;
+			} else if(tile.id != TILE_NOTHING) break;
 		}
 	}
 
@@ -686,7 +706,7 @@ void generateWorld()
 						generateTree(x, y - 1, copseHeight);
 						break;
 					}
-					else if(tile.id == TILE_MUD)
+					else if(tile.id == TILE_GRASS_JUNGLE)
 					{
 						generateTree(x, y - 1, copseHeight + 4);
 						break;
@@ -736,9 +756,14 @@ void generateWorld()
 	middleText("Vines", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH; x++)
 	{
-		for(int y = 0; y < game.WORLD_HEIGHT / 4.5; y++)
+		for(int y = 0; y < game.WORLD_HEIGHT - 1; y++)
 		{
-			if((getTile(x, y).id == TILE_GRASS || getTile(x, y).id == TILE_MUD) && getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 3) > 0)
+			tile = getTile(x, y);
+			if(y < game.WORLD_HEIGHT / 3.2 && tile.id == TILE_GRASS && getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 3) > 0)
+			{
+				for(int dY = 1; dY < randRange(3, 11) && getTile(x, y + dY).id == TILE_NOTHING; dY++) setTile(x, y + dY, TILE_VINE);
+			}
+			else if(tile.id == TILE_GRASS_JUNGLE && getTile(x, y + 1).id == TILE_NOTHING && randRange(0, 3) > 0)
 			{
 				for(int dY = 1; dY < randRange(3, 11) && getTile(x, y + dY).id == TILE_NOTHING; dY++) setTile(x, y + dY, TILE_VINE);
 			}
