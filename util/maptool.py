@@ -26,6 +26,7 @@ class Tiles(Enum):
     TREE = (151, 107, 75)
     SAND = (186, 168, 84)
     WATER = (9, 61, 191)
+    COBWEB = (191, 191, 191)
 
 # Call whenever you want to see the world
 def show():
@@ -228,6 +229,12 @@ def generate():
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
         clump(x, y, poisson(200), Tiles.NOTHING, True, 0, 0)
+
+    print("Surface Caves...")
+    for i in range(150):
+        x = random.randrange(0, WORLD_WIDTH)
+        y = random.randrange(WORLD_HEIGHT // 4, WORLD_HEIGHT // 2.8)
+        clump(x, y, poisson(125), Tiles.NOTHING, True, 0, 0)
     
     print("Generating grass...")
     for x in range(WORLD_WIDTH):
@@ -322,6 +329,29 @@ def generate():
                     ySave = y + deltaY - 1
                 else:   
                     ySave = y
+
+    print("Adding Cobwebs...")
+    for i in range(750):
+        for tries in range(1000):
+            x = random.randrange(0, WORLD_WIDTH)
+            y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
+
+            if getTile(x, y) != Tiles.NOTHING and getTile(x, y) != Tiles.VINE and getTile(x, y) != Tiles.COBWEB:
+                continue
+
+            canPlace = 0
+            new_y = 0
+
+            for j in range(y - 1, -1, -1):
+                if(getTile(x, j) != Tiles.NOTHING):
+                    canPlace = 1
+                    break
+                else:
+                    new_y = j
+
+            if(canPlace):
+                clump(x, new_y, poisson(9), Tiles.COBWEB, False, 0, 0)
+                break
 
     print("Buried Chests...")
     for i in range(30):

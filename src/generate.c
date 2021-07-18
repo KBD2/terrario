@@ -7,7 +7,7 @@
 #include "world.h"
 #include "chest.h"
 
-#define NUM_WORLD_GEN_PARTS 27
+#define NUM_WORLD_GEN_PARTS 28
 #define WORLD_SMOOTH_PASSES 5
 
 GYRAM unsigned char yPositions[1000];
@@ -541,24 +541,28 @@ void generateWorld()
 		for(int tries = 0; tries < 1000; tries++)
 		{
 			x = rand() % game.WORLD_WIDTH;
-			y = randRange(game.WORLD_HEIGHT / 4, game.WORLD_HEIGHT);
+			y = randRange(game.WORLD_HEIGHT / 3.2, game.WORLD_HEIGHT);
 
 			if(getTile(x, y).id != TILE_NOTHING && getTile(x, y).id != TILE_VINE && getTile(x, y).id != TILE_COBWEB) continue;
 
-			int canPlace = 0;
+			int canPlace = 0, newY = 0;
 
-			for(int j = 0; j < y; j++)
+			for(int j = y - 1; j >= 0; j--)
 			{
 				if(tiles[getTile(x, j).id].physics != PHYS_NON_SOLID)
 				{
 					canPlace = 1;
 					break;
 				}
+				else
+				{
+					newY = j;
+				}
 			}
 
 			if(canPlace)
 			{
-				clump(x, y, poisson(6), TILE_COBWEB, false, 0, 0);
+				clump(x, newY, poisson(9), TILE_COBWEB, false, 0, 0);
 				break;
 			}
 		}
