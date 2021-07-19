@@ -334,9 +334,28 @@ void render(bool renderHUD)
 //	Render the hotbar if the player has recently interacted with their inventory
 	if(renderHUD && player.inventory.ticksSinceInteracted < 120)
 	{
-		if(player.cursor.x < 82 && player.cursor.y < 19) hotbarY = 47;
-		else hotbarY = 0;
+		item = player.inventory.items[player.inventory.hotbarSlot];
+
+		int prefix = PREFIX_NONE;
+
+		if (items[item.id].type != TOOL_TYPE_NONE)
+		{
+			prefix = item.prefix;
+		}
+
+		if(player.cursor.x < 82 && player.cursor.y < 19)
+		{
+			hotbarY = 47;
+			if(item.id != ITEM_NULL) dprint_opt(0, 47, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_BOTTOM, "%s%s", prefixes[prefix].name, items[item.id].name);
+		}
+		else
+		{
+			hotbarY = 0;
+			if(item.id != ITEM_NULL) dprint_opt(0, 17, C_BLACK, C_WHITE, DTEXT_LEFT, DTEXT_TOP, "%s%s", prefixes[prefix].name, items[item.id].name);
+		}
+
 		dsubimage(0, hotbarY, &img_ui_slots, 0, 0, 80, 17, DIMAGE_NOCLIP);
+		
 		dimage(16 * player.inventory.hotbarSlot, hotbarY, &img_ui_slot_highlight);
 		for(int slot = 0; slot < 5; slot++)
 		{
@@ -475,17 +494,29 @@ void setVar(int x, int y)
 		
 		case TILE_FURNACE_EDGE:
 			if(x == game.WORLD_WIDTH - 1 || getTile(x + 1 , y).id != TILE_FURNACE_MID) var += 2;
+		case TILE_BED_EDGE:
+			if(x == game.WORLD_WIDTH - 1 || getTile(x + 1 , y).id != TILE_BED_MID) var += 2;
 		case TILE_CHAIR_L:
 			if(tile.id == TILE_CHAIR_L) var += 2;
 		case TILE_CHEST_R:
 			if(tile.id == TILE_CHEST_R) var += 2;
 		case TILE_CRYST_R:
 			if(tile.id == TILE_CRYST_R) var += 2;
+		case TILE_POT_R:
+			if(tile.id == TILE_POT_R) var += 2;
+		case TILE_SAWMILL_R:
+			if(tile.id == TILE_SAWMILL_R) var += 2;
+		case TILE_LOOM_R:
+			if(tile.id == TILE_LOOM_R) var += 2;
 		case TILE_CHAIR_R:
 		case TILE_FURNACE_MID:
+		case TILE_BED_MID:
 		case TILE_CHEST_L:
 		case TILE_DOOR_C:
 		case TILE_CRYST_L:
+		case TILE_POT_L:
+		case TILE_SAWMILL_L:
+		case TILE_LOOM_L:
 		case TILE_DOOR_O_L_L: case TILE_DOOR_O_L_R:
 		case TILE_DOOR_O_R_L: case TILE_DOOR_O_R_R:
 		while(y - dY - 1 >= 0 && getTile(x, y - dY - 1).id == tile.id) dY++;

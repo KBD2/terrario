@@ -134,6 +134,7 @@ enum UpdateReturnCodes keyboardUpdate()
 	struct Chest* chest;
 	int ret;
 	NPC *npc;
+	Item *item;
 	
 	player.inventory.ticksSinceInteracted++;
 
@@ -255,9 +256,54 @@ enum UpdateReturnCodes keyboardUpdate()
 						closeDoor(x, y);
 						break;
 
+					case TILE_BED_EDGE:
+						if(getTile(x - 1, y).id == TILE_BED_EDGE) x--;
+						else if(getTile(x + 1, y).id == TILE_BED_EDGE) x++;
+					case TILE_BED_MID:
+						if(getTile(x, y - 1).id == TILE_BED_MID) y--;
+						if(!checkArea(x - 1, y - 1, 2, 1, false)) break;
+						player.spawn.x = x, player.spawn.y = y;
+						break;
+
 					default:
 						break;
 				}
+
+				item = &player.inventory.items[player.inventory.hotbarSlot];
+
+				// Check consumables
+				// TODO: Make these changeable in a nice list in inventory.c like we do with tools and armor pieces
+				if(item->amount > 0)
+				{	
+					int consumed = 0;
+
+					switch(item->id)
+					{
+						case ITEM_LESSER_HEALING_POTION:
+							if(player.combat.health >= player.maxHealth) break;
+
+							player.combat.health = max(player.combat.health + 50, player.maxHealth);
+
+							consumed = 1;
+							break;
+						case ITEM_MUSHROOM:
+							if(player.combat.health >= player.maxHealth) break;
+
+							player.combat.health = max(player.combat.health + 15, player.maxHealth);
+
+							consumed = 1;
+							break;
+						default:
+							break;
+					}
+
+					if(consumed)
+					{
+						item->amount--;
+						if(item->amount == 0) *item = (Item){ITEM_NULL, PREFIX_NONE, 0};
+					}
+				}
+
 				break;
 			
 			case KEY_TAN:

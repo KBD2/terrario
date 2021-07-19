@@ -71,6 +71,19 @@ const struct ItemData items[] = {
 	{	999,	0,		TILE_NULL,			"Bottle",				TOOL_TYPE_NONE		},	// ITEM_BOTTLE
 	{	30,		0,		TILE_NULL,			"Lesser Healing Potion",TOOL_TYPE_NONE		},	// ITEM_LESSER_HEALING_POTION
 	{	30,		0,		TILE_NULL,			"Lesser Mana Potion",	TOOL_TYPE_NONE		},	// ITEM_LESSER_MANA_POTION
+	{	999,	0,		TILE_AMETHYST,		"Amethyst",				TOOL_TYPE_NONE		},	// ITEM_AMETHYST
+	{	999,	0,		TILE_DIAMOND,		"Diamond",				TOOL_TYPE_NONE		},	// ITEM_DIAMOND
+	{	999,	0,		TILE_EMERALD,		"Emerald",				TOOL_TYPE_NONE		},	// ITEM_EMERALD
+	{	999,	0,		TILE_RUBY,			"Ruby",					TOOL_TYPE_NONE		},	// ITEM_RUBY
+	{	999,	0,		TILE_SAPPHIRE,		"Sapphire",				TOOL_TYPE_NONE		},	// ITEM_SAPPHIRE
+	{	999,	0,		TILE_TOPAZ,			"Topaz",				TOOL_TYPE_NONE		},	// ITEM_TOPAZ
+	{	1,		0,		TILE_POT_L,			"Pot",					TOOL_TYPE_NONE		},	// ITEM_POT(should never be obtained)
+	{	999,	0,		TILE_COBWEB,		"Cobweb",				TOOL_TYPE_NONE		},	// ITEM_COBWEB
+	{	999,	0,		TILE_NULL,			"Chain",				TOOL_TYPE_NONE		},	// ITEM_CHAIN
+	{	99,		0,		TILE_NULL,			"Silk",					TOOL_TYPE_NONE		},	// ITEM_SILK
+	{	99,		0,		TILE_SAWMILL_L,		"Sawmill",				TOOL_TYPE_NONE		},	// ITEM_SAWMILL
+	{	99,		0,		TILE_LOOM_L,		"Loom",					TOOL_TYPE_NONE		},	// ITEM_LOOM
+	{	99,		0,		TILE_BED_EDGE,		"Bed",					TOOL_TYPE_NONE		},	// ITEM_BED
 };
 
 extern bopti_image_t img_swing_copper_pick, img_swing_iron_pick, img_swing_tin_pick, img_swing_cactus_pick;

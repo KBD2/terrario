@@ -77,8 +77,7 @@ enum Tiles {
 	TILE_SAND,
 	TILE_CACTUS, TILE_CACTUS_BRANCH,
 	TILE_WATER,
-	TILE_CRYST_L,
-	TILE_CRYST_R,
+	TILE_CRYST_L, TILE_CRYST_R,
 	TILE_MUD,
 	TILE_CLAY,
 	TILE_COPPER_ORE,
@@ -87,6 +86,18 @@ enum Tiles {
 	TILE_BOTTLE,
 	TILE_LESSER_HEALING_POTION,
 	TILE_LESSER_MANA_POTION,
+	TILE_GLASS,
+	TILE_AMETHYST,
+	TILE_DIAMOND,
+	TILE_EMERALD,
+	TILE_RUBY,
+	TILE_SAPPHIRE,
+	TILE_TOPAZ,
+	TILE_POT_L, TILE_POT_R,
+	TILE_COBWEB,
+	TILE_SAWMILL_L, TILE_SAWMILL_R,
+	TILE_LOOM_L, TILE_LOOM_R,
+	TILE_BED_EDGE, TILE_BED_MID,
 	TILE_GRASS_JUNGLE,
 
 	TILES_COUNT
@@ -118,6 +129,28 @@ typedef union {
 } tilePun;
 
 extern tilePun group;
+
+typedef struct {
+	int num;
+	const enum Items *items;
+	int amountMin;
+	int amountMax;
+	int ratioLow;
+	int ratioHigh;
+} ItemLoot;
+
+struct ItemLootTable {
+	int num;
+	const ItemLoot *loot;
+};
+
+enum LootTables {
+	TABLE_UNDERGROUND,
+	TABLE_SURFACE,
+	TABLE_POT
+};
+
+extern struct ItemLootTable loots[];
 
 static inline Tile getTile(int x, int y)
 {
@@ -197,6 +230,13 @@ Breaks a cactus, starting from the given stem coordinates.
 x, y: Coordinates of a cactus tile.
 */
 void breakCactus(int x, int y);
+
+/* breakPot
+Breaks a pot, dropping the corresponding items.
+
+x, y: Coordinates of a pot tile.
+*/
+void breakPot(int x, int y);
 
 /* findState
 Returns the appropriate state for the given tile, given its surroundings.
@@ -295,3 +335,18 @@ bool checkArea(int x, int y, int width, int height, bool support);
 Returns true if it's currently daytime.
 */
 bool isDay();
+
+/* addLoot
+Adds loot to a chest from the given loot table.
+
+chest: Pointer to the chest.
+table: The table to use.
+*/
+void addLoot(struct Chest *chest, enum LootTables table);
+
+/* dropLoot
+Gives loot to the player from the given loot table.
+
+table: The table to use.
+*/
+void dropLoot(enum LootTables table);

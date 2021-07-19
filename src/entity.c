@@ -709,8 +709,12 @@ void doSpawningCycle()
 				spawnY++;
 				if(tiles[getTile(spawnX, spawnY).id].physics != PHYS_NON_SOLID)
 				{
-					if(!isDay()) chosen = (rand() % 2) ? ENT_ZOMBIE : ENT_DEMONEYE;
-					else if(getTile(spawnX, spawnY).id == TILE_SAND && rand() % 4 > 0) chosen = ENT_VULTURE;
+					if(!isDay())
+					{
+						chosen = (rand() % 2) ? ENT_ZOMBIE : ENT_DEMONEYE;
+						if(spawnY > game.WORLD_HEIGHT / 3.2) chosen = ENT_ZOMBIE;
+					}
+					else if(spawnY < game.WORLD_HEIGHT / 3.2 && getTile(spawnX, spawnY).id == TILE_SAND && rand() % 4 > 0) chosen = ENT_VULTURE;
 					else chosen = ENT_SLIME;
 					
 					for(int idx = 0; idx < world.numMarkers; idx++)
