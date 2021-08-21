@@ -695,7 +695,7 @@ void generateWorld()
 	middleText("Pots", updateProgress());
 	for(int x = 0; x < game.WORLD_WIDTH - 1; x++)
 	{
-		for(int y = 1; y < game.WORLD_HEIGHT; y++)
+		for(int y = game.WORLD_HEIGHT / 4; y < game.WORLD_HEIGHT; y++)
 		{
 			if (checkArea(x, y, 2, 2, true) && rand() % 15 == 0)
 			{
