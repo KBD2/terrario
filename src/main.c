@@ -71,7 +71,7 @@ void setPlayerSpawn()
 	int playerX = (game.WORLD_WIDTH / 2);
 	int playerY = 0;
 
-	while(getTile(playerX, playerY).id == TILE_NOTHING && playerY < game.WORLD_HEIGHT) playerY++;
+	while(tiles[getTile(playerX, playerY).id].physics == PHYS_NON_SOLID && playerY < game.WORLD_HEIGHT) playerY++;
 
 	player.spawn.x = playerX << 3;
 	player.spawn.y = (playerY << 3) - player.props.height;
