@@ -585,6 +585,10 @@ void registerGhost()
 			player.ghost = (struct GhostObject){1, 3};
 			break;
 		
+		case ITEM_BED:
+			player.ghost = (struct GhostObject){3, 2};
+			break;
+		
 		default:
 			player.ghost = (struct GhostObject){0, 0};
 			break;

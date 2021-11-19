@@ -262,7 +262,9 @@ enum UpdateReturnCodes keyboardUpdate()
 					case TILE_BED_MID:
 						if(getTile(x, y - 1).id == TILE_BED_MID) y--;
 						if(!checkArea(x - 1, y - 1, 2, 1, false)) break;
-						player.spawn.x = x, player.spawn.y = y;
+						player.spawn.x = x << 3;
+						player.spawn.y = (y - 1) << 3;
+						sendMessage("Spawn set!");
 						break;
 
 					default:
