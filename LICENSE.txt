@@ -2,7 +2,8 @@ THE FOLLOWING LICENSE APPLIES TO ANY AND ALL SOURCE CODE PRESENT IN THIS REPOSIT
 
 MIT License
 
-Copyright (c) 2021 William Brunton
+Copyright (c) 2021
+https://github.com/KBD2
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
