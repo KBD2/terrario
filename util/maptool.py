@@ -200,7 +200,7 @@ def generate():
     for j in range(WORLD_WIDTH):
         print(j)
 
-        sh = 24 + (perlin_gud(j / 60.0, 3.1) + 1) * 30.0 + (perlin_gud(j / 30.0, 4.1) + 1) * 15.0 + (perlin_gud(j / 6.0, 5.1) + 1) * 2.5
+        sh = (perlin_gud(j / 60.0, 3.1) + 1) * 30.0 + (perlin_gud(j / 30.0, 4.1) + 1) * 15.0 + (perlin_gud(j / 6.0, 5.1) + 1) * 2.5
         dh = sh + ((perlin_gud(j / 60.0, 6.1) + 1) * 20.0 + (perlin_gud(j / 30.0, 7.1) + 1) * 10.0 + (perlin_gud(j / 6.0, 8.1) + 1) * 2.0)
         
         for i in range(WORLD_HEIGHT):
@@ -225,7 +225,7 @@ def generate():
                 noise /= 30.0
                 value = math.floor(((((math.sin((j + 90.0 * noise) / 12.0) + 1) * 0.5) * ((math.sin((j + 90.0 * noise) / 12.0) + 1) * 0.5))) * 256.0)
                 
-                if (value >= 160 + lerp(96, 0, i / 175.0)):
+                if (value >= 192 + lerp(32, 0, i / 175.0)):
                     value = 255
                 else:
                     value = 0
@@ -289,28 +289,15 @@ def generate():
         if getTile(x, y) == Tiles.DIRT:
             clump(x, y, poisson(10), Tiles.CLAY, True, 0, 0)
 
-    # print("Small holes")
-    # for i in range(250):
-    #     x = random.randrange(0, WORLD_WIDTH)
-    #     y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
-    #     clump(x, y, poisson(50), Tiles.WATER, False, 0, 0)
-    # for i in range(750):
-    #     x = random.randrange(0, WORLD_WIDTH)
-    #     y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
-    #     clump(x, y, poisson(50), Tiles.NOTHING, True, 0, 0)
-
-    # A 500-length coord array should be enough for this
-    # print("Caves")
-    # for i in range(150):
-    #     x = random.randrange(0, WORLD_WIDTH)
-    #     y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
-    #     clump(x, y, poisson(200), Tiles.NOTHING, True, 0, 0)
-
-    # print("Surface Caves...")
-    # for i in range(150):
-    #     x = random.randrange(0, WORLD_WIDTH)
-    #     y = random.randrange(WORLD_HEIGHT // 4, WORLD_HEIGHT // 2.8)
-    #     clump(x, y, poisson(125), Tiles.NOTHING, True, 0, 0)
+    print("Small holes")
+    for i in range(50):
+        x = random.randrange(0, WORLD_WIDTH)
+        y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
+        clump(x, y, poisson(50), Tiles.WATER, False, 0, 0)
+    for i in range(150):
+        x = random.randrange(0, WORLD_WIDTH)
+        y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
+        clump(x, y, poisson(50), Tiles.NOTHING, True, 0, 0)
     
     print("Grass")
     for x in range(WORLD_WIDTH):
@@ -389,7 +376,7 @@ def generate():
                         continue
                 if tile == Tiles.STONE:
                     setTile(x + dX + pX, y, Tiles.ICE)
-                elif tile == Tiles.DIRT or tile == Tiles.GRASS or tile == Tiles.SAND:
+                elif tile != Tiles.NOTHING: # == Tiles.DIRT or tile == Tiles.GRASS or tile == Tiles.SAND
                     setTile(x + dX + pX, y, Tiles.SNOW)
                 dX += 1
     for dX in range(width):
@@ -423,7 +410,7 @@ def generate():
                 clump(x, y, poisson(10), Tiles.TIN, True, 0, 0)
 
     print("Lakes")
-    for i in range(max(2, poisson(4))):
+    for i in range(0): # max(2, poisson(4)), lakes are causing some problems rn
         x = random.randrange(75, WORLD_WIDTH - 75)
         width = max(15, poisson(15))
         depth = max(5, poisson(10))
