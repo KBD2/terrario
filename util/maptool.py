@@ -73,6 +73,7 @@ def randFloat():
 def lerp(x, y, w):
     if (w < 0): return x
     if (w > 1): return y
+    # return (y - x) * w + x
     return (y - x) * ((w * (w * 6.0 - 15.0) + 10.0) * w * w * w) + x
 
 def dot_grad(tile_x, tile_y, x, y):
@@ -215,10 +216,10 @@ def generate():
                     setTile(j, i, tile)
                     continue
                 
-                noise = 0.0;
+                noise = 0.0
                 detail = 30.0
                 
-                while (detail >= 7.5): # 7.5
+                while (detail >= 15.0): # 7.5
                     noise += perlin_gud(j / detail, i / detail) * detail
                     detail /= 2.0
                 
@@ -230,8 +231,8 @@ def generate():
                 else:
                     value = 0
                 
-                if (perlin_gud(j / 24.0, i / 8.0) >= 0.1 + lerp(0.1, 0.0, i / 175.0)):
-                    value = 255
+                # if (perlin_gud(j / 24.0, i / 8.0) >= 0.1 + lerp(0.1, 0.0, i / 175.0)):
+                #     value = 255
                 
                 if (value == 0):
                     setTile(j, i, tile)

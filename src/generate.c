@@ -14,28 +14,94 @@ GYRAM unsigned char yPositions[1000];
 
 GYRAM Coords checkCoords[CHECK_BUFFER_SIZE];
 
+const float rand_dir[] = {
+	1, 0,
+	0.9807852804032304, 0.19509032201612825,
+	0.9238795325112867, 0.3826834323650898,
+	0.8314696123025452, 0.5555702330196022,
+	0.7071067811865476, 0.7071067811865475,
+	0.5555702330196023, 0.8314696123025452,
+	0.38268343236508984, 0.9238795325112867,
+	0.19509032201612833, 0.9807852804032304,
+	0, 1,
+	-0.1950903220161282, 0.9807852804032304,
+	-0.3826834323650897, 0.9238795325112867,
+	-0.555570233019602, 0.8314696123025455,
+	-0.7071067811865475, 0.7071067811865476,
+	-0.8314696123025453, 0.5555702330196022,
+	-0.9238795325112867, 0.3826834323650899,
+	-0.9807852804032304, 0.1950903220161286,
+	-1, 0,
+	-0.9807852804032304, -0.19509032201612836,
+	-0.9238795325112868, -0.38268343236508967,
+	-0.8314696123025455, -0.555570233019602,
+	-0.7071067811865477, -0.7071067811865475,
+	-0.5555702330196022, -0.8314696123025452,
+	-0.38268343236509034, -0.9238795325112865,
+	-0.19509032201612866, -0.9807852804032303,
+	0, -1,
+	0.1950903220161283, -0.9807852804032304,
+	0.38268343236509, -0.9238795325112866,
+	0.5555702330196018, -0.8314696123025455,
+	0.7071067811865474, -0.7071067811865477,
+	0.8314696123025452, -0.5555702330196022,
+	0.9238795325112865, -0.3826834323650904,
+	0.9807852804032303, -0.19509032201612872
+};
+
+static float progress = 0;
+
+static int seed_3a = 1;
+static int seed_3b = 1;
+static int seed_3c = 1;
+
+#define fast_sin(num) (fast_cos((num) + 1.5f * PI))
+#define fast_abs(num) ((num) < 0 ? -(num) : (num))
+
+float fast_cos(float x) {
+  float tp = 1 / (2 * PI);
+
+  x = fast_abs(x * tp);
+  x -= 0.25f + (int)(x + 0.25f);
+  x *= 16.0f * (fast_abs(x) - 0.5f);
+
+  // optional
+  // x += 0.225f * x * (fast_abs(x) - 1.0f);
+
+  return x;
+}
+
 int updateProgress()
 {
-	static float progress = 0;
-
 	progress += 100.0 / NUM_WORLD_GEN_PARTS;
 
 	return (int)(progress);
 }
 
-float interpolate(float a, float b, float x){
-	float f = (1.0 - cosf(x * PI)) * 0.5;
-    return a * (1.0 - f) + b * f;
+int rand_3() {
+  seed_3a = (seed_3a * 1664525 + 1013904223) % 1431655765;
+  seed_3b = (seed_3b * 16843019 + 826366249) % 1431655765;
+  seed_3c = (seed_3c * 16843031 + 826366237) % 1431655765;
+
+  return seed_3a + seed_3b + seed_3c;
+}
+
+void srand_3(int x, int y) {
+	seed_3a = (      x * 1664525 + 1013904223) % 1431655765;
+	seed_3b = (seed_3a * 16843019 + 826366249) % 1431655765;
+	
+	seed_3b = (      y * 16843019 + 826366249) % 1431655765;
+	seed_3a = (seed_3b * 1664525 + 1013904223) % 1431655765;
 }
 
 float randFloat()
 {
-	return (float)rand() / 0x7fffffff;
+	return (float)rand_3() / 0x7fffffff;
 }
 
 int randRange(int low, int high)
 {
-	return (rand() % (high - low)) + low;
+	return (rand_3() % (high - low)) + low;
 }
 
 int poisson(double lambda)
@@ -51,43 +117,29 @@ int poisson(double lambda)
 	return k - 1;
 }
 
-void perlin(int amplitude, int wavelength, int baseY, enum Tiles tile, int iterations)
+float lerp(float x, float y, float w)
 {
-	int perlinY;
-	float a;
-	float b;
+	if (w < 0) return x;
+	if (w > 1) return y;
 
-	for(int x = 0; x < game.WORLD_WIDTH; x++) yPositions[x] = baseY;
+	return (y - x) * w + x;
+	// return (y - x) * ((w * (w * 6.0f - 15.0f) + 10.0f) * w * w * w) + x;
+}
 
-	for(int i = 0; i < iterations; i++)
-	{
-		a = randFloat();
-		b = randFloat();
-		for(int x = 0; x < game.WORLD_WIDTH; x++)
-		{
-			if(x % wavelength == 0)
-			{
-				a = b;
-				b = randFloat();
-				perlinY = a * amplitude;
-			}
-			else
-			{
-				perlinY = interpolate(a, b, (float)(x % wavelength) / wavelength) * amplitude;
-			}
-			yPositions[x] += perlinY;
-		}
-		wavelength >>= 1;
-		amplitude >>= 1;
-	}
+float dot_grad(int tile_x, int tile_y, float x, float y)
+{
+	srand_3(tile_x, tile_y);
+	int angle = rand_3() & 31;
+	
+	return (x - tile_x) * rand_dir[angle * 2 + 0] + (y - tile_y) * rand_dir[angle * 2 + 1];
+}
 
-	for(int x = 0; x < game.WORLD_WIDTH; x++)
-	{
-		for(int y = yPositions[x]; y < game.WORLD_HEIGHT; y++)
-		{
-			setTile(x, y, tile);
-		}
-	}
+float perlin(float x, float y)
+{
+	float a = lerp(dot_grad((int)(x + 0), (int)(y + 0), x, y), dot_grad((int)(x + 1), (int)(y + 0), x, y), x - (int)(x));
+	float b = lerp(dot_grad((int)(x + 0), (int)(y + 1), x, y), dot_grad((int)(x + 1), (int)(y + 1), x, y), x - (int)(x));
+	
+	return lerp(a, b, y - (int)(y));
 }
 
 void clump(int x, int y, int num, enum Tiles tile, bool maskEmpty, float skewHorizontal, float skewVertical)
@@ -202,10 +254,55 @@ void generateWorld()
 	}
 
 	middleText("Terrain", updateProgress());
-//	Dirt
-	perlin(10, 30, game.WORLD_HEIGHT / 5, TILE_DIRT, 3);
-//	Stone
-	perlin(6, 20, game.WORLD_HEIGHT / 2.8, TILE_STONE, 1);
+	for (int j = 0; j < game.WORLD_WIDTH; j++)
+	{
+		char buffer[30];
+		sprintf(buffer, "Terrain(%d)", j);
+		middleText(buffer, (int)(progress));
+		
+	    float sh = (perlin(j / 60.0f, 3.1f) + 1) * 30.0f + (perlin(j / 30.0f, 4.1) + 1) * 15.0f + (perlin(j / 6.0f, 5.1f) + 1) * 2.5f;
+	    float dh = sh + ((perlin(j / 60.0f, 6.1f) + 1) * 20.0f + (perlin(j / 30.0f, 7.1f) + 1) * 10.0f + (perlin(j / 6.0f, 8.1f) + 1) * 2.0f);
+	    
+	    for (int i = 0; i < game.WORLD_HEIGHT; i++)
+	    {
+	        enum Tiles t = TILE_DIRT;
+	        
+	        if (sh <= i) {
+	            if (dh <= i) t = TILE_STONE;
+
+				setTile(j, i, t);
+				continue;
+
+	            if (perlin(j / 32.0f, i / 32.0f) < lerp(0.3f, 0.0f, i / 100.0f))
+	            {
+	                setTile(j, i, t);
+	                continue;
+	            }
+
+	            // if (perlin(j / 24.0f, i / 8.0f) >= 0.1f + lerp(0.1f, 0.0f, i / 175.0f)) continue;
+	            
+	            float noise = 0.0f;
+	            float detail = 30.0f;
+	            
+	            while (detail >= 15.0f)
+	            {
+	                noise += perlin(j / detail, i / detail) * detail;
+	                detail /= 2.0f;
+	            }
+	            
+	            noise /= 30.0f;
+
+	            float warp = ((fast_sin((j + 90.0f * noise) / 12.0f) + 1) * 0.5f);
+	            
+	            float value = (int)(warp * warp * 256.0f);
+	            value = (value >= 192 + lerp(32, 0, i / 175.0f)) ? 255 : 0;
+	            
+	            if (value == 0) setTile(j, i, t);
+	    	}
+		}
+	}
+
+	return;
 
 //	Tunnels
 	middleText("Tunnels", updateProgress());

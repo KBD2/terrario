@@ -159,8 +159,8 @@ int main(void)
 			game = (struct GameCompatibilityPresets) {
 				.HWMODE = MODE_RAM,
 				.RAM_START = (void *)0x88040000,
-				.WORLD_WIDTH = 1000,
-				.WORLD_HEIGHT = 250,
+				.WORLD_WIDTH = 780,
+				.WORLD_HEIGHT = 320,
 				.WORLDGEN_MULTIPLIER = 1.0
 			};
 			break;
@@ -170,8 +170,8 @@ int main(void)
 			game = (struct GameCompatibilityPresets) {
 				.HWMODE = MODE_PRAM,
 				.RAM_START = (void *)0xFE200000,
-				.WORLD_WIDTH = 640,
-				.WORLD_HEIGHT = 250,
+				.WORLD_WIDTH = 500,
+				.WORLD_HEIGHT = 320,
 				.WORLDGEN_MULTIPLIER = 0.64
 			};
 			break;
