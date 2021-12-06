@@ -314,6 +314,8 @@ void generateWorld()
 	      }
 	    }
 	  }
+
+	  /*
 	  
 	  for (int i = 0; i < 300; i++) {
 	  	char buffer[30];
@@ -412,6 +414,7 @@ void generateWorld()
 	      }
 	    }
 	  }
+	*/
 
 	/*
 //	Pots
