@@ -8,6 +8,8 @@
 #define WORLD_WIDTH  780
 #define WORLD_HEIGHT 320
 
+#define WORLD_SEED 0xDEADBEEF
+
 typedef enum tile_t tile_t;
 
 enum tile_t {
@@ -76,6 +78,25 @@ const Color colors[] = {
   (Color){158, 173, 174, 255}
 };
 
+uint32_t rand_seed = 1;
+
+uint32_t fast_rand(void) {
+  rand_seed ^= rand_seed >> 17;
+  rand_seed *= 0xED5AD4BB;
+  rand_seed ^= rand_seed >> 11;
+  rand_seed *= 0xAC4C1B51;
+  rand_seed ^= rand_seed >> 15;
+  rand_seed *= 0x31848BAB;
+  rand_seed ^= rand_seed >> 14;
+  
+  return rand_seed;
+}
+
+void fast_srand(uint32_t seed) {
+  srand(seed);
+  rand_seed = (seed + WORLD_SEED + 1);
+}
+
 float lerp(float x, float y, float w) {
   if (w < 0.0f) return x;
   if (w > 1.0f) return y;
@@ -91,8 +112,8 @@ float lerp_smooth(float x, float y, float w) {
 }
 
 float grad(int x, int y) {
-  srand(x + 1048577 * y);
-  return (rand() % 65537) / 65537.0f;
+  fast_srand(x + 1048577 * y);
+  return (fast_rand() % 65537) / 65537.0f;
 }
 
 float noise_1(float x) {
@@ -171,25 +192,25 @@ int main(void) {
   InitWindow(WORLD_WIDTH * 2, WORLD_HEIGHT * 2, "world!");
   world = malloc(WORLD_WIDTH * WORLD_HEIGHT * sizeof(tile_t));
   
-  srand(0); // TODO
+  fast_srand(0); // TODO
   
   printf("Terrain\n");
   
-  int sand_x = rand() % 4;
+  int sand_x = fast_rand() % 4;
   if (sand_x >= 2) sand_x++;
   
   int snow_x = 4 - sand_x;
-  int jungle_x = rand() % 5;
+  int jungle_x = fast_rand() % 5;
   
-  while (jungle_x == sand_x || jungle_x == snow_x) snow_x = rand() % 5;
+  while (jungle_x == sand_x || jungle_x == snow_x) snow_x = fast_rand() % 5;
   
   sand_x = 90 + ((sand_x * 2 + 1) * (WORLD_WIDTH - 180)) / 10;
   snow_x = 90 + ((snow_x * 2 + 1) * (WORLD_WIDTH - 180)) / 10;
   jungle_x = 90 + ((jungle_x * 2 + 1) * (WORLD_WIDTH - 180)) / 10;
   
-  int sand_width = ((WORLD_WIDTH - 180) / 5) - 25 - (rand() % 10);
-  int snow_width = ((WORLD_WIDTH - 180) / 5) - 35 - (rand() % 10);
-  int jungle_width = ((WORLD_WIDTH - 180) / 5) - (rand() % 10);
+  int sand_width = ((WORLD_WIDTH - 180) / 5) - 25 - (fast_rand() % 10);
+  int snow_width = ((WORLD_WIDTH - 180) / 5) - 35 - (fast_rand() % 10);
+  int jungle_width = ((WORLD_WIDTH - 180) / 5) - (fast_rand() % 10);
   
   for (int i = 0; i < WORLD_WIDTH; i++) {
     float height = 30.0f + noise_1(i / 17.4f) * 15.0f + noise_1(i / 6.3f) * 5.0f;
@@ -207,9 +228,9 @@ int main(void) {
       
       int biome_x = noise_1(j / 21.1f) * 19.0f - 9.5f;
       
-      srand(i + 1048577 * j);
+      fast_srand(i + 1048577 * j);
       
-      if (mirror_x < 90 + rand() % 4 && j >= height && j < height + 10 + rand() % 4) {
+      if (mirror_x < 90 + fast_rand() % 4 && j >= height && j < height + 10 + fast_rand() % 4) {
         world[i + j * WORLD_WIDTH] = tile_sand;
         continue;
       }
@@ -229,15 +250,15 @@ int main(void) {
       
       if (i >= (jungle_x + biome_x) - (jungle_width / 2) && i <= (jungle_x + biome_x) + jungle_width / 2) {
         if (i < ((jungle_x + biome_x) - (jungle_width / 2) + 20)) {
-          srand(i + 1048577 * j);
+          fast_srand(i + 1048577 * j);
           
-          if (rand() % 20 < i - ((jungle_x + biome_x) - (jungle_width / 2))) {
+          if (fast_rand() % 20 < i - ((jungle_x + biome_x) - (jungle_width / 2))) {
             tile = tile_mud;
           }
         } else if (i > ((jungle_x + biome_x + (jungle_width / 2)) - 20)) {
-          srand(i + 1048577 * j);
+          fast_srand(i + 1048577 * j);
           
-          if (rand() % 20 > i - ((jungle_x + biome_x + (jungle_width / 2)) - 20)) {
+          if (fast_rand() % 20 > i - ((jungle_x + biome_x + (jungle_width / 2)) - 20)) {
             tile = tile_mud;
           }
         } else {
@@ -254,8 +275,8 @@ int main(void) {
   printf("Rocks in dirt\n");
   
   for (int i = 0; i < 75; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = rand() % 100;
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = fast_rand() % 100;
     
     if (world[x + y * WORLD_WIDTH] != tile_dirt && world[x + y * WORLD_WIDTH] != tile_mud) {
       i--;
@@ -268,8 +289,8 @@ int main(void) {
   printf("Clay\n");
   
   for (int i = 0; i < 75; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = rand() % 100;
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = fast_rand() % 100;
     
     if (world[x + y * WORLD_WIDTH] != tile_dirt) {
       i--;
@@ -282,8 +303,8 @@ int main(void) {
   printf("Sand\n");
   
   for (int i = 0; i < 30; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = (rand() % 20) + 100;
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = (fast_rand() % 20) + 100;
     
     if (world[x + y * WORLD_WIDTH] != tile_dirt && world[x + y * WORLD_WIDTH] != tile_stone) {
       i--;
@@ -340,8 +361,8 @@ int main(void) {
   printf("Dirt in rocks\n");
   
   for (int i = 0; i < 300; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = rand() % WORLD_HEIGHT;
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = fast_rand() % WORLD_HEIGHT;
     
     if (world[x + y * WORLD_WIDTH] != tile_stone) {
       i--;
@@ -353,14 +374,14 @@ int main(void) {
   
   printf("Shinies\n");
   
-  tile_t ore_1 = (rand() % 2) ? tile_copper : tile_tin;      // 200, 20
-  tile_t ore_2 = (rand() % 2) ? tile_iron : tile_lead;       // 175, 18
-  tile_t ore_3 = (rand() % 2) ? tile_gold : tile_platinum;   // 125, 14
-  tile_t ore_4 = (rand() % 2) ? tile_silver : tile_tungsten; // 150, 16
+  tile_t ore_1 = (fast_rand() % 2) ? tile_copper : tile_tin;      // 200, 20
+  tile_t ore_2 = (fast_rand() % 2) ? tile_iron : tile_lead;       // 175, 18
+  tile_t ore_3 = (fast_rand() % 2) ? tile_gold : tile_platinum;   // 125, 14
+  tile_t ore_4 = (fast_rand() % 2) ? tile_silver : tile_tungsten; // 150, 16
   
   for (int i = 0; i < 200; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = rand() % WORLD_HEIGHT;
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = fast_rand() % WORLD_HEIGHT;
     
     if (world[x + y * WORLD_WIDTH] != tile_stone) {
       i--;
@@ -371,8 +392,8 @@ int main(void) {
   }
   
   for (int i = 0; i < 175; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = rand() % WORLD_HEIGHT;
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = fast_rand() % WORLD_HEIGHT;
     
     if (world[x + y * WORLD_WIDTH] != tile_stone) {
       i--;
@@ -383,8 +404,8 @@ int main(void) {
   }
   
   for (int i = 0; i < 150; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = rand() % WORLD_HEIGHT;
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = fast_rand() % WORLD_HEIGHT;
     
     if (world[x + y * WORLD_WIDTH] != tile_stone) {
       i--;
@@ -395,8 +416,8 @@ int main(void) {
   }
   
   for (int i = 0; i < 125; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = rand() % WORLD_HEIGHT;
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = fast_rand() % WORLD_HEIGHT;
     
     if (world[x + y * WORLD_WIDTH] != tile_stone) {
       i--;
@@ -425,8 +446,8 @@ int main(void) {
   printf("Water\n");
   
   for (int i = 0; i < 150; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = (rand() % (WORLD_HEIGHT - 125)) + 50;
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = (fast_rand() % (WORLD_HEIGHT - 125)) + 50;
     
     if (world[x + y * WORLD_WIDTH] != tile_air) {
       i--;
@@ -435,7 +456,7 @@ int main(void) {
     
     int area = flood(x, y, tile_water);
     
-    if (area > (rand() % 150) + 100) {
+    if (area > (fast_rand() % 150) + 100) {
       unflood(x, y, tile_water);
       i--;
     }
@@ -449,8 +470,8 @@ int main(void) {
   printf("Lava\n");
   
   for (int i = 0; i < 50; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = (rand() % 50) + (WORLD_HEIGHT - 100);
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = (fast_rand() % 50) + (WORLD_HEIGHT - 100);
     
     if (world[x + y * WORLD_WIDTH] != tile_air) {
       i--;
@@ -459,7 +480,7 @@ int main(void) {
     
     int area = flood(x, y, tile_lava);
     
-    if (area > (rand() % 150) + 100) {
+    if (area > (fast_rand() % 150) + 100) {
       unflood(x, y, tile_lava);
       i--;
     }
@@ -468,8 +489,8 @@ int main(void) {
   printf("Cobweb\n");
   
   for (int i = 0; i < 50; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = (rand() % (WORLD_HEIGHT - 155)) + 105;
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = (fast_rand() % (WORLD_HEIGHT - 155)) + 105;
     
     if (world[x + y * WORLD_WIDTH] != tile_air) {
       i--;
@@ -485,11 +506,11 @@ int main(void) {
   int chest_count = 0;
   
   for (int i = 0; i < 15; i++) {
-    int width = 10 + (rand() % 11);
+    int width = 10 + (fast_rand() % 11);
     int height = 8;
     
-    int x = rand() % (WORLD_WIDTH - width);
-    int y = (rand() % (WORLD_HEIGHT - (height + 175))) + 100;
+    int x = fast_rand() % (WORLD_WIDTH - width);
+    int y = (fast_rand() % (WORLD_HEIGHT - (height + 175))) + 100;
     
     if (world[x + y * WORLD_WIDTH] != tile_air) {
       i--;
@@ -525,8 +546,8 @@ int main(void) {
         }
       }
       
-      if (!chest_placed && rand() % 3 == 0) {
-        int chest_x = (rand() % (width - 3)) + x + 1;
+      if (!chest_placed && fast_rand() % 3 == 0) {
+        int chest_x = (fast_rand() % (width - 3)) + x + 1;
         int chest_y = (height - 3) + y;
         
         chests[2 * chest_count + 0] = chest_x;
@@ -544,19 +565,19 @@ int main(void) {
       
       y += (height - 1);
       
-      int new_width = 10 + (rand() % 11);
+      int new_width = 10 + (fast_rand() % 11);
       
       x += (new_width - width) / 2;
-      x += (rand() % (int)(width / 1.5f)) - (width / 3);
+      x += (fast_rand() % (int)(width / 1.5f)) - (width / 3);
       
       if (x < 0) x = 0;
       if (x + new_width > WORLD_WIDTH) x = WORLD_WIDTH - new_width;
       
       width = new_width;
-      height = 7 + (rand() % 3);
+      height = 7 + (fast_rand() % 3);
       
       if (y >= WORLD_HEIGHT - (height + 125)) break;
-      if (rand() % 2 > 0) break;
+      if (fast_rand() % 2 > 0) break;
     }
   }
   
@@ -565,8 +586,8 @@ int main(void) {
   int crystals[32];
   
   for (int i = 0; i < 16; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = (rand() % ((WORLD_HEIGHT / 2) - 50)) + (WORLD_HEIGHT / 2);
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = (fast_rand() % ((WORLD_HEIGHT / 2) - 50)) + (WORLD_HEIGHT / 2);
     
     if (world[(x + 0) + (y + 0) * WORLD_WIDTH] != tile_air ||
         world[(x + 1) + (y + 0) * WORLD_WIDTH] != tile_air ||
@@ -604,8 +625,8 @@ int main(void) {
   printf("Underground Chests\n");
   
   for (int i = 0; i < 20; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = (rand() % (WORLD_HEIGHT - 155)) + 105;
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = (fast_rand() % (WORLD_HEIGHT - 155)) + 105;
     
     if (world[(x + 0) + (y + 0) * WORLD_WIDTH] != tile_air ||
         world[(x + 1) + (y + 0) * WORLD_WIDTH] != tile_air ||
@@ -647,8 +668,8 @@ int main(void) {
   printf("Surface Chests\n");
   
   for (int i = 0; i < 15; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = rand() % 65;
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = fast_rand() % 65;
     
     if (world[(x + 0) + (y + 0) * WORLD_WIDTH] != tile_air ||
         world[(x + 1) + (y + 0) * WORLD_WIDTH] != tile_air ||
@@ -706,12 +727,12 @@ int main(void) {
     int length = 0;
     
     for (int j = 0; j < WORLD_HEIGHT; j++) {
-      if (world[i + j * WORLD_WIDTH] == tile_grass && rand() % 3 == 0) {
+      if (world[i + j * WORLD_WIDTH] == tile_grass && fast_rand() % 3 == 0) {
         y = j;
-        length = (rand() % 8) + 3;
-      } else if (world[i + j * WORLD_WIDTH] == tile_jungle_grass && rand() % 2 == 0) {
+        length = (fast_rand() % 8) + 3;
+      } else if (world[i + j * WORLD_WIDTH] == tile_jungle_grass && fast_rand() % 2 == 0) {
         y = j;
-        length = (rand() % 8) + 3;
+        length = (fast_rand() % 8) + 3;
       } else if (world[i + j * WORLD_WIDTH] == tile_air) {
         if (j > y && j <= y + length) {
           world[i + j * WORLD_WIDTH] = tile_vine;
@@ -724,10 +745,10 @@ int main(void) {
   
   printf("Trees\n");
   
-  for (int i = (rand() % 5) + 5; i < WORLD_WIDTH; i += (rand() % 5) + 5) {
+  for (int i = (fast_rand() % 5) + 5; i < WORLD_WIDTH; i += (fast_rand() % 5) + 5) {
     for (int j = 0; j < WORLD_HEIGHT - 1; j++) {
       if (world[i + j * WORLD_WIDTH] == tile_air && (world[i + (j + 1) * WORLD_WIDTH] == tile_grass || world[i + (j + 1) * WORLD_WIDTH] == tile_jungle_grass)) {
-        int length = (world[i + (j + 1) * WORLD_WIDTH] == tile_jungle_grass ? 8 : 5) + (rand() % 4);
+        int length = (world[i + (j + 1) * WORLD_WIDTH] == tile_jungle_grass ? 8 : 5) + (fast_rand() % 4);
         
         for (int k = 0; k < length; k++) {
           world[i + (j - k) * WORLD_WIDTH] = tile_tree;
@@ -740,10 +761,10 @@ int main(void) {
   
   printf("Cacti\n");
   
-  for (int i = (rand() % 5) + 95; i < WORLD_WIDTH - 90; i += (rand() % 10) + 10) {
+  for (int i = (fast_rand() % 5) + 95; i < WORLD_WIDTH - 90; i += (fast_rand() % 10) + 10) {
     for (int j = 0; j < WORLD_HEIGHT - 1; j++) {
       if (world[i + j * WORLD_WIDTH] == tile_air && world[i + (j + 1) * WORLD_WIDTH] == tile_sand) {
-        int length = 4 + (rand() % 3);
+        int length = 4 + (fast_rand() % 3);
         
         for (int k = 0; k < length; k++) {
           world[i + (j - k) * WORLD_WIDTH] = tile_cactus;
@@ -783,8 +804,8 @@ int main(void) {
   printf("Hellstone\n");
   
   for (int i = 0; i < 50; i++) {
-    int x = rand() % WORLD_WIDTH;
-    int y = WORLD_HEIGHT - (rand() % 35);
+    int x = fast_rand() % WORLD_WIDTH;
+    int y = WORLD_HEIGHT - (fast_rand() % 35);
     
     if (world[x + y * WORLD_WIDTH] != tile_ash) {
       i--;
