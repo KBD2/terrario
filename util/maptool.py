@@ -10,9 +10,9 @@ import random
 import math
 
 # Map constants
-WORLD_WIDTH = 1000
-WORLD_HEIGHT = 250
-WORLD_SMOOTH_PASSES = 5
+WORLD_WIDTH = 780
+WORLD_HEIGHT = 320
+WORLD_SMOOTH_PASSES = 0 # 5
 
 class Tiles(Enum):
     NOTHING = (132, 170, 248)
@@ -34,6 +34,11 @@ class Tiles(Enum):
     CRYSTAL = (182, 18, 57)
     CHEST = (161, 134, 160)
     JUNGLEGRASS = (143, 215, 29)
+    ICE = (159, 191, 255)
+    SNOW = (223, 223, 223)
+    LAVA = (255, 95, 15)
+    ASH = (47, 47, 47)
+    HELLSTONE = (142, 66, 66)
 
 # Call whenever you want to see the world
 def show():
@@ -64,6 +69,25 @@ def interpolate(a, b, x):
 
 def randFloat():
     return random.random()
+
+def lerp(x, y, w):
+    if (w < 0): return x
+    if (w > 1): return y
+    # return (y - x) * w + x
+    return (y - x) * ((w * (w * 6.0 - 15.0) + 10.0) * w * w * w) + x
+
+def dot_grad(tile_x, tile_y, x, y):
+    random.seed(tile_x + 1049576 * tile_y)
+    angle = randFloat() * 1038576
+    
+    dx = x - tile_x
+    dy = y - tile_y  
+    return dx * math.cos(angle) + dy * math.sin(angle)
+
+def perlin_gud(x, y):
+    a = lerp(dot_grad(math.floor(x + 0), math.floor(y + 0), x, y), dot_grad(math.floor(x + 1), math.floor(y + 0), x, y), x - math.floor(x))
+    b = lerp(dot_grad(math.floor(x + 0), math.floor(y + 1), x, y), dot_grad(math.floor(x + 1), math.floor(y + 1), x, y), x - math.floor(x))
+    return lerp(a, b, y - math.floor(y))
 
 def poisson(mean):
     k = 0
@@ -155,7 +179,7 @@ def generateTree(x, y, baseHeight):
     if getTile(x + 1, y + 1) == Tiles.GRASS and random.randrange(0, 3) <= 1: 
         setTile(x + 1, y, Tiles.TREE)
 
-def parabola(x, y, width, depth, material):
+def parabola(x, y, width, depth, material, noise):
     multiplier = -depth / (width / 2) ** 2
     for dX in range(width):
             if x + dX < 0: continue
@@ -163,7 +187,7 @@ def parabola(x, y, width, depth, material):
             for dY in range(y):
                 if getTile(x + dX, dY) != Tiles.NOTHING:
                     setTile(x + dX, dY, Tiles.NOTHING)
-            for dY in range(int(multiplier * (dX - width / 2) ** 2 + depth)):
+            for dY in range(int(multiplier * (dX - width / 2) ** 2 + depth + random.randrange(-noise / 2, noise / 2))):
                 setTile(x + dX, y + dY, material)
 
 def rect(x, y, width, height, material):
@@ -172,11 +196,47 @@ def rect(x, y, width, height, material):
             setTile(x + dX, y + dY, material)
 
 def generate():
-    
     print("Terrain")
-    perlin(10, 30, WORLD_HEIGHT // 5, Tiles.DIRT, 3)
-    perlin(6, 20, WORLD_HEIGHT // 2.8, Tiles.STONE, 1)
 
+    for j in range(WORLD_WIDTH):
+        print(j)
+
+        sh = (perlin_gud(j / 60.0, 3.1) + 1) * 30.0 + (perlin_gud(j / 30.0, 4.1) + 1) * 15.0 + (perlin_gud(j / 6.0, 5.1) + 1) * 2.5
+        dh = sh + ((perlin_gud(j / 60.0, 6.1) + 1) * 20.0 + (perlin_gud(j / 30.0, 7.1) + 1) * 10.0 + (perlin_gud(j / 6.0, 8.1) + 1) * 2.0)
+        
+        for i in range(WORLD_HEIGHT):
+            value = 0
+            tile = Tiles.DIRT
+            
+            if (sh <= i):
+                if (dh <= i):
+                    tile = Tiles.STONE
+
+                if (perlin_gud(j / 32.0, i / 32.0) < lerp(0.3, 0.0, i / 100.0)):
+                    setTile(j, i, tile)
+                    continue
+                
+                noise = 0.0
+                detail = 30.0
+                
+                while (detail >= 15.0): # 7.5
+                    noise += perlin_gud(j / detail, i / detail) * detail
+                    detail /= 2.0
+                
+                noise /= 30.0
+                value = math.floor(((((math.sin((j + 90.0 * noise) / 12.0) + 1) * 0.5) * ((math.sin((j + 90.0 * noise) / 12.0) + 1) * 0.5))) * 256.0)
+                
+                if (value >= 192 + lerp(32, 0, i / 175.0)):
+                    value = 255
+                else:
+                    value = 0
+                
+                # if (perlin_gud(j / 24.0, i / 8.0) >= 0.1 + lerp(0.1, 0.0, i / 175.0)):
+                #     value = 255
+                
+                if (value == 0):
+                    setTile(j, i, tile)
+    
     print("Tunnels")
     x = 100
     while x < WORLD_WIDTH - 100:
@@ -231,27 +291,14 @@ def generate():
             clump(x, y, poisson(10), Tiles.CLAY, True, 0, 0)
 
     print("Small holes")
-    for i in range(250):
+    for i in range(50):
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
         clump(x, y, poisson(50), Tiles.WATER, False, 0, 0)
-    for i in range(750):
+    for i in range(150):
         x = random.randrange(0, WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
         clump(x, y, poisson(50), Tiles.NOTHING, True, 0, 0)
-
-    # A 500-length coord array should be enough for this
-    print("Caves")
-    for i in range(150):
-        x = random.randrange(0, WORLD_WIDTH)
-        y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
-        clump(x, y, poisson(200), Tiles.NOTHING, True, 0, 0)
-
-    print("Surface Caves...")
-    for i in range(150):
-        x = random.randrange(0, WORLD_WIDTH)
-        y = random.randrange(WORLD_HEIGHT // 4, WORLD_HEIGHT // 2.8)
-        clump(x, y, poisson(125), Tiles.NOTHING, True, 0, 0)
     
     print("Grass")
     for x in range(WORLD_WIDTH):
@@ -274,55 +321,97 @@ def generate():
                 setTile(x, y, Tiles.GRASS)
 
     print("Jungle")
-    width = poisson(150)
+    width = poisson(160)
     x = random.choice([WORLD_WIDTH // 5, WORLD_WIDTH - WORLD_WIDTH // 5 - width])
     for y in range(WORLD_HEIGHT):
         dX = 0
-        while getTile(x + dX, y) == Tiles.NOTHING:
+        pX = int(perlin_gud(y / 60.0, 6.17) * 30.0)
+        random.seed(y)
+        while getTile(x + dX + pX, y) == Tiles.NOTHING:
             dX += 1
         while dX < width:
-            tile = getTile(x + dX, y)
+            tile = getTile(x + dX + pX, y)
             if dX < 20 or width - dX < 20:
                 num = (20 - dX) if dX < 20 else (20 - (width - dX))
                 if random.randrange(num) > 5:
                     dX += 1
                     continue
             if tile == Tiles.DIRT or tile == Tiles.STONE or tile == Tiles.SAND:
-                setTile(x + dX, y, Tiles.MUD)
+                setTile(x + dX + pX, y, Tiles.MUD)
             elif tile == Tiles.GRASS:
-                setTile(x + dX, y, Tiles.JUNGLEGRASS)
+                setTile(x + dX + pX, y, Tiles.JUNGLEGRASS)
             dX += 1
     for dX in range(width):
         for y in range(WORLD_HEIGHT):
-            if getTile(x + dX, y) == Tiles.MUD and (
-                getTile(x + dX - 1, y) == Tiles.NOTHING
-                or getTile(x + dX + 1, y) == Tiles.NOTHING
-                or getTile(x + dX, y - 1) == Tiles.NOTHING
-                or getTile(x + dX, y + 1) == Tiles.NOTHING):
-                setTile(x + dX, y, Tiles.JUNGLEGRASS)
+            pX = int(perlin_gud(y / 60.0, 6.17) * 30.0)
+            if getTile(x + dX + pX, y) == Tiles.MUD and (
+                getTile(x + dX + pX - 1, y) == Tiles.NOTHING
+                or getTile(x + dX + pX + 1, y) == Tiles.NOTHING
+                or getTile(x + dX + pX, y - 1) == Tiles.NOTHING
+                or getTile(x + dX + pX, y + 1) == Tiles.NOTHING):
+                setTile(x + dX + pX, y, Tiles.JUNGLEGRASS)
 
+    print("Snow Biome")
+    width = poisson(110)
+    if (x < WORLD_WIDTH // 2):
+        x = WORLD_WIDTH - WORLD_WIDTH // 5 - width
+    else:
+        x = WORLD_WIDTH // 5
+    for y in range(int(WORLD_HEIGHT / 1.5)):
+            dX = 0
+            pX = int(perlin_gud(y / 60.0, 6.17) * 20.0)
+            random.seed(y)
+            while getTile(x + dX + pX, y) == Tiles.NOTHING:
+                dX += 1
+            while dX < width:
+                tile = getTile(x + dX + pX, y)
+                if dX < 20 or width - dX < 20:
+                    num = (20 - dX) if dX < 20 else (20 - (width - dX))
+                    if random.randrange(num) > 5:
+                        dX += 1
+                        continue
+                if ((int(WORLD_HEIGHT / 1.5) - y) < 20):
+                    num = 20 - (int(WORLD_HEIGHT / 1.5) - y)
+                    if random.randrange(num) > 5:
+                        dX += 1
+                        continue
+                if tile == Tiles.STONE:
+                    setTile(x + dX + pX, y, Tiles.ICE)
+                elif tile != Tiles.NOTHING: # == Tiles.DIRT or tile == Tiles.GRASS or tile == Tiles.SAND
+                    setTile(x + dX + pX, y, Tiles.SNOW)
+                dX += 1
+    for dX in range(width):
+        for y in range(int(WORLD_HEIGHT / 1.5)):
+            pX = int(perlin_gud(y / 60.0, 6.17) * 20.0)
+            if getTile(x + dX + pX, y) == Tiles.ICE and (
+                getTile(x + dX + pX - 1, y) == Tiles.NOTHING
+                or getTile(x + dX + pX + 1, y) == Tiles.NOTHING
+                or getTile(x + dX + pX, y - 1) == Tiles.NOTHING
+                or getTile(x + dX + pX, y + 1) == Tiles.NOTHING) and False:
+                setTile(x + dX + pX, y, Tiles.SNOW)
+    
     print("Shinies")
     for i in range(750):
         x = random.randrange(WORLD_WIDTH)
         y = random.randrange(WORLD_HEIGHT)
-        if getTile(x, y) != Tiles.SAND:
+        if getTile(x, y) != Tiles.SAND and getTile(x, y) != Tiles.SNOW and getTile(x, y) != Tiles.ICE:
             clump(x, y, poisson(6), Tiles.IRON, True, 0, 0)
-
+    
     if random.randrange(0, 2) == 0:
         for i in range(750):
             x = random.randrange(WORLD_WIDTH)
             y = random.randrange(WORLD_HEIGHT)
-            if getTile(x, y) != Tiles.SAND:
+            if getTile(x, y) != Tiles.SAND and getTile(x, y) != Tiles.SNOW and getTile(x, y) != Tiles.ICE:
                 clump(x, y, poisson(8), Tiles.COPPER, True, 0, 0)
     else:
         for i in range(750):
             x = random.randrange(WORLD_WIDTH)
             y = random.randrange(WORLD_HEIGHT)
-            if getTile(x, y) != Tiles.SAND:
+            if getTile(x, y) != Tiles.SAND and getTile(x, y) != Tiles.SNOW and getTile(x, y) != Tiles.ICE:
                 clump(x, y, poisson(10), Tiles.TIN, True, 0, 0)
 
     print("Lakes")
-    for i in range(max(2, poisson(3))):
+    for i in range(0): # max(2, poisson(4)), lakes are causing some problems rn
         x = random.randrange(75, WORLD_WIDTH - 75)
         width = max(15, poisson(15))
         depth = max(5, poisson(10))
@@ -335,8 +424,9 @@ def generate():
             rightY += 1
             if getTile(x + width, rightY + 6) == Tiles.NOTHING: rightY += 6
         y = max(leftY, rightY)
-        parabola(x, y, width, depth, Tiles.WATER)
-
+        parabola(x, y, width, depth, Tiles.WATER, 2)
+        
+    
     print("Beaches")
     leftY = 0
     while getTile(60, leftY) == Tiles.NOTHING:
@@ -345,13 +435,13 @@ def generate():
     while getTile(WORLD_WIDTH - 60, rightY) == Tiles.NOTHING:
         rightY += 1
     # Left beach
-    parabola(-62, leftY, 124, 32, Tiles.DIRT)
-    parabola(-60, leftY, 120, 30, Tiles.SAND)
-    parabola(-50, leftY + 2, 100, 20, Tiles.WATER)
+    parabola(-62, leftY, 124, 32, Tiles.DIRT, 2)
+    parabola(-60, leftY, 120, 30, Tiles.SAND, 2)
+    parabola(-50, leftY + 2, 100, 20, Tiles.WATER, 2)
     # Right beach
-    parabola(WORLD_WIDTH - 62, rightY, 124, 32, Tiles.DIRT)
-    parabola(WORLD_WIDTH - 60, rightY, 120, 30, Tiles.SAND)
-    parabola(WORLD_WIDTH - 50, rightY + 2, 100, 20, Tiles.WATER)
+    parabola(WORLD_WIDTH - 62, rightY, 124, 32, Tiles.DIRT, 2)
+    parabola(WORLD_WIDTH - 60, rightY, 120, 30, Tiles.SAND, 2)
+    parabola(WORLD_WIDTH - 50, rightY + 2, 100, 20, Tiles.WATER, 2)
             
     print("Gravitating Sand")
     for x in range(WORLD_WIDTH):
@@ -374,6 +464,8 @@ def generate():
                 if getTile(x, y - 1) == Tiles.NOTHING and random.randrange(0, 3) == 0:
                     setTile(x , y - 1, Tiles.WATER)
 
+    ySave = 0
+    
     print("Smooth World")
     for i in range(WORLD_SMOOTH_PASSES):
         for passDir in range(2):
@@ -394,17 +486,17 @@ def generate():
                 else:   
                     ySave = y
 
-    print("Adding Cobwebs...")
-    for i in range(750):
+    print("Cobwebs")
+    for i in range(250):
         for tries in range(1000):
             x = random.randrange(0, WORLD_WIDTH)
-            y = random.randrange(WORLD_HEIGHT // 3.2, WORLD_HEIGHT)
+            y = random.randrange(WORLD_HEIGHT // 2.4, WORLD_HEIGHT - (WORLD_HEIGHT // 6.8))
 
             if getTile(x, y) != Tiles.NOTHING and getTile(x, y) != Tiles.VINE and getTile(x, y) != Tiles.COBWEB:
                 continue
 
             canPlace = 0
-            new_y = 0
+            new_y = y
 
             for j in range(y - 1, -1, -1):
                 if(getTile(x, j) != Tiles.NOTHING):
@@ -418,7 +510,7 @@ def generate():
                 break
 
     print("Life Crystals")
-    for i in range(40):
+    for i in range(20):
         for place in range(50):
             x = random.randrange(25, WORLD_WIDTH - 25)
             y = random.randrange(WORLD_HEIGHT // 2.8, WORLD_HEIGHT - 10)
@@ -508,10 +600,32 @@ def generate():
                     if getTile(x, y + dY) != Tiles.NOTHING: break;
                     setTile(x, y + dY, Tiles.VINE)
 
+    print("Underworld")
+    hell_height = int(WORLD_HEIGHT // 6.8)
+    for x in range(WORLD_WIDTH):
+        for y in range(hell_height):
+            if y > (((perlin_gud(x / 20.0, 12.5) * 1.5 + perlin_gud(x / 8.0, 14.7) * 0.5) + 1) * (hell_height // 2)) + 10:
+                setTile(x, y + (WORLD_HEIGHT - hell_height), Tiles.ASH)
+            elif y > (hell_height // 1.8):
+                setTile(x, y + (WORLD_HEIGHT - hell_height), Tiles.LAVA)
+            else:
+                setTile(x, y + (WORLD_HEIGHT - hell_height), Tiles.NOTHING)
+    for x in range(int(WORLD_WIDTH // 4)):
+        clump(int(4 * (x + 0.5)), WORLD_HEIGHT - hell_height, 60, Tiles.ASH, False, 0, 0)
+    
+    print("Hellstone")
+    for i in range(200):
+        x = random.randrange(WORLD_WIDTH)
+        y = WORLD_HEIGHT - random.randrange(hell_height - 15)
+        while getTile(x, y) != Tiles.ASH:
+            x = random.randrange(WORLD_WIDTH)
+            y = WORLD_HEIGHT - random.randrange(hell_height - 15)
+        clump(x, y, poisson(7), Tiles.HELLSTONE, True, 0, 0)
+
 ##### END ALGORITHM #####
 
 image = Image.new("RGB", (WORLD_WIDTH, WORLD_HEIGHT), Tiles.NOTHING.value)
 generate()
 show()
 if input("Save image? ").lower() in ('y', 'yes'):
-    image.resize((2000, 500), Image.NEAREST).save("./map.png")
+    image.resize((WORLD_WIDTH * 2, WORLD_HEIGHT * 2), Image.NEAREST).save("./map.png")
