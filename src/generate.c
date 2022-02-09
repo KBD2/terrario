@@ -570,9 +570,9 @@ void generateWorld()
 
 //	Gems(had to do it in a separate step for... ummmm... reasons?)
 	middleText("Gems", updateProgress());
-	for(int x = 0; x < game.WORLD_WIDTH; x++)
+	for(int x = 1; x < game.WORLD_WIDTH - 1; x++)
 	{
-		for(int y = game.WORLD_HEIGHT / 3.2; y < game.WORLD_HEIGHT; y++)
+		for(int y = game.WORLD_HEIGHT / 3.2; y < game.WORLD_HEIGHT - 1; y++)
 		{
 			if((rand() % 10) == 0)
 			{
@@ -667,7 +667,7 @@ void generateWorld()
 
 //	Surface Chests
 	middleText("Surface Chests", updateProgress());
-	for(int x = 0; x < game.WORLD_WIDTH; x++)
+	for(int x = 20; x < game.WORLD_WIDTH - 20; x++)
 	{
 		stage = 0;
 		for(int y = 0; y < game.WORLD_HEIGHT / 4; y++)
