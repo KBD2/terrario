@@ -229,7 +229,7 @@ void saveGame()
 				error = BFile_Create(filePath, BFile_File, &regionFileSize);
 				if(error < 0)
 				{
-					save.error = (y << 4) | x;
+					save.error = (y << 4) | x; // Helpful for knowing in which file error occurred
 					return;
 				}
 

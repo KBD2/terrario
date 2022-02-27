@@ -48,6 +48,7 @@ int poisson(double lambda)
 		k++;
 		p *= randFloat();
 	}
+
 	return k - 1;
 }
 
@@ -195,6 +196,7 @@ void generateWorld()
 	int deltaY;
 	int depth, leftY, rightY;
 
+//	Make sure we have a clear map to work with
 	middleText("Reset", updateProgress());
 	for(int y = 0; y < game.WORLD_HEIGHT; y++)
 	{

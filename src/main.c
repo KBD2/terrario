@@ -192,6 +192,7 @@ int main(void)
 	if(!testRAM()) 
 	{
 		incompatibleMenu(-99);
+		
 		return 1;
 	}
 
