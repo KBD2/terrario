@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 /*
 ----- MENU -----
 
@@ -49,6 +51,14 @@ void debugMenu();
 An exit dialog box.
 */
 int exitMenu();
+
+/* continueExploreMenu
+Asks whether the player wants to leave the current chunk and generate/load
+the next one.
+
+Returns true if the player chose Yes, false otherwise.
+*/
+bool continueExploreMenu();
 
 /* lowSpaceMenu
 A menu to inform the player that they should optimise their storage.

@@ -143,6 +143,10 @@ struct Player {
 	
 	Coords spawn;
 
+	/* Chunk containing the spawn point. spawn itself is chunk-local. */
+	int spawnChunkX;
+	int spawnChunkY;
+
 	int jumpTimer;
 	bool jumpReleased;
 	int swingFrame;

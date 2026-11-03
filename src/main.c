@@ -7,6 +7,7 @@
 #include <gint/hardware.h>
 #include <gint/gray.h>
 #include <gint/gint.h>
+#include <gint/keyboard.h>
 #include <gint/timer.h>
 #include <fxlibc/printf.h>
 
@@ -23,9 +24,6 @@
 #include "optimise.h"
 #include "npc.h"
 #include "chat.h"
-
-// Referencing this symbol links gint's SPU driver, which enables P-RAM.
-int spu_zero(void);
 
 // Syscalls
 const unsigned int sc003B[] = { SCA, SCB, SCE, 0x003B };
@@ -49,18 +47,6 @@ int frameCallback(volatile int *flag)
 	return TIMER_CONTINUE;
 }
 
-// Checks if the RAM we'll be using to store world tiles works
-bool testRAM()
-{
-	if(game.HWMODE == MODE_RAM && gint[HWRAM] < 512 * 1024) return false;
-	volatile uint32_t *address = game.RAM_START;
-	uint32_t previous = *address;
-	*address = 0x00c0ffee;
-	bool ok = *address == 0x00c0ffee;
-	*address = previous;
-	return ok;
-}
-
 void setPlayerSpawn()
 {
 	int playerX = (game.WORLD_WIDTH / 2);
@@ -70,6 +56,77 @@ void setPlayerSpawn()
 
 	player.spawn.x = playerX << 3;
 	player.spawn.y = (playerY << 3) - player.props.height;
+	player.spawnChunkX = save.chunkX;
+	player.spawnChunkY = save.chunkY;
+}
+
+static int exploreCooldown = 0;
+
+/* Handles walking into one of the four edges of the current chunk. The world
+   is a grid of 160x75 chunks: leaving through an edge saves the current chunk
+   and then loads/generates the next one, entering from the opposite edge. */
+static void checkExploreEdge()
+{
+	int direction;
+	int chunkX, chunkY, playerX, playerY;
+
+	if(exploreCooldown > 0)
+	{
+		exploreCooldown--;
+		return;
+	}
+	if(player.combat.health <= 0) return;
+
+	direction = currentExploreDirection();
+	if(direction == EXPLORE_NONE) return;
+
+	if(!continueExploreMenu())
+	{
+//		Don't keep asking while the player leans on the edge
+		exploreCooldown = 120;
+		clearevents();
+		return;
+	}
+
+	chunkX = save.chunkX;
+	chunkY = save.chunkY;
+	playerX = player.props.x;
+	playerY = player.props.y;
+
+	switch(direction)
+	{
+		case EXPLORE_LEFT:
+			chunkX--;
+			playerX = (game.WORLD_WIDTH - VAR_BUF_OFFSET) * 8 - player.props.width;
+			break;
+
+		case EXPLORE_RIGHT:
+			chunkX++;
+			playerX = VAR_BUF_OFFSET * 8;
+			break;
+
+		case EXPLORE_UP:
+			chunkY--;
+			playerY = (game.WORLD_HEIGHT - VAR_BUF_OFFSET) * 8 - player.props.height;
+			break;
+
+		case EXPLORE_DOWN:
+			chunkY++;
+			playerY = VAR_BUF_OFFSET * 8;
+			break;
+
+		default:
+			return;
+	}
+
+	if(!travelToChunk(chunkX, chunkY, playerX, playerY))
+	{
+		if(save.error == -4) loadFailMenu();
+		else saveFailMenu();
+		save.error = -99;
+	}
+	exploreCooldown = 45;
+	clearevents();
 }
 
 bool gameLoop(volatile int *flag)
@@ -82,9 +139,10 @@ bool gameLoop(volatile int *flag)
 	while(true)
 	{
 		updateRet = keyboardUpdate();
-		if(!respawnCounter) playerUpdate(frames);
 		if(updateRet == UPDATE_EXIT) return true;
 		else if(updateRet == UPDATE_EXIT_NOSAVE) return false;
+		if(!respawnCounter) playerUpdate(frames);
+		if(!respawnCounter) checkExploreEdge();
 
 		if(frames & 1 && world.explosion.numParticles > 0) updateExplosion();
 		if(frames % 8 == 0) worldUpdate();
@@ -97,8 +155,18 @@ bool gameLoop(volatile int *flag)
 		{
 			if(respawnCounter == 1)
 			{
-				player.props.x = player.spawn.x;
-				player.props.y = player.spawn.y;
+				if(player.spawnChunkX != save.chunkX || player.spawnChunkY != save.chunkY)
+				{
+					if(!travelToChunk(player.spawnChunkX, player.spawnChunkY, player.spawn.x, player.spawn.y))
+					{
+						save.error = -99;
+					}
+				}
+				else
+				{
+					player.props.x = player.spawn.x;
+					player.props.y = player.spawn.y;
+				}
 				player.combat.health = player.maxHealth;
 				player.props.xVel = 0;
 				player.props.yVel = 0;
@@ -149,27 +217,15 @@ int main(void)
 
 	__printf_enable_fixed();
 
+	/* Every model now uses a single 160x75 chunk of ordinary RAM. */
 	switch(gint[HWCALC])
 	{
 		case HWCALC_FX9860G_SH4:
-			game = (struct GameCompatibilityPresets) {
-				.HWMODE = MODE_RAM,
-				.RAM_START = (void *)0x88040000,
-				.WORLD_WIDTH = 1000,
-				.WORLD_HEIGHT = 250,
-				.WORLDGEN_MULTIPLIER = 1.0
-			};
-			break;
-		
 		case HWCALC_G35PE2:
-			/* GIII: keep the 160 kB world in SPU P-RAM, not the 61 kB heap. */
-			spu_zero();
 			game = (struct GameCompatibilityPresets) {
-				.HWMODE = MODE_PRAM,
-				.RAM_START = (void *)0xFE200000,
-				.WORLD_WIDTH = 640,
-				.WORLD_HEIGHT = 250,
-				.WORLDGEN_MULTIPLIER = 0.64
+				.WORLD_WIDTH = 160,
+				.WORLD_HEIGHT = 75,
+				.WORLDGEN_MULTIPLIER = 0.05
 			};
 			break;
 		
@@ -182,17 +238,21 @@ int main(void)
 		.tileDataSize = game.WORLD_HEIGHT * game.WORLD_WIDTH * sizeof(Tile),
 		.regionsX = (game.WORLD_WIDTH + REGION_SIZE - 1) / REGION_SIZE,
 		.regionsY = (game.WORLD_HEIGHT + REGION_SIZE - 1) / REGION_SIZE,
-		.tileData = game.RAM_START,
 		.error = -99,
 	};
 
-	if(!testRAM()) 
-	{
-		incompatibleMenu(-99);
-		return 1;
-	}
+	/* The whole chunk lives in normal RAM. At 160x75 this is 12 kB, so the
+	   GIII no longer needs the SPU P-RAM workaround. */
+	save.tileData = malloc(save.tileDataSize);
+	allocCheck(save.tileData);
+	memset(save.tileData, 0, save.tileDataSize);
 
-	srand(RTC_GetTicks());
+	unsigned int seed = RTC_GetTicks();
+	srand(seed);
+//	Mix in another value so two new worlds started on the same RTC tick don't
+//	reuse each other's chunk files.
+	seed ^= (unsigned int)rand() << 16;
+	srand(seed);
 
 	dgray(DGRAY_ON);
 
@@ -269,6 +329,9 @@ int main(void)
 
 	if(menuSelect == 0) // New game
 	{
+		save.chunkX = 0;
+		save.chunkY = 0;
+		save.worldSeed = seed;
 		generateWorld();
 		memset(save.regionData, 1, save.regionsX * save.regionsY);
 		player.inventory.items[0] = (Item){ITEM_COPPER_SWORD, rand() % PREFIX_COUNT, 1};
@@ -344,6 +407,7 @@ int main(void)
 //	Nothing is allocated if there are no NPCs
 	if(world.npcs != NULL) free(world.npcs);
 	if(world.markers != NULL) free(world.markers);
+	free(save.tileData);
 	if(save.error != -99) saveFailMenu();
 	
 	if(doSave)

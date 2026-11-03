@@ -91,6 +91,12 @@ x, y: Tile coordinates of the top left of the screen to use as deltas.
 */
 void updateVarBuffer(int x, int y);
 
+/* resetVarBuffer
+Discards the variant buffer contents, so the next render fills it from
+scratch. Used after switching to another world chunk.
+*/
+void resetVarBuffer();
+
 /* setVar
 Either randomises the variant or computes the variant of the given tile.
 Does nothing if the tile is out of the variant buffer window.

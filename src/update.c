@@ -96,8 +96,15 @@ void useHeld()
 		switch(player.inventory.getSelected()->id)
 		{
 			case ITEM_MAGIC_MIRROR:
-				player.props.x = player.spawn.x;
-				player.props.y = player.spawn.y;
+				if(player.spawnChunkX != save.chunkX || player.spawnChunkY != save.chunkY)
+				{
+					if(!travelToChunk(player.spawnChunkX, player.spawnChunkY, player.spawn.x, player.spawn.y)) break;
+				}
+				else
+				{
+					player.props.x = player.spawn.x;
+					player.props.y = player.spawn.y;
+				}
 				player.pixelsFallen = 0;
 				player.useFrames = 90;
 				break;
@@ -281,6 +288,8 @@ enum UpdateReturnCodes keyboardUpdate()
 						if(!checkArea(x - 1, y - 1, 2, 1, false)) break;
 						player.spawn.x = x << 3;
 						player.spawn.y = (y - 1) << 3;
+						player.spawnChunkX = save.chunkX;
+						player.spawnChunkY = save.chunkY;
 						sendMessage("Spawn set!");
 						break;
 
@@ -381,6 +390,21 @@ enum UpdateReturnCodes keyboardUpdate()
 
 
 	return UPDATE_CONTINUE;
+}
+
+int currentExploreDirection()
+{
+	int minX = VAR_BUF_OFFSET << 3;
+	int maxX = ((game.WORLD_WIDTH - VAR_BUF_OFFSET) << 3) - player.props.width;
+	int minY = VAR_BUF_OFFSET << 3;
+	int maxY = ((game.WORLD_HEIGHT - VAR_BUF_OFFSET) << 3) - player.props.height;
+
+	if(player.props.x <= minX && keydown(KEY_4)) return EXPLORE_LEFT;
+	if(player.props.x >= maxX && keydown(KEY_6)) return EXPLORE_RIGHT;
+	if(player.props.y <= minY && keydown(KEY_8)) return EXPLORE_UP;
+	if(player.props.y >= maxY && keydown(KEY_2)) return EXPLORE_DOWN;
+
+	return EXPLORE_NONE;
 }
 
 void playerUpdate(int frames)

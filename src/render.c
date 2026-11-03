@@ -532,6 +532,13 @@ void fillVarBuffer(int startX, int startY, int width, int height)
 	}
 }
 
+void resetVarBuffer()
+{
+//	Far enough away that the next updateVarBuffer() refills everything
+	varBufferPos.x = -10000;
+	varBufferPos.y = -10000;
+}
+
 void updateVarBuffer(int x, int y)
 {
 	int offsetX = x - (varBufferPos.x + VAR_BUF_OFFSET);

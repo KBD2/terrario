@@ -8,7 +8,7 @@ This document describes the high-level architecture of Terrario.
 
 The main game loop consists of working on data clumped in five main groups:
 
-- World storage: All the world tiles, as well as chest inventories.
+- World storage: The currently loaded 160x75 chunk of world tiles, as well as its chest inventories and NPCs. Visited chunks are saved individually and loaded when the player walks back into them.
 - Player storage: The player's current state, including their inventory.
 - Entity storage: The current world entities.
 - NPC storage: The world's NPCs.

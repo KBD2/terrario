@@ -32,3 +32,9 @@ void playerUpdate(int frames);
 Updates the world tiles in a region around the player.
 */
 void worldUpdate();
+
+/* currentExploreDirection
+Returns EXPLORE_LEFT/RIGHT/UP/DOWN when the player is at the matching edge of
+the chunk and pressing toward it, otherwise EXPLORE_NONE.
+*/
+int currentExploreDirection();

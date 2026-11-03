@@ -12,17 +12,19 @@ main menu and game version in case it's accidentally left enabled.
 */
 //#define DEBUGMODE
 
-enum HWModes {
-	MODE_RAM,
-	MODE_PRAM
-};
-
 struct GameCompatibilityPresets {
-	enum HWModes HWMODE;
-	void *RAM_START;
 	int WORLD_WIDTH;
 	int WORLD_HEIGHT;
 	float WORLDGEN_MULTIPLIER;
+};
+
+/* Directions the player can leave a 160x75 world through. */
+enum ExploreDirections {
+	EXPLORE_NONE,
+	EXPLORE_LEFT,
+	EXPLORE_RIGHT,
+	EXPLORE_UP,
+	EXPLORE_DOWN
 };
 
 extern struct GameCompatibilityPresets game;
@@ -30,7 +32,7 @@ extern struct GameCompatibilityPresets game;
 #define allocCheck(x) if((x) == NULL) memoryErrorMenu()
 
 #ifndef DEBUGMODE
-#define VERSION "v0.10.1"
+#define VERSION "v0.11.0"
 #else
 #define VERSION "DEBUG BUILD!"
 #endif

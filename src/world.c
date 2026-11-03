@@ -153,8 +153,6 @@ struct ItemLootTable loots[] = {
 	},
 };
 
-tilePun group;
-
 int timeToTicks(int hour, int minute)
 {
 	hour %= 24;

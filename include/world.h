@@ -135,13 +135,6 @@ struct World {
 	
 extern struct World world;
 
-typedef union {
-	Tile tiles[4];
-	uint32_t aligned;
-} tilePun;
-
-extern tilePun group;
-
 typedef struct {
 	int num;
 	const enum Items *items;
@@ -168,14 +161,7 @@ static inline Tile getTile(int x, int y)
 {
 	if((unsigned)x >= (unsigned)game.WORLD_WIDTH ||
 	   (unsigned)y >= (unsigned)game.WORLD_HEIGHT) return (Tile){TILE_STONE};
-	int offset = y * game.WORLD_WIDTH + x;
-	Tile tile;
-	if(game.HWMODE == MODE_RAM) tile = world.tiles[offset];
-	else {
-		tilePun word;
-		word.aligned = *(volatile uint32_t *)((unsigned char *)save.tileData + (offset & ~3));
-		tile = word.tiles[offset & 3];
-	}
+	Tile tile = world.tiles[y * game.WORLD_WIDTH + x];
 	return tile.id < TILES_COUNT ? tile : (Tile){TILE_STONE};
 }
 
@@ -184,15 +170,7 @@ static inline void setTile(int x, int y, enum Tiles tile)
 	if((unsigned)x >= (unsigned)game.WORLD_WIDTH ||
 	   (unsigned)y >= (unsigned)game.WORLD_HEIGHT ||
 	   (unsigned)tile >= TILES_COUNT) return;
-	int offset = y * game.WORLD_WIDTH + x;
-	if(game.HWMODE == MODE_RAM) world.tiles[offset] = (Tile){tile};
-	else {
-		volatile uint32_t *address = (volatile uint32_t *)((unsigned char *)save.tileData + (offset & ~3));
-		tilePun word;
-		word.aligned = *address;
-		word.tiles[offset & 3] = (Tile){tile};
-		*address = word.aligned;
-	}
+	world.tiles[y * game.WORLD_WIDTH + x] = (Tile){tile};
 	/* Includes sand, grass, and multi-tile objects across region boundaries. */
 	save.regionData[(y / REGION_SIZE) * save.regionsX + x / REGION_SIZE] = 1;
 }
