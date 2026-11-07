@@ -5,47 +5,61 @@
 
 The game save/load system.
 
-The world is split into 160x75 chunks. Only the chunk the player is currently
-in lives in RAM; every chunk that has been visited is stored in its own file
-under \\fls0\TERRARIO. Moving to an adjacent chunk saves the current one first,
-then loads the neighbouring chunk if it has been visited before, or generates
-it if it has not.
+The world is infinite and generated chunk by chunk (see worldgen.h); only a
+small window of chunks lives in RAM (see stream.h). Everything is stored in
+the TERRARIO folder of the storage memory:
+
+- save.info   Version, world seed and time of day.
+- player.dat  Inventory, health, position and spawn point (global pixels).
+- npc.dat     House markers and NPCs, in global coordinates.
+- C*.dat      One file per chunk the player has modified. Unmodified chunks
+              are not saved at all: they are regenerated from the seed.
+- K*.dat      One file per chest that has been opened or placed.
+
+File names are kept within 8 characters so they also work on the older
+CASIOWIN filesystem (fx-9860GII). Every write has an even size.
 */
+
+#include <stdbool.h>
+#include <stdint.h>
 
 #include "entity.h"
 
+/* The one place where the storage memory folder is spelled out */
+#define SAVE_FOLDER u"\\\\fls0\\TERRARIO"
+#define SAVE_FILE(name) u"\\\\fls0\\TERRARIO\\" name
+#define SAVE_FOLDER_ASCII "\\\\fls0\\TERRARIO\\"
+
 struct SaveData {
 	int tileDataSize;
-	int regionsX;
-	int regionsY;
 	void *tileData;
-	char regionData[MAX_REGIONS];
 	int timeTicks;
 	int error;
 
-	/* Global position of the loaded chunk, in chunks. */
-	int chunkX;
-	int chunkY;
-
-	/* Seed for the terrain heightmap, shared by every chunk of the world. */
+	/* Seed shared by every chunk of the world */
 	unsigned int worldSeed;
-
-	/* Set when loadChunkFile() could not find the requested chunk file. */
-	bool chunkMissing;
 };
 
 extern struct SaveData save;
 extern struct Player player;
 
 /* saveGame
-Saves the player and the currently loaded chunk to files.
+Saves the player, NPCs and every modified chunk in RAM. Must be called inside
+a gint_world_switch().
 */
 void saveGame();
 
 /* loadSave
-Loads the save files.
+Loads save.info and player.dat. Must be called inside a gint_world_switch().
+The chunk window and NPCs are loaded afterwards with finishLoad().
 */
 void loadSave();
+
+/* finishLoad
+Loads the chunk window around the player and then the NPCs. Called from the
+normal gint world after a successful loadSave().
+*/
+void finishLoad();
 
 /* getSave
 Checks if a game save exists.
@@ -54,24 +68,34 @@ Returns true if a save exists, false otherwise.
 */
 bool getSave();
 
+/* ensureSaveFolder
+Creates the TERRARIO folder if it does not exist. Must be called inside a
+gint_world_switch().
+*/
+bool ensureSaveFolder();
+
+/* clearSaveFolder
+Deletes the chunk and chest files of a previous world. Must be called inside a
+gint_world_switch().
+*/
+void clearSaveFolder();
+
 /* getVersionInfo
-Copies the \TERRARIO\save.info file into versionBuffer. Use getSave to ensure
-the file exists!
+Copies the version string of save.info into versionBuffer. Use getSave to
+ensure the file exists!
 */
 void getVersionInfo();
 
-/* travelToChunk
-Saves the current chunk, then loads the chunk at the given coordinates (or
-generates it if this is the first visit) and puts the player at the given
-chunk-local pixel position.
+/* savePath
+Builds the FONTCHARACTER path of a file in the save folder.
 
-Returns true on success, false if saving or loading failed.
+name: ASCII file name, at most 12 characters.
+path: Receives the path, must hold at least 40 characters.
 */
-bool travelToChunk(int chunkX, int chunkY, int playerX, int playerY);
+void savePath(const char *name, uint16_t *path);
 
-/* loadChunkFile
-Loads the chunk at save.chunkX/save.chunkY. If the file does not exist,
-save.chunkMissing is set and no chunk data is changed. Must be called inside a
-gint_world_switch().
+/* encodeName
+Writes a value as `digits` base-32 characters (0-9, A-V). Used to keep file
+names short.
 */
-void loadChunkFile();
+void encodeName(char *out, unsigned int value, int digits);

@@ -96,15 +96,13 @@ void useHeld()
 		switch(player.inventory.getSelected()->id)
 		{
 			case ITEM_MAGIC_MIRROR:
-				if(player.spawnChunkX != save.chunkX || player.spawnChunkY != save.chunkY)
+				if(!streamTeleport(player.spawn.x, player.spawn.y))
 				{
-					if(!travelToChunk(player.spawnChunkX, player.spawnChunkY, player.spawn.x, player.spawn.y)) break;
+					saveFailMenu();
+					break;
 				}
-				else
-				{
-					player.props.x = player.spawn.x;
-					player.props.y = player.spawn.y;
-				}
+				player.props.xVel = 0;
+				player.props.yVel = 0;
 				player.pixelsFallen = 0;
 				player.useFrames = 90;
 				break;
@@ -264,9 +262,17 @@ enum UpdateReturnCodes keyboardUpdate()
 						if(tile == TILE_CHEST_R) x--;
 						while(getTile(x, y - 1).id == TILE_CHEST_L) y--;
 						chest = world.chests.findChest(x, y);
-						if(chest == NULL) world.chests.addChest(x, y);
+						if(chest == NULL)
+						{
+							world.chests.addChest(x, y);
+							chest = world.chests.findChest(x, y);
+						}
 						player.inventory.ticksSinceInteracted = 0;
-						inventoryMenu(world.chests.findChest(x, y));
+						if(chest != NULL)
+						{
+							inventoryMenu(chest);
+							world.chests.flushChest();
+						}
 						break;
 
 					case TILE_DOOR_C:
@@ -286,10 +292,8 @@ enum UpdateReturnCodes keyboardUpdate()
 					case TILE_BED_MID:
 						if(getTile(x, y - 1).id == TILE_BED_MID) y--;
 						if(!checkArea(x - 1, y - 1, 2, 1, false)) break;
-						player.spawn.x = x << 3;
-						player.spawn.y = (y - 1) << 3;
-						player.spawnChunkX = save.chunkX;
-						player.spawnChunkY = save.chunkY;
+						player.spawn.x = (x + stream.originX) * 8;
+						player.spawn.y = (y - 1 + stream.originY) * 8;
 						sendMessage("Spawn set!");
 						break;
 
@@ -390,21 +394,6 @@ enum UpdateReturnCodes keyboardUpdate()
 
 
 	return UPDATE_CONTINUE;
-}
-
-int currentExploreDirection()
-{
-	int minX = VAR_BUF_OFFSET << 3;
-	int maxX = ((game.WORLD_WIDTH - VAR_BUF_OFFSET) << 3) - player.props.width;
-	int minY = VAR_BUF_OFFSET << 3;
-	int maxY = ((game.WORLD_HEIGHT - VAR_BUF_OFFSET) << 3) - player.props.height;
-
-	if(player.props.x <= minX && keydown(KEY_4)) return EXPLORE_LEFT;
-	if(player.props.x >= maxX && keydown(KEY_6)) return EXPLORE_RIGHT;
-	if(player.props.y <= minY && keydown(KEY_8)) return EXPLORE_UP;
-	if(player.props.y >= maxY && keydown(KEY_2)) return EXPLORE_DOWN;
-
-	return EXPLORE_NONE;
 }
 
 void playerUpdate(int frames)
@@ -537,6 +526,7 @@ void worldUpdate()
 	int placeX, placeY;
 	enum SupportTypes support;
 	int virtX, virtY;
+	bool dirty;
 
 	for(int y = min(game.WORLD_HEIGHT - 1, (player.props.y >> 3) + 10); y > max(0, (player.props.y >> 3) - 10); y--)
 	{
@@ -546,15 +536,20 @@ void worldUpdate()
 //			Drop sand tiles
 			if(tiles[tile].physics == PHYS_SAND && getTile(x, y + 1).id == TILE_NOTHING)
 			{
+//				Falling sand only needs saving if it lands in or leaves a modified
+//				chunk; otherwise it will just fall again next time
+				dirty = streamIsDirty(x, y) || streamIsDirty(x, y + 1);
 				for(tempY = y; tempY >= 0 && tiles[getTile(x, tempY).id].physics == PHYS_SAND; tempY--)
 				{
 					support = tiles[getTile(x, tempY - 1).id].support;
 					if(support == SUPPORT_NEED) world.removeTile(x, tempY - 1);
 					else if(support == SUPPORT_KEEP) break;
-					setTile(x, tempY + 1, getTile(x, tempY).id);
+					setTileNatural(x, tempY + 1, getTile(x, tempY).id);
+					if(dirty) streamMarkDirty(x, tempY + 1);
 					setVar(x, tempY + 1);
 				}
-				setTile(x, tempY + 1, TILE_NOTHING);
+				setTileNatural(x, tempY + 1, TILE_NOTHING);
+				if(dirty) streamMarkDirty(x, tempY + 1);
 			}
 //			Water tile physics
 			else if(tile == TILE_WATER)
@@ -593,11 +588,15 @@ void worldUpdate()
 				}
 				if(placeX > 0)
 				{
-					setTile(x, y, TILE_NOTHING);
+					dirty = streamIsDirty(x, y) || streamIsDirty(placeX, placeY);
+					setTileNatural(x, y, TILE_NOTHING);
 					if(getTile(placeX, placeY).id != TILE_NOTHING) removeTile(placeX, placeY);
-					setTile(placeX, placeY, TILE_WATER);
-					regionChange(x, y);
-					regionChange(placeX, placeY);
+					setTileNatural(placeX, placeY, TILE_WATER);
+					if(dirty)
+					{
+						regionChange(x, y);
+						regionChange(placeX, placeY);
+					}
 					setVar(placeX, placeY);
 				}
 			}
@@ -609,7 +608,7 @@ void worldUpdate()
 					|| getTile(x + 1, y).id == TILE_GRASS
 					|| getTile(x, y + 1).id == TILE_GRASS
 					|| getTile(x, y - 1).id == TILE_GRASS)
-				) setTile(x, y, TILE_GRASS);
+				) setTileNatural(x, y, TILE_GRASS);
 			}
 //			Jungle grass spread
 			else if(tile == TILE_MUD)
@@ -619,7 +618,7 @@ void worldUpdate()
 					|| getTile(x + 1, y).id == TILE_GRASS_JUNGLE
 					|| getTile(x, y + 1).id == TILE_GRASS_JUNGLE
 					|| getTile(x, y - 1).id == TILE_GRASS_JUNGLE)
-				) setTile(x, y, TILE_GRASS_JUNGLE);
+				) setTileNatural(x, y, TILE_GRASS_JUNGLE);
 			}
 //			Torch animation
 			else if(tile == TILE_TORCH)

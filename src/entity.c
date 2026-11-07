@@ -708,12 +708,13 @@ void doSpawningCycle()
 				spawnY++;
 				if(tiles[getTile(spawnX, spawnY).id].physics != PHYS_NON_SOLID)
 				{
+					bool underground = isUnderground(spawnX, spawnY);
 					if(!isDay())
 					{
 						chosen = (rand() % 2) ? ENT_ZOMBIE : ENT_DEMONEYE;
-						if(spawnY > game.WORLD_HEIGHT / 3.2) chosen = ENT_ZOMBIE;
+						if(underground) chosen = ENT_ZOMBIE;
 					}
-					else if(spawnY < game.WORLD_HEIGHT / 3.2 && getTile(spawnX, spawnY).id == TILE_SAND && rand() % 4 > 0) chosen = ENT_VULTURE;
+					else if(!underground && getTile(spawnX, spawnY).id == TILE_SAND && rand() % 4 > 0) chosen = ENT_VULTURE;
 					else chosen = ENT_SLIME;
 					
 					for(int idx = 0; idx < world.numMarkers; idx++)

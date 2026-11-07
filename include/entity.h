@@ -35,9 +35,11 @@ struct EntityDrops {
 	const Drop *dropList;
 };
 
+/* Window-local coordinates can move far from 0 as the window slides over the
+   infinite world, so these are full ints. */
 typedef struct {
-	short x;
-	short y;
+	int x;
+	int y;
 } Coords;
 
 struct Rect {
@@ -141,11 +143,8 @@ struct Player {
 		float speedBonus;
 	} bonuses;
 	
+	/* Spawn point in global pixel coordinates (see stream.h) */
 	Coords spawn;
-
-	/* Chunk containing the spawn point. spawn itself is chunk-local. */
-	int spawnChunkX;
-	int spawnChunkY;
 
 	int jumpTimer;
 	bool jumpReleased;

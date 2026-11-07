@@ -5,11 +5,23 @@
 #include <gint/defs/util.h>
 #include <gint/keyboard.h>
 #include <gint/gint.h>
+#include <gint/defs/attributes.h>
 
 #include "npc.h"
 #include "world.h"
 #include "render.h"
-#include "generate.h"
+#include "stream.h"
+
+/* Flood-fill buffer for the housing check, in on-chip memory */
+GYRAM Coords checkCoords[CHECK_BUFFER_SIZE];
+
+/* NPCs outside the chunk window are frozen until the player comes back */
+static bool npcInWindow(const NPC *npc)
+{
+	return npc->props.x >= 0 && npc->props.y >= 0
+		&& npc->props.x + npc->props.width < game.WORLD_WIDTH * 8
+		&& npc->props.y + npc->props.height < game.WORLD_HEIGHT * 8;
+}
 
 char *guideDialogue[] = {
 	"Greetings, player. Is there something I can help you with?",
@@ -87,7 +99,6 @@ void addNPC(enum NPCs id)
 {
 	extern bopti_image_t img_npcs_guide, img_npcs_head_guide, img_npcs_nurse, img_npcs_head_nurse;
 	NPC *npc;
-	int tileX, tileY = 0;
 
 	if(id <= NPC_NONE || id > NPC_NURSE || world.numNPCs >= MAX_NPCS || isNPCAlive(id)) return;
 	NPC *resized = realloc(world.npcs, (world.numNPCs + 1) * sizeof(NPC));
@@ -141,11 +152,9 @@ void addNPC(enum NPCs id)
 	npc->marker = -1;
 	npc->id = id;
 
-	tileX = game.WORLD_WIDTH >> 1;
-	while(tileY < game.WORLD_HEIGHT - 1 && getTile(tileX, tileY).id == TILE_NOTHING) tileY++;
-	tileY -= 4;
-	npc->props.x = tileX << 3;
-	npc->props.y = tileY << 3;
+//	New NPCs arrive at the world spawn point, which may be outside the window
+	npc->props.x = player.spawn.x - stream.originX * 8;
+	npc->props.y = player.spawn.y - stream.originY * 8 + player.props.height - npc->props.height;
 }
 
 void doNPCHouseCheck()
@@ -246,6 +255,7 @@ void npcUpdate(int frames)
 
 //		Physics and movement
 
+		if(!npcInWindow(npc)) continue;
 		handlePhysics(&npc->props, frames, false, WATER_FRICTION);
 
 		if(npc->props.movingSelf)
@@ -358,7 +368,7 @@ bool checkHousingValid(Coords position)
 	short end = 0;
 	Coords toCheck;
 	bool isAlreadyPresent;
-	short x, y;
+	int x, y;
 
 	bool hasChair = false;
 	bool hasTable = false;
@@ -484,7 +494,10 @@ void doMarkerChecks()
 	for(int idx = 0; idx < world.numMarkers; idx++)
 	{
 		marker = &world.markers[idx];
-		if(marker->doCheck)
+//		Can't check a house that isn't loaded; try again when it is
+		if(marker->doCheck
+		&& marker->position.x > 0 && marker->position.x < game.WORLD_WIDTH - 1
+		&& marker->position.y > 0 && marker->position.y < game.WORLD_HEIGHT - 1)
 		{
 			save = marker->position;
 			marker->position = (Coords){-1, -1};

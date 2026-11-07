@@ -22,6 +22,7 @@
 #include "render.h"
 #include "world.h"
 #include "crafting.h"
+#include "stream.h"
 
 struct {
 	char year[5];
@@ -68,6 +69,10 @@ int mainMenu()
 		"9 + 1 = 11",
 		"Hey Guys!",
 		"Totally not Terraria!"
+		"KBD2 the Notch!"
+		"caiji-xd the Jeb!"
+		"Infdev!"
+		"Farlands exsist"
 	};
 	int messageIndex = (rand() % 22) + 1;
 
@@ -187,36 +192,6 @@ int exitMenu()
 	}
 }
 
-bool continueExploreMenu()
-{
-	key_event_t key;
-
-	clearevents();
-	render(false);
-
-	drect(4, 14, 123, 46, C_WHITE);
-	drect_border(4, 14, 123, 46, C_WHITE, 1, C_BLACK);
-	dtext_opt(64, 18, C_BLACK, C_WHITE, DTEXT_CENTER, DTEXT_TOP, "Continue to explore?");
-	dtext_opt(64, 36, C_BLACK, C_WHITE, DTEXT_CENTER, DTEXT_TOP, "F1: Yes   F2: No");
-	dupdate();
-
-	while(1)
-	{
-		key = getkey_opt(GETKEY_NONE, NULL);
-		switch(key.key)
-		{
-			case KEY_F1:
-				return true;
-
-			case KEY_F2:
-				return false;
-
-			default:
-				break;
-		}
-	}
-}
-
 void RAMErrorMenu()
 {
 	key_event_t key;
@@ -249,8 +224,6 @@ void loadFailMenu()
 	dtext(0, 0, C_BLACK, "Failed to load");
 	if(save.error == -1) dtext(0, 8, C_BLACK, "\\TERRARIO\\player.dat");
 	if(save.error == -2) dtext(0, 8, C_BLACK, "\\TERRARIO\\save.info");
-	if(save.error == -3) dtext(0, 8, C_BLACK, "Chunk file missing");
-	if(save.error == -4) dtext(0, 8, C_BLACK, "Chunk file damaged");
 	if(save.error == -5) dtext(0, 8, C_BLACK, "Save version mismatch");
 	dtext(0, 16, C_BLACK, "Save data unavailable");
 	dtext(0, 40, C_BLACK, "[EXIT] to exit");
@@ -278,7 +251,9 @@ void saveFailMenu()
 	dtext(0, 0, C_BLACK, "Failed to write");
 	if(save.error == -1) dtext(0, 8, C_BLACK, "player.dat");
 	else if(save.error == -2) dtext(0, 8, C_BLACK, "save.info / folder");
-	else if(save.error == -6) dprint(0, 8, C_BLACK, "chunk %i,%i", save.chunkX, save.chunkY);
+	else if(save.error == -6) dtext(0, 8, C_BLACK, "world chunk");
+	else if(save.error == -7) dtext(0, 8, C_BLACK, "chest file");
+	else if(save.error == -8) dtext(0, 8, C_BLACK, "npc.dat");
 	else dtext(0, 8, C_BLACK, "save data");
 	dtext(0, 24, C_BLACK, "Save failed");
 	dtext(0, 48, C_BLACK, "[EXIT] to exit");
@@ -427,12 +402,11 @@ void itemMenu()
 				return;
 			
 			case KEY_F5:
-				saveGame();
+				gint_world_switch(GINT_CALL(&saveGame));
 				return;
 			
 			case KEY_F6:
-				player.props.x = player.spawn.x;
-				player.props.y = player.spawn.y;
+				streamTeleport(player.spawn.x, player.spawn.y);
 				return;
 			
 			case KEY_SHIFT:

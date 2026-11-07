@@ -12,19 +12,11 @@ main menu and game version in case it's accidentally left enabled.
 */
 //#define DEBUGMODE
 
+/* Size of the chunk window kept in RAM (see stream.h). The world itself is
+   infinite. */
 struct GameCompatibilityPresets {
 	int WORLD_WIDTH;
 	int WORLD_HEIGHT;
-	float WORLDGEN_MULTIPLIER;
-};
-
-/* Directions the player can leave a 160x75 world through. */
-enum ExploreDirections {
-	EXPLORE_NONE,
-	EXPLORE_LEFT,
-	EXPLORE_RIGHT,
-	EXPLORE_UP,
-	EXPLORE_DOWN
 };
 
 extern struct GameCompatibilityPresets game;
@@ -40,9 +32,6 @@ extern struct GameCompatibilityPresets game;
 #define PI 3.14159265358979323846
 #define E 2.718281828459045
 
-// Size in tiles of each world region
-#define REGION_SIZE 90
-
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 
@@ -50,16 +39,12 @@ extern struct GameCompatibilityPresets game;
 #define VAR_BUF_HEIGHT 20
 #define VAR_BUF_OFFSET 5
 
-#define MAX_CHESTS 50
-
 #define CHECK_BUFFER_SIZE 750
 
 #define GRAVITY_ACCEL 0.15
 
 #define INVENTORY_SIZE 24
 
-// Arbitrary size, not using GYRAM for much else
-#define MAX_REGIONS 36
 #define MAX_HOUSE_MARKERS 32
 #define MAX_NPCS 2
 

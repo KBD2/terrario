@@ -20,7 +20,8 @@
 #include "save.h"
 #include "crafting.h"
 #include "update.h"
-#include "generate.h"
+#include "worldgen.h"
+#include "stream.h"
 #include "optimise.h"
 #include "npc.h"
 #include "chat.h"
@@ -47,86 +48,24 @@ int frameCallback(volatile int *flag)
 	return TIMER_CONTINUE;
 }
 
-void setPlayerSpawn()
+/* Puts the spawn point on the surface of the starting column */
+static void setPlayerSpawn(int spawnX)
 {
-	int playerX = (game.WORLD_WIDTH / 2);
-	int playerY = 0;
+	int surface = wgSurfaceY(spawnX);
 
-	while(playerY < game.WORLD_HEIGHT - 1 && tiles[getTile(playerX, playerY).id].physics == PHYS_NON_SOLID) playerY++;
-
-	player.spawn.x = playerX << 3;
-	player.spawn.y = (playerY << 3) - player.props.height;
-	player.spawnChunkX = save.chunkX;
-	player.spawnChunkY = save.chunkY;
+	player.spawn.x = spawnX * 8;
+	player.spawn.y = surface * 8 - player.props.height - 8;
 }
 
-static int exploreCooldown = 0;
-
-/* Handles walking into one of the four edges of the current chunk. The world
-   is a grid of 160x75 chunks: leaving through an edge saves the current chunk
-   and then loads/generates the next one, entering from the opposite edge. */
-static void checkExploreEdge()
+/* Drops the player onto solid ground after appearing in the window */
+static void settlePlayer()
 {
-	int direction;
-	int chunkX, chunkY, playerX, playerY;
+	int x = (player.props.x + (player.props.width >> 1)) >> 3;
+	int y = player.props.y >> 3;
 
-	if(exploreCooldown > 0)
-	{
-		exploreCooldown--;
-		return;
-	}
-	if(player.combat.health <= 0) return;
-
-	direction = currentExploreDirection();
-	if(direction == EXPLORE_NONE) return;
-
-	if(!continueExploreMenu())
-	{
-//		Don't keep asking while the player leans on the edge
-		exploreCooldown = 120;
-		clearevents();
-		return;
-	}
-
-	chunkX = save.chunkX;
-	chunkY = save.chunkY;
-	playerX = player.props.x;
-	playerY = player.props.y;
-
-	switch(direction)
-	{
-		case EXPLORE_LEFT:
-			chunkX--;
-			playerX = (game.WORLD_WIDTH - VAR_BUF_OFFSET) * 8 - player.props.width;
-			break;
-
-		case EXPLORE_RIGHT:
-			chunkX++;
-			playerX = VAR_BUF_OFFSET * 8;
-			break;
-
-		case EXPLORE_UP:
-			chunkY--;
-			playerY = (game.WORLD_HEIGHT - VAR_BUF_OFFSET) * 8 - player.props.height;
-			break;
-
-		case EXPLORE_DOWN:
-			chunkY++;
-			playerY = VAR_BUF_OFFSET * 8;
-			break;
-
-		default:
-			return;
-	}
-
-	if(!travelToChunk(chunkX, chunkY, playerX, playerY))
-	{
-		if(save.error == -4) loadFailMenu();
-		else saveFailMenu();
-		save.error = -99;
-	}
-	exploreCooldown = 45;
-	clearevents();
+//	Climb out of the ground
+	while(y > 0 && tiles[getTile(x, y + 2).id].physics == PHYS_SOLID) y--;
+	player.props.y = y * 8;
 }
 
 bool gameLoop(volatile int *flag)
@@ -142,7 +81,12 @@ bool gameLoop(volatile int *flag)
 		if(updateRet == UPDATE_EXIT) return true;
 		else if(updateRet == UPDATE_EXIT_NOSAVE) return false;
 		if(!respawnCounter) playerUpdate(frames);
-		if(!respawnCounter) checkExploreEdge();
+		if(!streamUpdate())
+		{
+			save.error = stream.error;
+			saveFailMenu();
+			save.error = -99;
+		}
 
 		if(frames & 1 && world.explosion.numParticles > 0) updateExplosion();
 		if(frames % 8 == 0) worldUpdate();
@@ -155,17 +99,11 @@ bool gameLoop(volatile int *flag)
 		{
 			if(respawnCounter == 1)
 			{
-				if(player.spawnChunkX != save.chunkX || player.spawnChunkY != save.chunkY)
+				if(!streamTeleport(player.spawn.x, player.spawn.y))
 				{
-					if(!travelToChunk(player.spawnChunkX, player.spawnChunkY, player.spawn.x, player.spawn.y))
-					{
-						save.error = -99;
-					}
-				}
-				else
-				{
-					player.props.x = player.spawn.x;
-					player.props.y = player.spawn.y;
+					save.error = -6;
+					saveFailMenu();
+					save.error = -99;
 				}
 				player.combat.health = player.maxHealth;
 				player.props.xVel = 0;
@@ -217,15 +155,15 @@ int main(void)
 
 	__printf_enable_fixed();
 
-	/* Every model now uses a single 160x75 chunk of ordinary RAM. */
+	/* Every model keeps the same small chunk window in ordinary RAM; the world
+	   itself is infinite (see stream.h). */
 	switch(gint[HWCALC])
 	{
 		case HWCALC_FX9860G_SH4:
 		case HWCALC_G35PE2:
 			game = (struct GameCompatibilityPresets) {
-				.WORLD_WIDTH = 160,
-				.WORLD_HEIGHT = 75,
-				.WORLDGEN_MULTIPLIER = 0.05
+				.WORLD_WIDTH = WINDOW_WIDTH,
+				.WORLD_HEIGHT = WINDOW_HEIGHT
 			};
 			break;
 		
@@ -236,13 +174,10 @@ int main(void)
 
 	save = (struct SaveData){
 		.tileDataSize = game.WORLD_HEIGHT * game.WORLD_WIDTH * sizeof(Tile),
-		.regionsX = (game.WORLD_WIDTH + REGION_SIZE - 1) / REGION_SIZE,
-		.regionsY = (game.WORLD_HEIGHT + REGION_SIZE - 1) / REGION_SIZE,
 		.error = -99,
 	};
 
-	/* The whole chunk lives in normal RAM. At 160x75 this is 12 kB, so the
-	   GIII no longer needs the SPU P-RAM workaround. */
+	/* 128x96 tiles = 12 kB of normal RAM */
 	save.tileData = malloc(save.tileDataSize);
 	allocCheck(save.tileData);
 	memset(save.tileData, 0, save.tileDataSize);
@@ -307,10 +242,11 @@ int main(void)
 		},
 
 		.chests = {
-			.chests = malloc(MAX_CHESTS * sizeof(struct Chest)),
 			.addChest = &addChest,
 			.removeChest = &removeChest,
-			.findChest = &findChest
+			.findChest = &findChest,
+			.flushChest = &flushChest,
+			.closeChest = &closeChest
 		},
 
 		.placeTile = &placeTile,
@@ -322,27 +258,36 @@ int main(void)
 	};
 	allocCheck(world.entities);
 	allocCheck(world.explosion.particles);
-	allocCheck(world.chests.chests);
 
 //	An entity ID of -1 is considered a free slot
 	for(int idx = 0; idx < MAX_ENTITIES; idx++) world.entities[idx] = (Entity){ -1 };
 
 	if(menuSelect == 0) // New game
 	{
-		save.chunkX = 0;
-		save.chunkY = 0;
+		int spawnX;
+
 		save.worldSeed = seed;
-		generateWorld();
-		memset(save.regionData, 1, save.regionsX * save.regionsY);
+		wgSetSeed(seed);
+
+		dclear(C_WHITE);
+		dtext_opt(64, 32, C_BLACK, C_WHITE, DTEXT_CENTER, DTEXT_MIDDLE, "Clearing old world...");
+		dupdate();
+//		Chunk and chest files of a previous world would otherwise pile up
+		gint_world_switch(GINT_CALL(&clearSaveFolder));
+
+		spawnX = wgFindSpawnX();
+		setPlayerSpawn(spawnX);
+		if(!streamInit(player.spawn.x >> 3, player.spawn.y >> 3)) memoryErrorMenu();
+		player.props.x = player.spawn.x - stream.originX * 8;
+		player.props.y = player.spawn.y - stream.originY * 8;
+		settlePlayer();
+		player.spawn.y = player.props.y + stream.originY * 8;
+
 		player.inventory.items[0] = (Item){ITEM_COPPER_SWORD, rand() % PREFIX_COUNT, 1};
 		player.inventory.items[1] = (Item){ITEM_COPPER_PICK, rand() % PREFIX_COUNT, 1};
 		player.maxHealth = 100;
 		world.timeTicks = timeToTicks(8, 15);
-		setPlayerSpawn();
 		addNPC(NPC_GUIDE);
-
-		player.props.x = player.spawn.x;
-		player.props.y = player.spawn.y;
 	} 
 	else if(menuSelect == 1) // Load game
 	{
@@ -365,6 +310,7 @@ int main(void)
 		}
 
 		dgray(DGRAY_ON);
+		finishLoad();
 	}
 
 	dclear(C_WHITE);
@@ -394,20 +340,22 @@ int main(void)
 		dupdate();
 	}
 
-	//int nums[] = {world.entities, world.chests.chests, world.explosion.particles, world.npcs, world.markers};
-	//debugNumberMenu(nums, 5);
-
 	free(world.entities);
 	free(world.explosion.particles);
 
 	if(lastMessage != NULL) clearMessage(lastMessage);
 
-	if(doSave) gint_world_switch(GINT_CALL(&saveGame));
-	free(world.chests.chests);
+	if(doSave)
+	{
+		bool chestSaved = world.chests.flushChest();
+		gint_world_switch(GINT_CALL(&saveGame));
+		if(!chestSaved) save.error = -7;
+	}
 //	Nothing is allocated if there are no NPCs
 	if(world.npcs != NULL) free(world.npcs);
 	if(world.markers != NULL) free(world.markers);
 	free(save.tileData);
+	streamFree();
 	if(save.error != -99) saveFailMenu();
 	
 	if(doSave)

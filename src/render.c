@@ -121,7 +121,7 @@ void render(bool renderHUD)
 
 	dclear(C_WHITE);
 
-	if(player.props.y > (game.WORLD_HEIGHT / 2.8) * 8) dimage(0, 0, &img_bg_underground);
+	if(isUnderground(player.props.x >> 3, player.props.y >> 3)) dimage(0, 0, &img_bg_underground);
 	else
 	{
 		if(!isDay()) dimage(0, 0, &img_bg_night);

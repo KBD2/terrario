@@ -8,6 +8,7 @@
 #include "defs.h"
 #include "save.h"
 #include "chest.h"
+#include "worldgen.h"
 
 #define PI 3.14159265358979323846
 
@@ -496,10 +497,22 @@ unsigned char findRenderState(int x, int y)
 	return sides;
 }
 
+bool isUnderground(int x, int y)
+{
+	static int cachedX = 0x7fffffff, cachedSurface;
+	int gx = x + stream.originX;
+
+	if(gx != cachedX)
+	{
+		cachedX = gx;
+		cachedSurface = wgSurfaceY(gx);
+	}
+	return y + stream.originY > cachedSurface + 12;
+}
+
 void regionChange(int x, int y)
 {
-	if((unsigned)x >= (unsigned)game.WORLD_WIDTH || (unsigned)y >= (unsigned)game.WORLD_HEIGHT) return;
-	save.regionData[(y / REGION_SIZE) * save.regionsX + (x / REGION_SIZE)] = 1;
+	streamMarkDirty(x, y);
 }
 
 // Generic check for objects

@@ -6,65 +6,82 @@
 
 #include <gint/bfile.h>
 #include <gint/gint.h>
-#include <gint/keyboard.h>
 
 #include "save.h"
 #include "defs.h"
 #include "world.h"
 #include "npc.h"
-#include "generate.h"
-#include "render.h"
+#include "stream.h"
+#include "worldgen.h"
 
-#define CHUNK_MAGIC 0x4B484354u
-#define CHUNK_FORMAT_VERSION 1
+#define NPC_FILE_MAGIC 0x5343504Eu
+#define NPC_FILE_VERSION 1
+#define MAX_NPC_RECORDS (MAX_HOUSE_MARKERS + MAX_NPCS)
 
 struct SaveInfo {
 	char version[VERSION_BUFFER_SIZE];
-	int time;
-	int chunkX;
-	int chunkY;
-	unsigned int worldSeed;
+	int32_t time;
+	uint32_t worldSeed;
 };
 
+/* All positions are global pixel coordinates */
 struct PlayerSave {
 	Item items[INVENTORY_SIZE];
 	Item accessories[5];
 	Item armour[3];
-	int health;
-	int maxHealth;
-	Coords spawn;
-	int spawnChunkX;
-	int spawnChunkY;
-	int x, y;
+	int32_t health;
+	int32_t maxHealth;
+	int32_t spawnX, spawnY;
+	int32_t x, y;
 };
 
-struct HousingSave {
-	Coords position;
-	enum NPCs npc;
-};
-
-struct ChunkHeader {
+struct NpcFileHeader {
 	uint32_t magic;
-	uint16_t formatVersion;
-	uint16_t width;
-	uint16_t height;
-	uint16_t reserved;
-	int chunkX;
-	int chunkY;
-	unsigned int worldSeed;
-	int numChests;
-	int numMarkers;
-	int numNPCs;
-	int numHomeless;
-	int dataSize;
+	uint16_t version;
+	uint16_t count;
+};
+
+enum NpcRecordTypes {
+	RECORD_MARKER,		// x, y: global tile of the marker; npc: occupant or NPC_NONE
+	RECORD_HOMELESS		// x, y: global pixel position of an NPC without a house
+};
+
+struct NpcRecord {
+	int32_t x, y;
+	int16_t npc;
+	int16_t type;
 };
 
 /* The CASIOWIN filesystem only accepts even-sized writes. */
 _Static_assert(sizeof(struct SaveInfo) % 2 == 0, "save.info must be even-sized");
 _Static_assert(sizeof(struct PlayerSave) % 2 == 0, "player.dat must be even-sized");
-_Static_assert(sizeof(struct ChunkHeader) % 2 == 0, "chunk header must be even-sized");
-_Static_assert(sizeof(struct Chest) % 2 == 0, "chest data must be even-sized");
-_Static_assert(sizeof(struct HousingSave) % 2 == 0, "housing data must be even-sized");
+_Static_assert(sizeof(struct NpcFileHeader) % 2 == 0, "npc header must be even-sized");
+_Static_assert(sizeof(struct NpcRecord) % 2 == 0, "npc record must be even-sized");
+
+/* Player position read by loadSave(), used by finishLoad() */
+static int loadedX, loadedY;
+
+void encodeName(char *out, unsigned int value, int digits)
+{
+	static const char alphabet[] = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
+
+	for(int i = digits - 1; i >= 0; i--)
+	{
+		out[i] = alphabet[value & 31];
+		value >>= 5;
+	}
+	out[digits] = '\0';
+}
+
+void savePath(const char *name, uint16_t *path)
+{
+	char buffer[48];
+	int i;
+
+	snprintf(buffer, sizeof(buffer), "%s%s", SAVE_FOLDER_ASCII, name);
+	for(i = 0; buffer[i] != '\0' && i < 47; i++) path[i] = (uint16_t)(unsigned char)buffer[i];
+	path[i] = 0;
+}
 
 static void sanitizeItem(Item *item)
 {
@@ -78,26 +95,6 @@ static void sanitizeItem(Item *item)
 	if(item->id == ITEM_NULL) item->amount = 0;
 }
 
-static void toPath(const char *source, uint16_t *destination)
-{
-	int i;
-
-	for(i = 0; source[i] != '\0' && i < 63; i++)
-	{
-		destination[i] = (uint16_t)(unsigned char)source[i];
-	}
-	destination[i] = 0;
-}
-
-static void chunkPath(int chunkX, int chunkY, uint16_t *path)
-{
-	char buffer[64];
-
-	sprintf(buffer, "\\\\fls0\\TERRARIO\\c%i_%i.dat", chunkX, chunkY);
-	toPath(buffer, path);
-}
-
-// Checks if \\fls0\TERRARIO\save.info exists
 bool getSave()
 {
 	int handle;
@@ -105,7 +102,7 @@ bool getSave()
 	struct BFile_FileInfo fileInfo;
 	int error;
 
-	error = BFile_FindFirst((const uint16_t*)u"\\\\fls0\\TERRARIO\\save.info", &handle, foundPath, &fileInfo);
+	error = BFile_FindFirst(SAVE_FILE("save.info"), &handle, foundPath, &fileInfo);
 	if(error == 0) BFile_FindClose(handle);
 
 	return error == 0;
@@ -115,8 +112,7 @@ void getVersionInfo()
 {
 	extern char versionBuffer[16];
 	struct SaveInfo info;
-	const uint16_t *infoPath = u"\\\\fls0\\TERRARIO\\save.info";
-	int descriptor = BFile_Open(infoPath, BFile_ReadOnly);
+	int descriptor = BFile_Open(SAVE_FILE("save.info"), BFile_ReadOnly);
 
 	memset(&info, 0, sizeof(info));
 	if(descriptor >= 0)
@@ -128,26 +124,72 @@ void getVersionInfo()
 	versionBuffer[VERSION_BUFFER_SIZE - 1] = '\0';
 }
 
-static bool ensureSaveFolder()
+bool ensureSaveFolder()
 {
 	int handle;
 	uint16_t foundPath[64];
 	struct BFile_FileInfo fileInfo;
 	int error;
 
-	error = BFile_FindFirst((const uint16_t*)u"\\\\fls0\\TERRARIO", &handle, foundPath, &fileInfo);
+	error = BFile_FindFirst(SAVE_FOLDER, &handle, foundPath, &fileInfo);
 	if(error == 0) BFile_FindClose(handle);
 	if(error < 0)
 	{
-		error = BFile_Create((const uint16_t*)u"\\\\fls0\\TERRARIO", BFile_Folder, NULL);
+		error = BFile_Create(SAVE_FOLDER, BFile_Folder, NULL);
 		if(error < 0) return false;
 	}
 	return true;
 }
 
-/* writeWholeFile
-Writes a small structure (save.info/player.dat) to a freshly created file. All
-sizes used here are even, as required by the CASIOWIN filesystem. */
+/* Extracts the ASCII file name from a search result, which may or may not
+   include the folder. Returns false for names we don't own. */
+static bool worldFileName(const uint16_t *found, char *name)
+{
+	int start = 0, length = 0;
+
+	for(int i = 0; found[i] != 0 && i < 63; i++) if(found[i] == '\\') start = i + 1;
+	while(found[start + length] != 0 && length < 12)
+	{
+		uint16_t c = found[start + length];
+		if(c > 127) return false;
+		name[length++] = (char)c;
+	}
+	name[length] = '\0';
+	if(found[start + length] != 0 || length < 5) return false;
+	if(name[0] != 'C' && name[0] != 'c' && name[0] != 'K' && name[0] != 'k') return false;
+	return strcmp(name + length - 4, ".dat") == 0 || strcmp(name + length - 4, ".DAT") == 0;
+}
+
+void clearSaveFolder()
+{
+	char names[16][13];
+	uint16_t found[64], path[48];
+	struct BFile_FileInfo info;
+	int handle, count, removed;
+
+//	Searching while deleting is not safe, so collect a batch, delete it and
+//	start a new search until nothing is left
+	for(int pass = 0; pass < 200; pass++)
+	{
+		count = 0;
+		if(BFile_FindFirst(SAVE_FILE("*"), &handle, found, &info) != 0) return;
+		do
+		{
+			if(worldFileName(found, names[count])) count++;
+		}
+		while(count < 16 && BFile_FindNext(handle, found, &info) == 0);
+		BFile_FindClose(handle);
+
+		removed = 0;
+		for(int i = 0; i < count; i++)
+		{
+			savePath(names[i], path);
+			if(BFile_Remove(path) == 0) removed++;
+		}
+		if(removed == 0) return;
+	}
+}
+
 static bool writeWholeFile(const uint16_t *path, const void *data, int size)
 {
 	int fileSize = size;
@@ -168,109 +210,44 @@ static bool writeWholeFile(const uint16_t *path, const void *data, int size)
 	return true;
 }
 
-/* writeChunkFile
-Stores the loaded chunk: tiles, chests, house markers and NPCs. */
-static bool writeChunkFile()
+static bool writeNpcFile()
 {
-	uint16_t path[64];
-	struct ChunkHeader header;
-	int numMarkers = world.numMarkers;
-	int numHomeless = 0;
-	int numChests = world.chests.number;
-	int tileBytes = game.WORLD_WIDTH * game.WORLD_HEIGHT * sizeof(Tile);
-	int chestBytes;
-	int markerBytes;
-	int fileSize;
-	int descriptor;
-	int offset;
-	NPC *npc;
-	HouseMarker *marker;
-	struct HousingSave housingSave;
+	struct {
+		struct NpcFileHeader header;
+		struct NpcRecord records[MAX_NPC_RECORDS];
+	} file;
+	int count = 0;
+	const uint16_t *path = SAVE_FILE("npc.dat");
 
-	for(int idx = 0; idx < world.numNPCs; idx++)
+	for(int idx = 0; idx < world.numMarkers && count < MAX_NPC_RECORDS; idx++)
 	{
-		if(world.npcs[idx].marker == -1) numHomeless++;
-	}
-
-	chestBytes = numChests * sizeof(struct Chest);
-	markerBytes = (numMarkers + numHomeless) * sizeof(struct HousingSave);
-	fileSize = sizeof(header) + tileBytes + chestBytes + markerBytes;
-	if(fileSize & 1) fileSize += 2;
-
-	memset(&header, 0, sizeof(header));
-	header.magic = CHUNK_MAGIC;
-	header.formatVersion = CHUNK_FORMAT_VERSION;
-	header.width = game.WORLD_WIDTH;
-	header.height = game.WORLD_HEIGHT;
-	header.chunkX = save.chunkX;
-	header.chunkY = save.chunkY;
-	header.worldSeed = save.worldSeed;
-	header.numChests = numChests;
-	header.numMarkers = numMarkers;
-	header.numNPCs = world.numNPCs;
-	header.numHomeless = numHomeless;
-	header.dataSize = fileSize;
-
-	chunkPath(save.chunkX, save.chunkY, path);
-	BFile_Remove(path);
-	if(BFile_Create(path, BFile_File, &fileSize) < 0) return false;
-	descriptor = BFile_Open(path, BFile_WriteOnly);
-	if(descriptor < 0) return false;
-
-	offset = 0;
-	if(BFile_Write(descriptor, &header, sizeof(header)) < 0) goto fail;
-	offset += sizeof(header);
-	if(BFile_Write(descriptor, world.tiles, tileBytes) < 0) goto fail;
-	offset += tileBytes;
-	if(chestBytes > 0)
-	{
-		if(BFile_Write(descriptor, world.chests.chests, chestBytes) < 0) goto fail;
-		offset += chestBytes;
-	}
-
-	for(int idx = 0; idx < numMarkers; idx++)
-	{
-		marker = &world.markers[idx];
-		housingSave = (struct HousingSave) {
-			.position = marker->position,
+		HouseMarker *marker = &world.markers[idx];
+		file.records[count++] = (struct NpcRecord){
+			.x = marker->position.x + stream.originX,
+			.y = marker->position.y + stream.originY,
 			.npc = (marker->occupant >= 0 && marker->occupant < world.numNPCs)
-				? world.npcs[marker->occupant].id : NPC_NONE
+				? world.npcs[marker->occupant].id : NPC_NONE,
+			.type = RECORD_MARKER
 		};
-		if(BFile_Write(descriptor, &housingSave, sizeof(housingSave)) < 0) goto fail;
-		offset += sizeof(housingSave);
 	}
-	for(int idx = 0; idx < world.numNPCs; idx++)
+	for(int idx = 0; idx < world.numNPCs && count < MAX_NPC_RECORDS; idx++)
 	{
-		npc = &world.npcs[idx];
-		if(npc->marker == -1)
-		{
-			housingSave = (struct HousingSave) {
-				.position = (Coords){npc->props.x, npc->props.y},
-				.npc = npc->id
-			};
-			if(BFile_Write(descriptor, &housingSave, sizeof(housingSave)) < 0) goto fail;
-			offset += sizeof(housingSave);
-		}
+		NPC *npc = &world.npcs[idx];
+		if(npc->marker != -1) continue;
+		file.records[count++] = (struct NpcRecord){
+			.x = npc->props.x + stream.originX * 8,
+			.y = npc->props.y + stream.originY * 8,
+			.npc = npc->id,
+			.type = RECORD_HOMELESS
+		};
 	}
 
-	if(offset < fileSize)
-	{
-		char padding[2] = {0, 0};
-		if(BFile_Write(descriptor, padding, fileSize - offset) < 0) goto fail;
-	}
-
-	BFile_Close(descriptor);
-	return true;
-
-fail:
-	BFile_Close(descriptor);
-	return false;
+	file.header = (struct NpcFileHeader){NPC_FILE_MAGIC, NPC_FILE_VERSION, count};
+	return writeWholeFile(path, &file, sizeof(struct NpcFileHeader) + count * sizeof(struct NpcRecord));
 }
 
 void saveGame()
 {
-	const uint16_t *infoPath = u"\\\\fls0\\TERRARIO\\save.info";
-	const uint16_t *playerPath = u"\\\\fls0\\TERRARIO\\player.dat";
 	struct SaveInfo info;
 	struct PlayerSave playerSave;
 
@@ -283,11 +260,17 @@ void saveGame()
 		return;
 	}
 
-//	Write the chunk first: if anything goes wrong the old save.info still
-//	points at a consistent chunk.
-	if(!writeChunkFile())
+//	Chunks first: if anything goes wrong, the old save.info still describes a
+//	consistent world
+	if(!streamFlushOp())
 	{
 		save.error = -6;
+		return;
+	}
+
+	if(!writeNpcFile())
+	{
+		save.error = -8;
 		return;
 	}
 
@@ -297,12 +280,11 @@ void saveGame()
 	memcpy(playerSave.items, player.inventory.items, INVENTORY_SIZE * sizeof(Item));
 	memcpy(playerSave.accessories, player.inventory.accessories, 5 * sizeof(Item));
 	memcpy(playerSave.armour, player.inventory.armour, 3 * sizeof(Item));
-	playerSave.spawn = player.spawn;
-	playerSave.spawnChunkX = player.spawnChunkX;
-	playerSave.spawnChunkY = player.spawnChunkY;
-	playerSave.x = player.props.x;
-	playerSave.y = player.props.y;
-	if(!writeWholeFile(playerPath, &playerSave, sizeof(playerSave)))
+	playerSave.spawnX = player.spawn.x;
+	playerSave.spawnY = player.spawn.y;
+	playerSave.x = player.props.x + stream.originX * 8;
+	playerSave.y = player.props.y + stream.originY * 8;
+	if(!writeWholeFile(SAVE_FILE("player.dat"), &playerSave, sizeof(playerSave)))
 	{
 		save.error = -1;
 		return;
@@ -311,341 +293,143 @@ void saveGame()
 	memset(&info, 0, sizeof(info));
 	strncpy(info.version, VERSION, VERSION_BUFFER_SIZE - 1);
 	info.time = save.timeTicks;
-	info.chunkX = save.chunkX;
-	info.chunkY = save.chunkY;
 	info.worldSeed = save.worldSeed;
-	if(!writeWholeFile(infoPath, &info, sizeof(info))) save.error = -2;
+	if(!writeWholeFile(SAVE_FILE("save.info"), &info, sizeof(info))) save.error = -2;
 }
 
-/* clearChunk
-Drops all per-chunk state before another chunk is loaded or generated. */
-static void clearChunk()
+static bool readWholeFile(const uint16_t *path, void *data, int size)
 {
-	world.chests.number = 0;
-	for(int idx = 0; idx < MAX_ENTITIES; idx++) world.entities[idx] = (Entity){ -1 };
-	world.explosion.numParticles = 0;
-	world.explosion.deltaTicks = 0;
+	int descriptor = BFile_Open(path, BFile_ReadOnly);
 
-	world.numNPCs = 0;
-	free(world.npcs);
-	world.npcs = NULL;
-
-	world.numMarkers = 0;
-	free(world.markers);
-	world.markers = NULL;
+	if(descriptor < 0) return false;
+	if(BFile_Size(descriptor) != size || BFile_Read(descriptor, data, size, 0) < 0)
+	{
+		BFile_Close(descriptor);
+		return false;
+	}
+	BFile_Close(descriptor);
+	return true;
 }
 
-void loadChunkFile()
+/* Runs in the OS world. Returns the number of records read into `records`. */
+static int readNpcFile(struct NpcRecord *records)
 {
-	uint16_t path[64];
-	struct ChunkHeader header;
-	struct HousingSave housingSave;
-	NPC *npc;
-	HouseMarker *marker;
-	int descriptor;
-	int fileSize;
-	int tileBytes = game.WORLD_WIDTH * game.WORLD_HEIGHT * sizeof(Tile);
-	int chestBytes;
-	int markerBytes;
-	int offset;
+	struct NpcFileHeader header;
+	int descriptor = BFile_Open(SAVE_FILE("npc.dat"), BFile_ReadOnly);
+	int size;
 
-	save.chunkMissing = false;
-	chunkPath(save.chunkX, save.chunkY, path);
-
-	descriptor = BFile_Open(path, BFile_ReadOnly);
-	if(descriptor < 0)
-	{
-		save.chunkMissing = true;
-		save.error = -99;
-		return;
-	}
-
-	fileSize = BFile_Size(descriptor);
-	if(fileSize < (int)sizeof(header) || BFile_Read(descriptor, &header, sizeof(header), 0) < 0)
+	if(descriptor < 0) return 0;
+	size = BFile_Size(descriptor);
+	if(size < (int)sizeof(header) || BFile_Read(descriptor, &header, sizeof(header), 0) < 0
+	|| header.magic != NPC_FILE_MAGIC || header.version != NPC_FILE_VERSION
+	|| header.count > MAX_NPC_RECORDS
+	|| size != (int)(sizeof(header) + header.count * sizeof(struct NpcRecord)))
 	{
 		BFile_Close(descriptor);
-		save.error = -4;
-		return;
+		return 0;
 	}
-
-	if(header.magic != CHUNK_MAGIC
-	|| header.formatVersion != CHUNK_FORMAT_VERSION
-	|| header.width != game.WORLD_WIDTH
-	|| header.height != game.WORLD_HEIGHT
-	|| header.chunkX != save.chunkX
-	|| header.chunkY != save.chunkY
-	|| header.dataSize != fileSize
-	|| header.numChests < 0 || header.numChests > MAX_CHESTS
-	|| header.numMarkers < 0 || header.numMarkers > MAX_HOUSE_MARKERS
-	|| header.numNPCs < 0 || header.numNPCs > MAX_NPCS
-	|| header.numHomeless < 0 || header.numHomeless > MAX_NPCS)
+	if(header.count > 0
+	&& BFile_Read(descriptor, records, header.count * sizeof(struct NpcRecord), sizeof(header)) < 0)
 	{
 		BFile_Close(descriptor);
-		save.error = -4;
-		return;
+		return 0;
 	}
-
-	/* A chunk file left over from another world can share these coordinates.
-	   Treat it as absent and let the caller generate this world's version. */
-	if(header.worldSeed != save.worldSeed)
-	{
-		BFile_Close(descriptor);
-		save.chunkMissing = true;
-		save.error = -99;
-		return;
-	}
-
-	chestBytes = header.numChests * sizeof(struct Chest);
-	markerBytes = (header.numMarkers + header.numHomeless) * sizeof(struct HousingSave);
-	if((int)(sizeof(header) + tileBytes + chestBytes + markerBytes) != fileSize)
-	{
-		BFile_Close(descriptor);
-		save.error = -4;
-		return;
-	}
-
-	clearChunk();
-
-	offset = sizeof(header);
-	if(BFile_Read(descriptor, world.tiles, tileBytes, offset) < 0) goto fail;
-	offset += tileBytes;
-	for(int idx = 0; idx < game.WORLD_WIDTH * game.WORLD_HEIGHT; idx++)
-	{
-		if(world.tiles[idx].id >= TILES_COUNT) world.tiles[idx] = (Tile){TILE_STONE};
-	}
-	world.chests.number = header.numChests;
-	if(chestBytes > 0 && BFile_Read(descriptor, world.chests.chests, chestBytes, offset) < 0) goto fail;
-	offset += chestBytes;
-	for(int chest = 0; chest < header.numChests; chest++)
-	{
-		for(int slot = 0; slot < INVENTORY_SIZE; slot++)
-		{
-			sanitizeItem(&world.chests.chests[chest].items[slot]);
-		}
-	}
-
-	for(int idx = 0; idx < header.numMarkers; idx++)
-	{
-		int numNPCs;
-		int numMarkers;
-
-		if(BFile_Read(descriptor, &housingSave, sizeof(housingSave), offset) < 0) goto fail;
-		offset += sizeof(housingSave);
-		if(housingSave.npc < NPC_NONE || housingSave.npc > NPC_NURSE) housingSave.npc = NPC_NONE;
-		if(!checkHousingValid(housingSave.position))
-		{
-			if(housingSave.npc != NPC_NONE)
-			{
-				numNPCs = world.numNPCs;
-				addNPC(housingSave.npc);
-				if(world.numNPCs == numNPCs) continue;
-				npc = &world.npcs[world.numNPCs - 1];
-				npc->props.x = housingSave.position.x << 3;
-				npc->props.y = housingSave.position.y << 3;
-				continue;
-			}
-		}
-		numMarkers = world.numMarkers;
-		addMarker(housingSave.position);
-		if(world.numMarkers == numMarkers) continue;
-		if(housingSave.npc != NPC_NONE)
-		{
-			numNPCs = world.numNPCs;
-			addNPC(housingSave.npc);
-			if(world.numNPCs == numNPCs) continue;
-			marker = &world.markers[world.numMarkers - 1];
-			npc = &world.npcs[world.numNPCs - 1];
-			npc->props.x = housingSave.position.x << 3;
-			npc->props.y = housingSave.position.y << 3;
-			npc->marker = world.numMarkers - 1;
-			marker->occupant = world.numNPCs - 1;
-		}
-	}
-	for(int idx = 0; idx < header.numHomeless; idx++)
-	{
-		int numNPCs;
-
-		if(BFile_Read(descriptor, &housingSave, sizeof(housingSave), offset) < 0) goto fail;
-		offset += sizeof(housingSave);
-		if(housingSave.npc < NPC_NONE || housingSave.npc > NPC_NURSE) housingSave.npc = NPC_NONE;
-		numNPCs = world.numNPCs;
-		addNPC(housingSave.npc);
-		if(world.numNPCs == numNPCs) continue;
-		npc = &world.npcs[world.numNPCs - 1];
-		npc->props.x = housingSave.position.x;
-		npc->props.y = housingSave.position.y;
-	}
-
 	BFile_Close(descriptor);
-	save.error = -99;
-	return;
-
-fail:
-	BFile_Close(descriptor);
-	save.error = -4;
+	return header.count;
 }
 
 void loadSave()
 {
-	const uint16_t *infoPath = u"\\\\fls0\\TERRARIO\\save.info";
-	const uint16_t *playerPath = u"\\\\fls0\\TERRARIO\\player.dat";
 	struct SaveInfo info;
 	struct PlayerSave playerSave;
-	int descriptor;
-	int size;
+	struct PlayerSave *ps = &playerSave;
 
 	save.error = -99;
 
-	descriptor = BFile_Open(infoPath, BFile_ReadOnly);
-	if(descriptor < 0)
+	if(!readWholeFile(SAVE_FILE("save.info"), &info, sizeof(info)))
 	{
 		save.error = -2;
 		return;
 	}
-	size = BFile_Size(descriptor);
-	if(size != (int)sizeof(info))
-	{
-		BFile_Close(descriptor);
-		save.error = -5;
-		return;
-	}
-	if(BFile_Read(descriptor, &info, sizeof(info), 0) < 0)
-	{
-		BFile_Close(descriptor);
-		save.error = -5;
-		return;
-	}
-	BFile_Close(descriptor);
-
 	if(strncmp(info.version, VERSION, VERSION_BUFFER_SIZE) != 0)
 	{
 		save.error = -5;
 		return;
 	}
-
-	descriptor = BFile_Open(playerPath, BFile_ReadOnly);
-	if(descriptor < 0)
+	if(!readWholeFile(SAVE_FILE("player.dat"), &playerSave, sizeof(playerSave)))
 	{
 		save.error = -1;
 		return;
 	}
-	size = BFile_Size(descriptor);
-	if(size != (int)sizeof(playerSave))
-	{
-		BFile_Close(descriptor);
-		save.error = -5;
-		return;
-	}
-	if(BFile_Read(descriptor, &playerSave, sizeof(playerSave), 0) < 0)
-	{
-		BFile_Close(descriptor);
-		save.error = -1;
-		return;
-	}
-	BFile_Close(descriptor);
 
 	save.timeTicks = info.time;
-	save.chunkX = info.chunkX;
-	save.chunkY = info.chunkY;
 	save.worldSeed = info.worldSeed;
 	world.timeTicks = save.timeTicks;
 
-	player.maxHealth = playerSave.maxHealth > 0 ? playerSave.maxHealth : 100;
-	player.combat.health = playerSave.health;
+	player.maxHealth = ps->maxHealth > 0 ? ps->maxHealth : 100;
+	player.combat.health = ps->health;
 	if(player.combat.health < 0) player.combat.health = 0;
 	if(player.combat.health > player.maxHealth) player.combat.health = player.maxHealth;
-	memcpy(player.inventory.items, playerSave.items, INVENTORY_SIZE * sizeof(Item));
-	memcpy(player.inventory.accessories, playerSave.accessories, 5 * sizeof(Item));
-	memcpy(player.inventory.armour, playerSave.armour, 3 * sizeof(Item));
+	memcpy(player.inventory.items, ps->items, INVENTORY_SIZE * sizeof(Item));
+	memcpy(player.inventory.accessories, ps->accessories, 5 * sizeof(Item));
+	memcpy(player.inventory.armour, ps->armour, 3 * sizeof(Item));
 	for(int slot = 0; slot < INVENTORY_SIZE; slot++) sanitizeItem(&player.inventory.items[slot]);
 	for(int slot = 0; slot < 5; slot++) sanitizeItem(&player.inventory.accessories[slot]);
 	for(int slot = 0; slot < 3; slot++) sanitizeItem(&player.inventory.armour[slot]);
-	player.spawn = playerSave.spawn;
-	player.spawnChunkX = playerSave.spawnChunkX;
-	player.spawnChunkY = playerSave.spawnChunkY;
-
-	loadChunkFile();
-	if(save.chunkMissing) save.error = -3;
-	if(save.error != -99) return;
-
-	player.props.x = playerSave.x;
-	player.props.y = playerSave.y;
+	player.spawn.x = ps->spawnX;
+	player.spawn.y = ps->spawnY;
+	loadedX = ps->x;
+	loadedY = ps->y;
 }
 
-/* carvePlayerSpace
-Makes sure the player is not embedded in solid ground after entering a chunk
-through an edge, where the stitched terrain may not leave a doorway. */
-static void carvePlayerSpace()
+void finishLoad()
 {
-	int left = player.props.x >> 3;
-	int right = (player.props.x + player.props.width - 1) >> 3;
-	int top = player.props.y >> 3;
-	int bottom = (player.props.y + player.props.height - 1) >> 3;
+	struct NpcRecord records[MAX_NPC_RECORDS];
+	int numRecords;
 
-	for(int y = top; y <= bottom; y++)
+	wgSetSeed(save.worldSeed);
+
+	if(!streamInit(loadedX >> 3, loadedY >> 3)) memoryErrorMenu();
+	player.props.x = loadedX - stream.originX * 8;
+	player.props.y = loadedY - stream.originY * 8;
+
+	numRecords = gint_world_switch(GINT_CALL(&readNpcFile, (void *)records));
+
+//	Markers (and the NPCs living in them) first, then homeless NPCs. Housing
+//	is re-validated later by the regular marker checks, since most markers
+//	are outside the window right now.
+	for(int pass = 0; pass < 2; pass++)
 	{
-		for(int x = left; x <= right; x++)
+		for(int i = 0; i < numRecords; i++)
 		{
-			enum PhysicsTypes physics = tiles[getTile(x, y).id].physics;
-			if(physics == PHYS_SOLID || physics == PHYS_SAND) setTile(x, y, TILE_NOTHING);
+			struct NpcRecord *rec = &records[i];
+			int numNPCs = world.numNPCs;
+			NPC *npc;
+
+			if(rec->npc < NPC_NONE || rec->npc > NPC_NURSE) rec->npc = NPC_NONE;
+			if(pass == 0 && rec->type == RECORD_MARKER)
+			{
+				int numMarkers = world.numMarkers;
+				Coords position = {rec->x - stream.originX, rec->y - stream.originY};
+
+				addMarker(position);
+				if(world.numMarkers == numMarkers || rec->npc == NPC_NONE) continue;
+				addNPC(rec->npc);
+				if(world.numNPCs == numNPCs) continue;
+				npc = &world.npcs[world.numNPCs - 1];
+				npc->props.x = position.x * 8;
+				npc->props.y = position.y * 8;
+				npc->marker = world.numMarkers - 1;
+				world.markers[world.numMarkers - 1].occupant = world.numNPCs - 1;
+			}
+			else if(pass == 1 && rec->type == RECORD_HOMELESS && rec->npc != NPC_NONE)
+			{
+				addNPC(rec->npc);
+				if(world.numNPCs == numNPCs) continue;
+				npc = &world.npcs[world.numNPCs - 1];
+				npc->props.x = rec->x - stream.originX * 8;
+				npc->props.y = rec->y - stream.originY * 8;
+			}
 		}
 	}
-}
-
-bool travelToChunk(int chunkX, int chunkY, int playerX, int playerY)
-{
-	int oldChunkX = save.chunkX;
-	int oldChunkY = save.chunkY;
-	int failure;
-
-	if(chunkX == save.chunkX && chunkY == save.chunkY)
-	{
-		player.props.x = playerX;
-		player.props.y = playerY;
-		return true;
-	}
-
-	gint_world_switch(GINT_CALL(&saveGame));
-	if(save.error != -99) return false;
-
-	save.chunkX = chunkX;
-	save.chunkY = chunkY;
-	save.chunkMissing = false;
-
-	gint_world_switch(GINT_CALL(&loadChunkFile));
-	if(save.chunkMissing)
-	{
-		clearChunk();
-		generateWorld();
-		save.error = -99;
-	}
-	else if(save.error != -99)
-	{
-//		The target chunk is damaged; put the saved chunk back in memory
-		failure = save.error;
-		save.chunkX = oldChunkX;
-		save.chunkY = oldChunkY;
-		save.chunkMissing = false;
-		gint_world_switch(GINT_CALL(&loadChunkFile));
-		save.error = failure;
-		return false;
-	}
-
-	save.error = -99;
-	save.chunkMissing = false;
-	player.props.x = playerX;
-	player.props.y = playerY;
-	player.props.xVel = 0;
-	player.props.yVel = 0;
-	player.props.touchingTileTop = false;
-	player.props.dropping = false;
-	player.props.movingSelf = false;
-	player.jumpTimer = 0;
-	player.jumpReleased = true;
-	player.pixelsFallen = 0;
-
-	carvePlayerSpace();
-	resetVarBuffer();
-	clearevents();
-	return true;
 }

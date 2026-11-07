@@ -9,6 +9,8 @@ World API functions.
 #include <gint/display.h>
 #include <stdbool.h>
 
+#include "tiles.h"
+#include "stream.h"
 #include "inventory.h"
 #include "render.h"
 #include "entity.h"
@@ -35,6 +37,9 @@ enum Materials {
 	MAT_SOIL,
 	MAT_COUNT
 };
+
+/* Window-local tile coordinates (see stream.h). Tiles outside the window read
+   as stone and can't be written. */
 
 /* I want to keep as much data as I can in here
 and not the Tile struct */
@@ -63,57 +68,7 @@ typedef struct {
 	unsigned char id;
 } Tile;
 
-enum Tiles {
-	TILE_NULL = -1,
-	TILE_NOTHING,
-	TILE_STONE,
-	TILE_DIRT,
-	TILE_GRASS,
-	TILE_WOOD,
-	TILE_TRUNK,
-	TILE_ROOT_L, TILE_ROOT_R,
-	TILE_LEAVES,
-	TILE_PLANT,
-	TILE_WBENCH_L, TILE_WBENCH_R,
-	TILE_PLATFORM,
-	TILE_CHAIR_L, TILE_CHAIR_R,
-	TILE_TORCH,
-	TILE_FURNACE_EDGE, TILE_FURNACE_MID,
-	TILE_IRON_ORE,
-	TILE_ANVIL_L, TILE_ANVIL_R,
-	TILE_CHEST_L, TILE_CHEST_R,
-	TILE_DOOR_C,
-	TILE_DOOR_O_L_L, TILE_DOOR_O_L_R,
-	TILE_DOOR_O_R_L, TILE_DOOR_O_R_R,
-	TILE_VINE,
-	TILE_SAND,
-	TILE_CACTUS, TILE_CACTUS_BRANCH,
-	TILE_WATER,
-	TILE_CRYST_L, TILE_CRYST_R,
-	TILE_MUD,
-	TILE_CLAY,
-	TILE_COPPER_ORE,
-	TILE_TIN_ORE,
-	TILE_MUSHROOM,
-	TILE_BOTTLE,
-	TILE_LESSER_HEALING_POTION,
-	TILE_LESSER_MANA_POTION,
-	TILE_GLASS,
-	TILE_AMETHYST,
-	TILE_DIAMOND,
-	TILE_EMERALD,
-	TILE_RUBY,
-	TILE_SAPPHIRE,
-	TILE_TOPAZ,
-	TILE_POT_L, TILE_POT_R,
-	TILE_COBWEB,
-	TILE_SAWMILL_L, TILE_SAWMILL_R,
-	TILE_LOOM_L, TILE_LOOM_R,
-	TILE_BED_EDGE, TILE_BED_MID,
-	TILE_GRASS_JUNGLE,
-
-	TILES_COUNT
-};
+/* enum Tiles lives in tiles.h */
 
 struct World {
 	Tile *tiles;
@@ -171,13 +126,31 @@ static inline void setTile(int x, int y, enum Tiles tile)
 	   (unsigned)y >= (unsigned)game.WORLD_HEIGHT ||
 	   (unsigned)tile >= TILES_COUNT) return;
 	world.tiles[y * game.WORLD_WIDTH + x] = (Tile){tile};
-	/* Includes sand, grass, and multi-tile objects across region boundaries. */
-	save.regionData[(y / REGION_SIZE) * save.regionsX + x / REGION_SIZE] = 1;
+	/* The chunk now differs from what the generator makes, so it must be saved */
+	streamMarkDirty(x, y);
 }
 
+/* setTileNatural
+Like setTile, but for changes the world makes by itself (grass spreading,
+falling sand, flowing water). These don't force a chunk to be saved: if the
+chunk is unloaded unmodified, the change simply happens again next time.
+*/
+static inline void setTileNatural(int x, int y, enum Tiles tile)
+{
+	if((unsigned)x >= (unsigned)game.WORLD_WIDTH ||
+	   (unsigned)y >= (unsigned)game.WORLD_HEIGHT ||
+	   (unsigned)tile >= TILES_COUNT) return;
+	world.tiles[y * game.WORLD_WIDTH + x] = (Tile){tile};
+}
+
+/* isUnderground
+Whether a window-local tile is well below the terrain surface. Used for the
+background and for choosing which monsters spawn.
+*/
+bool isUnderground(int x, int y);
+
 /* regionChange
-Sets the status of the region the given coordinates are in. Used to keep track
-of which world regions are to be saved to file.
+Marks the chunk containing the given tile as modified, so it gets saved.
 
 x, y: Coordinates of a tile within the world.
 */
